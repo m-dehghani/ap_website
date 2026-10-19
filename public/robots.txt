@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://ap-football.com/sitemap.xml
+
+# Disallow admin pages
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /api/
+
+# Allow specific API endpoints
+Allow: /api/programs
+Allow: /api/register
+
+# Crawl delay (1 second)
+Crawl-delay: 1
+
+# Host
+Host: https://ap-football.com 

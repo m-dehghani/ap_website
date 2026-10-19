@@ -1,0 +1,70 @@
+{
+  "name": "آکادمی فوتبال AP",
+  "short_name": "AP Football",
+  "description": "آکادمی فوتبال AP - بهترین آموزش فوتبال برای همه سنین",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "lang": "fa-IR",
+  "dir": "rtl",
+  "scope": "/",
+  "categories": ["sports", "education", "lifestyle"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.ap.football"
+    }
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "ثبت نام",
+      "short_name": "ثبت نام",
+      "description": "ثبت نام در برنامه های آموزشی",
+      "url": "/register",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "برنامه ها",
+      "short_name": "برنامه ها",
+      "description": "مشاهده برنامه های آموزشی",
+      "url": "/programs",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "تماس",
+      "short_name": "تماس",
+      "description": "تماس با آکادمی",
+      "url": "/contact",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

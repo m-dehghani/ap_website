@@ -1,0 +1,445 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String?   @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?   @unique
+  birthDate DateTime?
+  role      String    @default("STUDENT")
+  emailVerifiedAt DateTime?
+  phoneVerifiedAt DateTime?
+  marketingOptIn Boolean @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  roleDefinition Role             @relation(fields: [role], references: [name])
+  registrations Registration[]
+  payments      Payment[]
+  attendance    Attendance[]
+  evaluations   Evaluation[]
+  verificationChallenges VerificationChallenge[]
+
+  @@map("users")
+}
+
+model VerificationChallenge {
+  id           String   @id @default(cuid())
+  userId       String
+  purpose      String
+  channel      String
+  target       String
+  codeHash     String
+  passwordHash String?
+  attempts     Int      @default(0)
+  expiresAt    DateTime
+  consumedAt   DateTime?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, createdAt])
+  @@map("verification_challenges")
+}
+
+model Role {
+  name    String   @id
+  users   User[]
+  coaches Coach[]
+
+  @@map("roles")
+}
+
+model Coach {
+  id             String   @id @default(cuid())
+  firstName      String
+  lastName       String
+  email          String   @unique
+  password       String
+  phone          String   @unique
+  role           String   @default("COACH")
+  specialization String
+  experience     Int // Years of experience
+  title          String?
+  bio            String?
+  quote          String?
+  certifications String[] @default([])
+  achievements   String[] @default([])
+  rating         Float    @default(0)
+  studentsCount  Int      @default(0)
+  image          String?
+  instagram      String?
+  twitter        String?
+  isActive       Boolean  @default(true)
+  displayOrder   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  roleDefinition Role       @relation(fields: [role], references: [name])
+  programs       Program[]
+  sessions       Session[]
+  evaluations    Evaluation[]
+  successStories SuccessStory[]
+
+  @@map("coaches")
+}
+
+model Program {
+  id               String     @id @default(cuid())
+  name             String
+  description      String
+  price            Int // Price in Toman
+  duration         Int // Duration in months
+  sessionCount     Int // Number of sessions
+  maxStudents      Int        @default(15)
+  isActive         Boolean    @default(true)
+  popular          Boolean    @default(false)
+  icon             String
+  ageRange         String // Display label, e.g. "8-12 سال"
+  minAge           Int        @default(0)
+  maxAge           Int        @default(99)
+  color            String
+  period           String
+  rating           Float
+  studentsEnrolled Int
+  features         String[]
+  level            String
+  displayOrder     Int        @default(0)
+  schedule         Schedule[]
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  // Relations
+  coach         Coach          @relation(fields: [coachId], references: [id])
+  coachId        String
+  registrations  Registration[]
+  sessions       Session[]
+  successStories SuccessStory[]
+  testimonials   Testimonial[]
+
+  @@map("programs")
+}
+
+model Schedule {
+  id           String   @id @default(cuid())
+  day          String
+  time         String
+  displayOrder Int      @default(0)
+  program      Program? @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programId    String?
+
+  @@map("Schedules")
+}
+
+model Registration {
+  id                    String   @id @default(cuid())
+  status                String   @default("PENDING")
+  totalAmount           Int
+  paidAmount            Int      @default(0)
+  experienceLevel       String? // beginner, intermediate, advanced
+  parentName            String?
+  parentEmail           String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  medicalConditions     String?
+  registeredAt          DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  program   Program   @relation(fields: [programId], references: [id])
+  programId String
+  payments  Payment[]
+
+  @@map("registrations")
+}
+
+model Payment {
+  id                String   @id @default(cuid())
+  amount            Int
+  currency          String   @default("IRR")
+  status            String   @default("PENDING")
+  method            String   @default("ONLINE")
+  stripeId          String?
+  providerReference String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+  registrationId String
+
+  @@index([providerReference, method])
+  @@map("payments")
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  date        DateTime
+  duration    Int // Duration in minutes
+  location    String
+  maxCapacity Int      @default(15)
+  status      String   @default("SCHEDULED")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  program    Program      @relation(fields: [programId], references: [id])
+  programId  String
+  coach      Coach        @relation(fields: [coachId], references: [id])
+  coachId    String
+  attendance Attendance[]
+
+  @@map("sessions")
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  status    String   @default("PRESENT")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+
+  @@unique([userId, sessionId])
+  @@map("attendance")
+}
+
+model Evaluation {
+  id        String   @id @default(cuid())
+  technical Int // 1-10 rating
+  physical  Int // 1-10 rating
+  mental    Int // 1-10 rating
+  teamwork  Int // 1-10 rating
+  overall   Int // 1-10 rating
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user    User   @relation(fields: [userId], references: [id])
+  userId  String
+  coach   Coach  @relation(fields: [coachId], references: [id])
+  coachId String
+
+  @@map("evaluations")
+}
+
+// ---------------------------------------------------------------------------
+// Website content
+// ---------------------------------------------------------------------------
+
+// Singleton row (id = "default") holding the academy's public contact details.
+model AcademyInfo {
+  id           String   @id @default("default")
+  name         String
+  tagline      String
+  description  String
+  phone        String // Display format, e.g. "021-12345678"
+  email        String
+  privacyEmail String?
+  address      String
+  city         String
+  foundedYear  Int? // Solar Hijri year
+  updatedAt    DateTime @updatedAt
+
+  @@map("academy_info")
+}
+
+model OpeningHour {
+  id           String @id @default(cuid())
+  type         String // OFFICE, TRAINING
+  days         String
+  hours        String
+  displayOrder Int    @default(0)
+
+  @@map("opening_hours")
+}
+
+model SocialLink {
+  id           String  @id @default(cuid())
+  platform     String  @unique // instagram, telegram, youtube, whatsapp, twitter
+  name         String
+  url          String
+  icon         String
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  @@map("social_links")
+}
+
+// Marketing figures shown across the site, looked up by key (e.g. "players").
+model Statistic {
+  id           String  @id @default(cuid())
+  key          String  @unique
+  value        String
+  label        String
+  description  String?
+  displayOrder Int     @default(0)
+
+  @@map("statistics")
+}
+
+model Testimonial {
+  id           String    @id @default(cuid())
+  name         String
+  role         String
+  content      String
+  image        String?
+  rating       Int       @default(5)
+  category     String    @default("GENERAL") // GENERAL, SUCCESS
+  improvement  String?
+  date         DateTime?
+  isPublished  Boolean   @default(true)
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+
+  program   Program? @relation(fields: [programId], references: [id], onDelete: SetNull)
+  programId String?
+
+  @@map("testimonials")
+}
+
+model SuccessStory {
+  id           String   @id @default(cuid())
+  playerName   String
+  age          Int
+  achievement  String
+  description  String
+  quote        String?
+  image        String?
+  date         DateTime
+  goals        Int      @default(0)
+  assists      Int      @default(0)
+  matches      Int      @default(0)
+  isPublished  Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  program   Program? @relation(fields: [programId], references: [id], onDelete: SetNull)
+  programId String?
+  coach     Coach?   @relation(fields: [coachId], references: [id], onDelete: SetNull)
+  coachId   String?
+
+  @@map("success_stories")
+}
+
+model Milestone {
+  id           String @id @default(cuid())
+  year         Int // Solar Hijri year
+  title        String
+  description  String
+  displayOrder Int    @default(0)
+
+  @@map("milestones")
+}
+
+model StaffMember {
+  id           String  @id @default(cuid())
+  name         String
+  role         String
+  bio          String
+  initials     String
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  @@map("staff_members")
+}
+
+model Facility {
+  id           String @id @default(cuid())
+  category     String // PITCH, EQUIPMENT
+  name         String
+  displayOrder Int    @default(0)
+
+  @@map("facilities")
+}
+
+model NewsCategory {
+  id           String @id @default(cuid())
+  slug         String @unique
+  name         String
+  icon         String
+  displayOrder Int    @default(0)
+
+  @@map("news_categories")
+}
+
+model NewsArticle {
+  id              String   @id @default(cuid())
+  title           String
+  excerpt         String
+  content         String
+  category        String // NewsCategory.slug
+  type            String   @default("NEWS") // NEWS, VIDEO, GALLERY
+  author          String
+  image           String?
+  tags            String[] @default([])
+  readTimeMinutes Int      @default(1)
+  likes           Int      @default(0)
+  comments        Int      @default(0)
+  featured        Boolean  @default(false)
+  isPublished     Boolean  @default(true)
+  publishedAt     DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@map("news_articles")
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+  message   String
+  status    String   @default("NEW") // NEW, READ, ANSWERED
+  createdAt DateTime @default(now())
+
+  @@map("contact_messages")
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("newsletter_subscribers")
+}
+
+// Status values are stored as strings with default values:
+// UserRole: STUDENT, ADMIN, COACH
+// RegistrationStatus: PENDING, APPROVED, CANCELLED, COMPLETED
+// PaymentStatus: PENDING, COMPLETED, FAILED, REFUNDED
+// PaymentMethod: ONLINE, CASH, BANK_TRANSFER
+// SessionStatus: SCHEDULED, ONGOING, COMPLETED, CANCELLED
+// AttendanceStatus: PRESENT, ABSENT, LATE, EXCUSED

@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Next.js and build output
+.next/
+prisma/generated/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+
+# Tests
+coverage/
+playwright-report/
+test-results/
+
+# Local environment files
+.env*
+!.env.example
+
+# Local editor and agent settings
+.claude/
+.vscode/
+
+# Logs and generated TypeScript state
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.tsbuildinfo
