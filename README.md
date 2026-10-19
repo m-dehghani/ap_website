@@ -28,4 +28,8 @@ database whose data you want to preserve. Production seeding is blocked unless
 - `npm test`
 - `npm run build`
 
+The build command generates the Prisma client before running the Next.js build,
+so clean deployments (including Vercel) do not need the generated client checked
+into source control.
+
 GitHub Actions runs these checks on pushes and pull requests to `main`.

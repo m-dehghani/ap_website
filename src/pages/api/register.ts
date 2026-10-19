@@ -2,7 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '../../lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { TransactionClient } from '../../../prisma/generated/internal/prismaNamespace';
 import { normalizePhone } from '@/lib/auth';
 import { calculateAge, parseBirthDateInput } from '@/lib/age';
 
@@ -113,7 +112,7 @@ export default async function handler(
     const hashedPassword = await bcrypt.hash(validatedData.password, 10);
 
     // Create user and registration in a transaction
-    const result = await db.$transaction(async (tx: TransactionClient) => {
+    const result = await db.$transaction(async (tx) => {
       // Create user
       const user = await tx.user.create({
         data: {

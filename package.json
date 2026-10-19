@@ -34,7 +34,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:turbopack": "next dev --turbopack",
-    "build": "next build --webpack",
+    "build": "prisma generate && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit -p tsconfig.json",
