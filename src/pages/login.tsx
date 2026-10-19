@@ -40,8 +40,8 @@ const LoginPage: React.FC = () => {
 
   return (
     <Layout
-      title="ورود - آکادمی فوتبال AP"
-      description="ورود به پنل کاربری آکادمی فوتبال AP"
+      title="ورود - آکادمی فوتبال افشین پیروانی"
+      description="ورود به پنل کاربری آکادمی فوتبال افشین پیروانی"
       canonical="https://ap-football.com/login"
     >
       <div className="min-h-screen bg-gray-50 py-12 flex items-center justify-center">
@@ -53,7 +53,9 @@ const LoginPage: React.FC = () => {
                 <h1 className="text-3xl font-bold text-white mb-2">
                   ورود به حساب کاربری
                 </h1>
-                <p className="text-primary-100">برای دسترسی به پنل خود وارد شوید</p>
+                <p className="text-primary-100">
+                  برای دسترسی به پنل خود وارد شوید
+                </p>
               </div>
             </div>
 
@@ -62,7 +64,10 @@ const LoginPage: React.FC = () => {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Email or phone */}
                 <div>
-                  <label htmlFor="login-identifier" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="login-identifier"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     ایمیل یا شماره تلفن *
                   </label>
                   <input
@@ -78,13 +83,18 @@ const LoginPage: React.FC = () => {
                     placeholder="ایمیل یا شماره تلفن خود را وارد کنید"
                   />
                   {errors.identifier && (
-                    <p className="mt-1 text-sm text-red-600">{errors.identifier.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.identifier.message}
+                    </p>
                   )}
                 </div>
 
                 {/* Password */}
                 <div>
-                  <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="login-password"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     رمز عبور *
                   </label>
                   <input
@@ -97,7 +107,9 @@ const LoginPage: React.FC = () => {
                     placeholder="رمز عبور خود را وارد کنید"
                   />
                   {errors.password && (
-                    <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.password.message}
+                    </p>
                   )}
                 </div>
 

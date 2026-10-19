@@ -192,9 +192,7 @@ function TestimonialCard({
       className="bg-white rounded-2xl shadow-lg p-8"
     >
       <div className="flex items-center mb-6">
-        <div
-          className="w-16 h-16 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center text-white text-xl font-bold ml-4"
-        >
+        <div className="w-16 h-16 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center text-white text-xl font-bold ml-4">
           {testimonial.name.split(' ')[0].charAt(0)}
         </div>
         <div>
@@ -263,9 +261,7 @@ function StatisticCard({
       transition={{ duration: 0.5, delay: index * 0.1 }}
       className={`bg-white rounded-2xl shadow-lg p-8 text-center ${bgColors[index]}`}
     >
-      <div
-        className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-      >
+      <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
         {getIcon(stat.icon, `w-8 h-8 ${stat.color}`)}
       </div>
       <motion.div className="text-4xl font-bold text-gray-900 mb-2">
@@ -294,9 +290,7 @@ function TimelineItem({
       transition={{ duration: 0.5, delay: index * 0.1 }}
       className="flex items-start gap-4 p-4 bg-emerald-50 rounded-xl"
     >
-      <div
-        className="w-14 h-14 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
-      >
+      <div className="w-14 h-14 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0">
         {milestone.year}
       </div>
       <div>
@@ -505,7 +499,7 @@ export default function SuccessStories() {
                 className="bg-white rounded-2xl shadow-lg p-8"
               >
                 <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
-                  مسیر موفقیت آکادمی AP
+                  مسیر موفقیت آکادمی افشین پیروانی
                 </h3>
                 <div className="space-y-4">
                   {milestones.map((milestone, index) => (

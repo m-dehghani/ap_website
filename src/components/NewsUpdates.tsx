@@ -101,7 +101,13 @@ const getTypeBgColor = (type: NewsContentType) => {
 };
 
 // Featured News Card
-function FeaturedNewsCard({ article, index }: { article: NewsArticleCardViewModel; index: number }) {
+function FeaturedNewsCard({
+  article,
+  index,
+}: {
+  article: NewsArticleCardViewModel;
+  index: number;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -110,7 +116,9 @@ function FeaturedNewsCard({ article, index }: { article: NewsArticleCardViewMode
       className="bg-white rounded-2xl shadow-lg overflow-hidden"
     >
       <div className="relative">
-        <div className={`h-64 bg-linear-to-r ${getTypeBgColor(article.type)} flex items-center justify-center relative overflow-hidden`}>
+        <div
+          className={`h-64 bg-linear-to-r ${getTypeBgColor(article.type)} flex items-center justify-center relative overflow-hidden`}
+        >
           {hasArticleImage(article.image) && (
             <img
               src={article.image}
@@ -120,14 +128,14 @@ function FeaturedNewsCard({ article, index }: { article: NewsArticleCardViewMode
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="relative z-10 flex items-center justify-center">
-            <div
-              className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"
-            >
+            <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
               {getTypeIcon(article.type)}
             </div>
           </div>
         </div>
-        <div className={`absolute top-4 right-4 ${getTypeColor(article.type)} text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1`}>
+        <div
+          className={`absolute top-4 right-4 ${getTypeColor(article.type)} text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1`}
+        >
           {getTypeIcon(article.type)}
           <span>{getTypeLabel(article.type)}</span>
         </div>
@@ -169,11 +177,15 @@ function FeaturedNewsCard({ article, index }: { article: NewsArticleCardViewMode
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="flex items-center space-x-4 space-x-reverse text-sm text-gray-500">
             <span className="flex items-center gap-1">
-              <span role="img" aria-label="لایک">👍</span>
+              <span role="img" aria-label="لایک">
+                👍
+              </span>
               {article.likes}
             </span>
             <span className="flex items-center gap-1">
-              <span role="img" aria-label="نظر">💬</span>
+              <span role="img" aria-label="نظر">
+                💬
+              </span>
               {article.comments}
             </span>
           </div>
@@ -185,7 +197,13 @@ function FeaturedNewsCard({ article, index }: { article: NewsArticleCardViewMode
 }
 
 // News Card Component
-function NewsCard({ article, index }: { article: NewsArticleCardViewModel; index: number }) {
+function NewsCard({
+  article,
+  index,
+}: {
+  article: NewsArticleCardViewModel;
+  index: number;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -194,7 +212,9 @@ function NewsCard({ article, index }: { article: NewsArticleCardViewModel; index
       className="bg-white rounded-2xl shadow-lg overflow-hidden"
     >
       <div className="relative">
-        <div className={`h-48 bg-linear-to-br ${getTypeBgColor(article.type)} flex items-center justify-center relative overflow-hidden`}>
+        <div
+          className={`h-48 bg-linear-to-br ${getTypeBgColor(article.type)} flex items-center justify-center relative overflow-hidden`}
+        >
           {hasArticleImage(article.image) && (
             <img
               src={article.image}
@@ -204,14 +224,14 @@ function NewsCard({ article, index }: { article: NewsArticleCardViewModel; index
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="relative z-10 flex items-center justify-center">
-            <div
-              className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"
-            >
+            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
               {getTypeIcon(article.type)}
             </div>
           </div>
         </div>
-        <div className={`absolute top-4 right-4 ${getTypeColor(article.type)} text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1`}>
+        <div
+          className={`absolute top-4 right-4 ${getTypeColor(article.type)} text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1`}
+        >
           {getTypeIcon(article.type)}
           <span>{getTypeLabel(article.type)}</span>
         </div>
@@ -219,7 +239,9 @@ function NewsCard({ article, index }: { article: NewsArticleCardViewModel; index
 
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-primary-700 font-medium">{article.date}</span>
+          <span className="text-sm text-primary-700 font-medium">
+            {article.date}
+          </span>
           <span className="text-xs text-gray-500">{article.readTime}</span>
         </div>
 
@@ -246,11 +268,15 @@ function NewsCard({ article, index }: { article: NewsArticleCardViewModel; index
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="flex items-center space-x-3 space-x-reverse text-sm text-gray-500">
             <span className="flex items-center gap-1">
-              <span role="img" aria-label="لایک">👍</span>
+              <span role="img" aria-label="لایک">
+                👍
+              </span>
               {article.likes}
             </span>
             <span className="flex items-center gap-1">
-              <span role="img" aria-label="نظر">💬</span>
+              <span role="img" aria-label="نظر">
+                💬
+              </span>
               {article.comments}
             </span>
           </div>
@@ -262,11 +288,11 @@ function NewsCard({ article, index }: { article: NewsArticleCardViewModel; index
 }
 
 // Category Filter Component
-function CategoryFilter({ 
-  categories, 
-  selectedCategory, 
-  onCategoryChange 
-}: { 
+function CategoryFilter({
+  categories,
+  selectedCategory,
+  onCategoryChange,
+}: {
   categories: typeof NEWS_CATEGORIES;
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
@@ -322,7 +348,13 @@ function NewsFollowCTA() {
 }
 
 // Load More Button Component
-function LoadMoreButton({ onClick, hasMore }: { onClick: () => void; hasMore: boolean }) {
+function LoadMoreButton({
+  onClick,
+  hasMore,
+}: {
+  onClick: () => void;
+  hasMore: boolean;
+}) {
   if (!hasMore) return null;
 
   return (
@@ -334,7 +366,10 @@ function LoadMoreButton({ onClick, hasMore }: { onClick: () => void; hasMore: bo
     >
       <motion.button
         onClick={onClick}
-        whileHover={{ scale: 1.05, boxShadow: '0 20px 25px -5px rgba(14, 165, 233, 0.4)' }}
+        whileHover={{
+          scale: 1.05,
+          boxShadow: '0 20px 25px -5px rgba(14, 165, 233, 0.4)',
+        }}
         whileTap={{ scale: 0.98 }}
         className="bg-linear-to-r from-primary-600 to-primary-700 text-white px-10 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 mx-auto"
       >
@@ -347,26 +382,27 @@ function LoadMoreButton({ onClick, hasMore }: { onClick: () => void; hasMore: bo
 
 export default function NewsUpdates() {
   const [selectedCategory, setSelectedCategory] = useState('all');
-    const [displayCount, setDisplayCount] = useState(6);
+  const [displayCount, setDisplayCount] = useState(6);
 
-    const categories = NEWS_CATEGORIES;
+  const categories = NEWS_CATEGORIES;
   const allNews = NEWS_ARTICLES;
 
   const featuredNews = allNews.filter((item) => item.featured);
   const regularNews = allNews.filter((item) => !item.featured);
 
-  const filteredNews = selectedCategory === 'all'
-    ? regularNews
-    : regularNews.filter((item) => item.category === selectedCategory);
+  const filteredNews =
+    selectedCategory === 'all'
+      ? regularNews
+      : regularNews.filter((item) => item.category === selectedCategory);
 
   const displayedNews = filteredNews.slice(0, displayCount);
   const hasMoreNews = displayedNews.length < filteredNews.length;
 
   const handleLoadMore = useCallback(() => {
-      setTimeout(() => {
-        setDisplayCount(prev => prev + 6);
-      }, 500);
-    }, []);
+    setTimeout(() => {
+      setDisplayCount((prev) => prev + 6);
+    }, 500);
+  }, []);
 
   return (
     <section className="py-20 bg-linear-to-br from-navy-50 to-navy-100 relative overflow-hidden">
@@ -393,7 +429,8 @@ export default function NewsUpdates() {
             آخرین <span className="text-navy-800">اخبار</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            از آخرین اخبار، رویدادها و دستاوردهای آکادمی AP مطلع شوید
+            از آخرین اخبار، رویدادها و دستاوردهای آکادمی فوتبال افشین پیروانی
+            مطلع شوید
           </p>
         </motion.div>
 

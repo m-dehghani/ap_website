@@ -13,18 +13,19 @@ const NewsPage: React.FC = () => {
 
   return (
     <Layout
-      title="اخبار و رویدادها - آکادمی فوتبال AP"
-      description="آخرین اخبار آکادمی فوتبال AP و دنیای فوتبال ایران. اخبار انتقالات، نتایج بازی‌ها، و رویدادهای آکادمی."
+      title="اخبار و رویدادها - آکادمی فوتبال افشین پیروانی"
+      description="آخرین اخبار آکادمی فوتبال افشین پیروانی و دنیای فوتبال ایران. اخبار انتقالات، نتایج بازی‌ها، و رویدادهای آکادمی."
       canonical="https://ap-football.com/news"
       openGraph={{
-        title: 'اخبار و رویدادها - آکادمی فوتبال AP',
-        description: 'آخرین اخبار آکادمی فوتبال AP و دنیای فوتبال ایران',
+        title: 'اخبار و رویدادها - آکادمی فوتبال افشین پیروانی',
+        description:
+          'آخرین اخبار آکادمی فوتبال افشین پیروانی و دنیای فوتبال ایران',
         images: [
           {
             url: 'https://ap-football.com/images/news-og.jpg',
             width: 1200,
             height: 630,
-            alt: 'اخبار آکادمی فوتبال AP',
+            alt: 'اخبار آکادمی فوتبال افشین پیروانی',
           },
         ],
       }}
@@ -35,7 +36,7 @@ const NewsPage: React.FC = () => {
           <div className="container-custom">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                مرکز اخبار آکادمی AP
+                مرکز اخبار آکادمی فوتبال افشین پیروانی
               </h1>
               <p className="text-xl text-white/80 max-w-3xl mx-auto">
                 آخرین اخبار آکادمی، دنیای فوتبال ایران و تحلیل‌های تخصصی
@@ -101,8 +102,8 @@ const NewsPage: React.FC = () => {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">ویژگی‌های خبری ما</h2>
               <p className="text-white/80 max-w-2xl mx-auto">
-                مرکز اخبار آکادمی AP با هوش مصنوعی، آخرین اخبار فوتبال را تحلیل
-                و ارائه می‌دهد
+                مرکز اخبار آکادمی فوتبال افشین پیروانی با هوش مصنوعی، آخرین
+                اخبار فوتبال را تحلیل و ارائه می‌دهد
               </p>
             </div>
 
@@ -134,7 +135,7 @@ const NewsPage: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold mb-2">اخبار آکادمی</h3>
                 <p className="text-white/80">
-                  آخرین اخبار، رویدادها و دستاوردهای آکادمی فوتبال AP
+                  آخرین اخبار، رویدادها و دستاوردهای آکادمی فوتبال افشین پیروانی
                 </p>
               </div>
             </div>

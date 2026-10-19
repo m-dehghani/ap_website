@@ -6,8 +6,8 @@ import { DocumentTextIcon } from '@heroicons/react/24/outline';
 const TermsPage: React.FC = () => {
   return (
     <Layout
-      title="قوانین و مقررات - آکادمی فوتبال AP"
-      description="قوانین و مقررات استفاده از خدمات آکادمی فوتبال AP"
+      title="قوانین و مقررات - آکادمی فوتبال افشین پیروانی"
+      description="قوانین و مقررات استفاده از خدمات آکادمی فوتبال افشین پیروانی. شرایط استفاده، مسئولیت‌ها و محدودیت‌های خدمات ارائه شده."
       canonical="https://ap-football.com/terms"
       noindex={true}
     >
@@ -19,7 +19,7 @@ const TermsPage: React.FC = () => {
           },
         ]}
       />
-      
+
       <div className="section-padding bg-linear-to-br from-gray-50 to-gray-100">
         <div className="container-custom max-w-4xl">
           <div className="text-center mb-16">
@@ -30,22 +30,27 @@ const TermsPage: React.FC = () => {
               قوانین و مقررات
             </h1>
             <p className="text-xl text-gray-600">
-              شرایط استفاده از خدمات آکادمی فوتبال AP
+              شرایط استفاده از خدمات آکادمی فوتبال افشین پیروانی
             </p>
           </div>
 
           <div className="card-glass p-8 rounded-4xl space-y-8">
             <section>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">پذیرش شرایط</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                پذیرش شرایط
+              </h2>
               <p className="text-gray-700">
-                با استفاده از خدمات آکادمی فوتبال AP، شما موافقت خود را با این قوانین و مقررات اعلام می‌کنید.
+                با استفاده از خدمات آکادمی فوتبال افشین پیروانی، شما موافقت خود
+                را با این قوانین و مقررات اعلام می‌کنید.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">خدمات ما</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                خدمات ما
+              </h2>
               <p className="text-gray-700 mb-4">
-                آکادمی فوتبال AP خدمات زیر را ارائه می‌دهد:
+                آکادمی فوتبال افشین پیروانی خدمات زیر را ارائه می‌دهد:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2">
                 <li>آموزش فوتبال برای تمام سنین</li>
@@ -56,7 +61,9 @@ const TermsPage: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">مسئولیت‌های شرکت‌کننده</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                مسئولیت‌های شرکت‌کننده
+              </h2>
               <p className="text-gray-700 mb-4">
                 شرکت‌کنندگان متعهد به رعایت موارد زیر هستند:
               </p>
@@ -69,25 +76,31 @@ const TermsPage: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">لغو و استرداد</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                لغو و استرداد
+              </h2>
               <p className="text-gray-700">
-                درخواست لغو حداقل 48 ساعت قبل از شروع دوره باید اعلام شود. 
-                بسته به شرایط، امکان استرداد کامل یا جزئی هزینه‌ها وجود دارد.
+                درخواست لغو حداقل 48 ساعت قبل از شروع دوره باید اعلام شود. بسته
+                به شرایط، امکان استرداد کامل یا جزئی هزینه‌ها وجود دارد.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">محدودیت مسئولیت</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                محدودیت مسئولیت
+              </h2>
               <p className="text-gray-700">
-                آکادمی فوتبال AP در قبال آسیب‌هایی که ممکن است در طول فعالیت‌های ورزشی رخ دهد، 
-                مسئولیت محدودی دارد. توصیه می‌شود بیمه مناسب تهیه کنید.
+                آکادمی فوتبال افشین پیروانی در قبال آسیب‌هایی که ممکن است در طول
+                فعالیت‌های ورزشی رخ دهد، مسئولیت محدودی دارد. توصیه می‌شود بیمه
+                مناسب تهیه کنید.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">تغییرات</h2>
               <p className="text-gray-700">
-                این قوانین ممکن است بدون اطلاع قبلی تغییر کند. تغییرات از طریق وب‌سایت اطلاع‌رسانی می‌شود.
+                این قوانین ممکن است بدون اطلاع قبلی تغییر کند. تغییرات از طریق
+                وب‌سایت اطلاع‌رسانی می‌شود.
               </p>
             </section>
 
@@ -103,4 +116,4 @@ const TermsPage: React.FC = () => {
   );
 };
 
-export default TermsPage; 
+export default TermsPage;

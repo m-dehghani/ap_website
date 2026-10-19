@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-2xl font-bold text-white">
-                    آکادمی فوتبال AP
+                    آکادمی فوتبال افشین پیروانی
                   </h3>
                   <p className="text-gray-200 font-medium">
                     جایی که قهرمانان ساخته می‌شوند
@@ -121,9 +121,7 @@ const Footer: React.FC = () => {
             {/* Enhanced Quick Links */}
             <div className="space-y-6">
               <h4 className="text-xl font-bold text-white flex items-center">
-                <span className="text-white">
-                  لینک‌های سریع
-                </span>
+                <span className="text-white">لینک‌های سریع</span>
               </h4>
               <ul className="space-y-3">
                 {quickLinks.map((link, index) => (
@@ -143,9 +141,7 @@ const Footer: React.FC = () => {
             {/* Enhanced Programs */}
             <div className="space-y-1">
               <h4 className="text-xl font-bold text-white flex items-center">
-                <span className="text-white">
-                  برنامه‌های آموزشی
-                </span>
+                <span className="text-white">برنامه‌های آموزشی</span>
               </h4>
               <ul className="space-y-3">
                 {programs.map((program, index) => (

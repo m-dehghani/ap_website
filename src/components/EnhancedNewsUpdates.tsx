@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react';
-import { CalendarDaysIcon, ClockIcon, UserGroupIcon, CameraIcon, PlayIcon, ArrowRightIcon, GlobeAltIcon, HomeIcon, FireIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import {
+  CalendarDaysIcon,
+  ClockIcon,
+  UserGroupIcon,
+  CameraIcon,
+  PlayIcon,
+  ArrowRightIcon,
+  GlobeAltIcon,
+  HomeIcon,
+  FireIcon,
+  SparklesIcon,
+} from '@heroicons/react/24/outline';
 import type { CrawlerNewsApiResponse, CrawlerStats } from '@/types/api/crawler';
 import type { NewsCardViewModel } from '@/types/viewModels/content';
 
@@ -10,7 +21,8 @@ function NewsAction({
   article: NewsCardViewModel;
   compact?: boolean;
 }) {
-  const className = 'inline-flex items-center gap-1 font-medium text-navy-800 hover:text-navy-900 focus-visible:underline';
+  const className =
+    'inline-flex items-center gap-1 font-medium text-navy-800 hover:text-navy-900 focus-visible:underline';
 
   if (article.url) {
     return (
@@ -59,8 +71,10 @@ export default function EnhancedNewsUpdates() {
     {
       id: 1,
       title: 'قهرمانی تیم نوجوانان در مسابقات منطقه‌ای',
-      excerpt: 'تیم نوجوانان آکادمی AP با نتیجه 3-1 در فینال مسابقات منطقه‌ای به قهرمانی رسید',
-      content: 'در یک بازی پرهیجان، تیم نوجوانان آکادمی AP توانست با نمایش فوق‌العاده‌ای عنوان قهرمانی مسابقات منطقه‌ای را کسب کند. این قهرمانی اولین عنوان بزرگ آکادمی در سال 1402 محسوب می‌شود.',
+      excerpt:
+        'تیم نوجوانان آکادمی افشین پیروانی با نتیجه 3-1 در فینال مسابقات منطقه‌ای به قهرمانی رسید',
+      content:
+        'در یک بازی پرهیجان، تیم نوجوانان آکادمی افشین پیروانی توانست با نمایش فوق‌العاده‌ای عنوان قهرمانی مسابقات منطقه‌ای را کسب کند. این قهرمانی اولین عنوان بزرگ آکادمی در سال 1402 محسوب می‌شود.',
       category: 'matches',
       date: '1402/08/15',
       author: 'مدیر آکادمی',
@@ -70,13 +84,15 @@ export default function EnhancedNewsUpdates() {
       likes: 156,
       comments: 23,
       type: 'academy',
-      featured: true
+      featured: true,
     },
     {
       id: 2,
       title: 'برگزاری کمپ تابستانی ویژه',
-      excerpt: 'کمپ تابستانی آکادمی AP با حضور مربیان برتر و برنامه‌های متنوع آغاز شد',
-      content: 'کمپ تابستانی امسال با حضور بیش از 100 کودک و نوجوان برگزار شد. این کمپ شامل تمرینات فنی، بازی‌های تفریحی و اردوی یک روزه بود.',
+      excerpt:
+        'کمپ تابستانی آکادمی افشین پیروانی با حضور مربیان برتر و برنامه‌های متنوع آغاز شد',
+      content:
+        'کمپ تابستانی امسال با حضور بیش از 100 کودک و نوجوان برگزار شد. این کمپ شامل تمرینات فنی، بازی‌های تفریحی و اردوی یک روزه بود.',
       category: 'events',
       date: '1402/08/10',
       author: 'تیم اجرایی',
@@ -86,8 +102,8 @@ export default function EnhancedNewsUpdates() {
       likes: 89,
       comments: 12,
       type: 'academy',
-      featured: false
-    }
+      featured: false,
+    },
   ];
 
   const categories = [
@@ -100,105 +116,107 @@ export default function EnhancedNewsUpdates() {
   ];
 
   const sourceTypes = [
-      { id: 'all', name: 'همه منابع', icon: GlobeAltIcon },
-      { id: 'academy', name: 'آکادمی AP', icon: HomeIcon },
-      { id: 'external', name: 'اخبار خارجی', icon: GlobeAltIcon },
-    ];
+    { id: 'all', name: 'همه منابع', icon: GlobeAltIcon },
+    { id: 'academy', name: 'آکادمی AP', icon: HomeIcon },
+    { id: 'external', name: 'اخبار خارجی', icon: GlobeAltIcon },
+  ];
 
-              const [retryTrigger, setRetryTrigger] = useState(0);
+  const [retryTrigger, setRetryTrigger] = useState(0);
 
-              useEffect(() => {
-                let mounted = true;
-                const runFetch = async () => {
-                  if (selectedSource === 'academy') {
-                    if (mounted) {
-                      setExternalNews([]);
-                    }
-                    return;
-                  }
+  useEffect(() => {
+    let mounted = true;
+    const runFetch = async () => {
+      if (selectedSource === 'academy') {
+        if (mounted) {
+          setExternalNews([]);
+        }
+        return;
+      }
 
-                  setLoading(true);
-                  setError(null);
-    
-                  try {
-                    const params = new URLSearchParams({
-                      category: selectedCategory,
-                      source: selectedSource === 'external' ? 'all' : selectedSource,
-                      limit: '20'
-                    });
-      
-                    const response = await fetch(`/api/crawler-news?${params}`);
-      
-                    if (!response.ok) {
-                      throw new Error('Failed to fetch external news');
-                    }
+      setLoading(true);
+      setError(null);
 
-                    const data: CrawlerNewsApiResponse = await response.json();
-                    if (mounted) {
-                      setExternalNews(data.news || []);
-                      setCrawlerStats(data.stats);
-                    }
-                  } catch (err) {
-                    if (mounted) {
-                      console.error('Unable to load external news:', err);
-                      setError('دریافت اخبار با مشکل مواجه شد. لطفاً دوباره تلاش کنید.');
-                      setExternalNews([]);
-                      setCrawlerStats(null);
-                    }
-                  } finally {
-                    if (mounted) {
-                      setLoading(false);
-                    }
-                  }
-                };
+      try {
+        const params = new URLSearchParams({
+          category: selectedCategory,
+          source: selectedSource === 'external' ? 'all' : selectedSource,
+          limit: '20',
+        });
 
-                runFetch();
+        const response = await fetch(`/api/crawler-news?${params}`);
 
-                return () => {
-                  mounted = false;
-                };
-              }, [selectedCategory, selectedSource, retryTrigger]);
+        if (!response.ok) {
+          throw new Error('Failed to fetch external news');
+        }
 
-              const handleRetry = () => {
-                setRetryTrigger(prev => prev + 1);
-              };
+        const data: CrawlerNewsApiResponse = await response.json();
+        if (mounted) {
+          setExternalNews(data.news || []);
+          setCrawlerStats(data.stats);
+        }
+      } catch (err) {
+        if (mounted) {
+          console.error('Unable to load external news:', err);
+          setError('دریافت اخبار با مشکل مواجه شد. لطفاً دوباره تلاش کنید.');
+          setExternalNews([]);
+          setCrawlerStats(null);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-              // Combine and filter news
+    runFetch();
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedCategory, selectedSource, retryTrigger]);
+
+  const handleRetry = () => {
+    setRetryTrigger((prev) => prev + 1);
+  };
+
+  // Combine and filter news
   const getAllNews = (): NewsCardViewModel[] => {
     let combinedNews: NewsCardViewModel[] = [];
-    
+
     if (selectedSource === 'all' || selectedSource === 'academy') {
       combinedNews = [...combinedNews, ...academyNews];
     }
-    
+
     if (selectedSource === 'all' || selectedSource === 'external') {
       combinedNews = [...combinedNews, ...externalNews];
     }
-    
+
     // Filter by category
     if (selectedCategory !== 'all') {
-      combinedNews = combinedNews.filter(item => item.category === selectedCategory);
+      combinedNews = combinedNews.filter(
+        (item) => item.category === selectedCategory,
+      );
     }
-    
+
     // Sort by importance and date
     return combinedNews.sort((a, b) => {
       // Featured items first
       if (a.featured && !b.featured) return -1;
       if (!a.featured && b.featured) return 1;
-      
+
       // Then by importance score (for external news)
       if (a.importanceScore && b.importanceScore) {
         return b.importanceScore - a.importanceScore;
       }
-      
+
       // Finally by date
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
   };
 
   const filteredNews = getAllNews();
-  const featuredNews = filteredNews.filter(item => item.featured);
-  const regularNews = filteredNews.filter(item => !item.featured);
+  const featuredNews = filteredNews.filter((item) => item.featured);
+  const regularNews = filteredNews.filter((item) => !item.featured);
   const visibleNews = regularNews.slice(0, visibleCount);
 
   const getTypeIcon = (type: string) => {
@@ -208,7 +226,7 @@ export default function EnhancedNewsUpdates() {
       }
       case 'gallery': {
         return <CameraIcon className="w-5 h-5" />;
-        }
+      }
       case 'external': {
         return <GlobeAltIcon className="w-5 h-5" />;
       }
@@ -228,7 +246,7 @@ export default function EnhancedNewsUpdates() {
       }
       case 'gallery': {
         return 'bg-purple-500';
-        }
+      }
       case 'external': {
         return 'bg-blue-500';
       }
@@ -263,7 +281,7 @@ export default function EnhancedNewsUpdates() {
 
   const getSentimentIcon = (sentiment?: { score: number; label: string }) => {
     if (!sentiment) return null;
-  
+
     switch (sentiment.label) {
       case 'positive': {
         return '😊';
@@ -293,7 +311,7 @@ export default function EnhancedNewsUpdates() {
             آخرین <span className="text-navy-800">اخبار</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            از آخرین اخبار آکادمی AP و دنیای فوتبال ایران مطلع شوید
+            از آخرین اخبار آکادمی افشین پیروانی و دنیای فوتبال ایران مطلع شوید
           </p>
         </div>
 
@@ -302,15 +320,21 @@ export default function EnhancedNewsUpdates() {
           <div className="mb-12 bg-white rounded-xl p-6 shadow-lg">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">{crawlerStats.total_articles}</div>
+                <div className="text-3xl font-bold text-blue-600 mb-2">
+                  {crawlerStats.total_articles}
+                </div>
                 <div className="text-sm text-gray-600">کل اخبار</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">{crawlerStats.sources_count}</div>
+                <div className="text-3xl font-bold text-green-600 mb-2">
+                  {crawlerStats.sources_count}
+                </div>
                 <div className="text-sm text-gray-600">منابع فعال</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-2">{crawlerStats.today_articles}</div>
+                <div className="text-3xl font-bold text-purple-600 mb-2">
+                  {crawlerStats.today_articles}
+                </div>
                 <div className="text-sm text-gray-600">اخبار امروز</div>
               </div>
               <div className="text-center">
@@ -384,9 +408,12 @@ export default function EnhancedNewsUpdates() {
 
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8" role="alert">
+          <div
+            className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8"
+            role="alert"
+          >
             <p className="text-red-800">خطا: {error}</p>
-            <button 
+            <button
               type="button"
               onClick={handleRetry}
               className="mt-2 text-red-600 hover:text-red-800 font-medium"
@@ -405,12 +432,17 @@ export default function EnhancedNewsUpdates() {
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {featuredNews.slice(0, 2).map((item) => (
-                <div key={item.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div
+                  key={item.id}
+                  className="bg-white rounded-2xl shadow-lg overflow-hidden"
+                >
                   <div className="relative">
                     <div className="h-64 bg-linear-to-r from-navy-500 to-navy-600 flex items-center justify-center">
                       <div className="text-white text-6xl">📰</div>
                     </div>
-                    <div className={`absolute top-4 right-4 ${getTypeColor(item.type)} text-white px-3 py-1 rounded-full text-sm font-medium flex items-center`}>
+                    <div
+                      className={`absolute top-4 right-4 ${getTypeColor(item.type)} text-white px-3 py-1 rounded-full text-sm font-medium flex items-center`}
+                    >
                       {getTypeIcon(item.type)}
                       <span className="mr-1">{getTypeName(item.type)}</span>
                     </div>
@@ -431,25 +463,37 @@ export default function EnhancedNewsUpdates() {
                         {item.author}
                       </div>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">{item.title}</h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">{item.excerpt}</p>
-                    
+                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {item.excerpt}
+                    </p>
+
                     {/* Entities Tags */}
                     {item.entities && (
                       <div className="flex flex-wrap gap-1 mb-4">
-                        {item.entities.players.slice(0, 3).map((player, idx) => (
-                          <span key={idx} className="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs">
-                            👤 {player}
-                          </span>
-                        ))}
+                        {item.entities.players
+                          .slice(0, 3)
+                          .map((player, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs"
+                            >
+                              👤 {player}
+                            </span>
+                          ))}
                         {item.entities.teams.slice(0, 2).map((team, idx) => (
-                          <span key={idx} className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs">
+                          <span
+                            key={idx}
+                            className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs"
+                          >
                             ⚽ {team}
                           </span>
                         ))}
                       </div>
                     )}
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4 space-x-reverse text-sm text-gray-500">
                         <span>👍 {item.likes}</span>
@@ -471,14 +515,25 @@ export default function EnhancedNewsUpdates() {
         {/* News Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {visibleNews.map((item) => (
-            <div key={item.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div
+              key={item.id}
+              className="bg-white rounded-2xl shadow-lg overflow-hidden"
+            >
               <div className="relative">
                 <div className="h-48 bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                   <div className="text-gray-400 text-4xl">
-                    {item.type === 'video' ? '🎥' : item.type === 'gallery' ? '📸' : item.type === 'external' ? '🌐' : '📰'}
+                    {item.type === 'video'
+                      ? '🎥'
+                      : item.type === 'gallery'
+                        ? '📸'
+                        : item.type === 'external'
+                          ? '🌐'
+                          : '📰'}
                   </div>
                 </div>
-                <div className={`absolute top-4 right-4 ${getTypeColor(item.type)} text-white px-3 py-1 rounded-full text-sm font-medium flex items-center`}>
+                <div
+                  className={`absolute top-4 right-4 ${getTypeColor(item.type)} text-white px-3 py-1 rounded-full text-sm font-medium flex items-center`}
+                >
                   {getTypeIcon(item.type)}
                   <span className="mr-1">{getTypeName(item.type)}</span>
                 </div>
@@ -488,32 +543,43 @@ export default function EnhancedNewsUpdates() {
                   </div>
                 )}
               </div>
-              
+
               <div className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm text-navy-800 font-medium">{item.date}</span>
+                  <span className="text-sm text-navy-800 font-medium">
+                    {item.date}
+                  </span>
                   <div className="flex items-center">
-                    <span className="text-xs text-gray-500">{item.readTime}</span>
+                    <span className="text-xs text-gray-500">
+                      {item.readTime}
+                    </span>
                     {item.sentiment && (
-                      <span className="ml-2">{getSentimentIcon(item.sentiment)}</span>
+                      <span className="ml-2">
+                        {getSentimentIcon(item.sentiment)}
+                      </span>
                     )}
                   </div>
                 </div>
-                
+
                 <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-2">
                   {item.title}
                 </h3>
-                
-                <p className="text-gray-600 mb-4 line-clamp-3 text-sm">{item.excerpt}</p>
-                
+
+                <p className="text-gray-600 mb-4 line-clamp-3 text-sm">
+                  {item.excerpt}
+                </p>
+
                 <div className="flex flex-wrap gap-2 mb-4">
                   {item.tags.slice(0, 3).map((tag, index) => (
-                    <span key={index} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                    <span
+                      key={index}
+                      className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs"
+                    >
                       {tag}
                     </span>
                   ))}
                 </div>
-                
+
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div className="flex items-center space-x-3 space-x-reverse text-sm text-gray-500">
                     <span>👍 {item.likes}</span>
@@ -541,4 +607,4 @@ export default function EnhancedNewsUpdates() {
       </div>
     </section>
   );
-} 
+}

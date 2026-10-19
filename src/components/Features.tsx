@@ -274,11 +274,12 @@ const Features: React.FC = () => {
         >
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-600 text-sm font-medium mb-6">
             <SparklesIcon className="w-4 h-4 mr-2" />
-            چرا آکادمی AP
+            چرا آکادمی افشین پیروانی
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gray-900 text-balance">
-            چرا <span className="gradient-text">آکادمی فوتبال AP</span> را
-            انتخاب کنیم؟
+            چرا{' '}
+            <span className="gradient-text">آکادمی فوتبال افشین پیروانی</span>{' '}
+            را انتخاب کنیم؟
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto text-pretty">
             ما آموزش جامع فوتبال را با مربیان متخصص، امکانات مدرن و محیط حمایتی
@@ -415,9 +416,9 @@ const Features: React.FC = () => {
                   تجربه‌ای متفاوت در آموزش فوتبال
                 </h3>
                 <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                  آکادمی فوتبال AP روش‌های علمی تمرین را با رویکردهای نوین ترکیب
-                  می‌کند تا بهترین آموزش فوتبال را ارائه دهد — از مهارت‌های پایه
-                  تا آمادگی حرفه‌ای.
+                  آکادمی فوتبال افشین پیروانی روش‌های علمی تمرین را با رویکردهای
+                  نوین ترکیب می‌کند تا بهترین آموزش فوتبال را ارائه دهد — از
+                  مهارت‌های پایه تا آمادگی حرفه‌ای.
                 </p>
               </div>
 
@@ -453,7 +454,7 @@ const Features: React.FC = () => {
                   whileTap={{ scale: 0.95 }}
                   className="btn-primary inline-flex items-center"
                 >
-                  بیشتر درباره آکادمی فوتبال AP بدانید
+                  بیشتر درباره آکادمی فوتبال افشین پیروانی بدانید
                   <SparklesIcon className="w-5 h-5 ml-2" />
                 </motion.a>
               </div>
