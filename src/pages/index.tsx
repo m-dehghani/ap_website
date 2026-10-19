@@ -19,27 +19,28 @@ const HomePage: React.FC<HomePageProps> = ({ coaches }) => {
   return (
     <Layout>
       <NextSeo
-        title="آکادمی فوتبال AP - بهترین آموزش فوتبال برای همه سنین"
-        description="آکادمی فوتبال AP با مربیان حرفه‌ای و امکانات مدرن، بهترین آموزش فوتبال را برای سنین ۸ تا ۳۰ سال ارائه می‌دهد. همین امروز ثبت نام کنید."
-        canonical="https://ap-football.com"
+        title="آکادمی فوتبال افشین پیروانی - بهترین آموزش فوتبال برای همه سنین"
+        description="آکادمی فوتبال افشین پیروانی با مربیان حرفه‌ای و امکانات مدرن، بهترین آموزش فوتبال را برای سنین ۸ تا ۳۰ سال ارائه می‌دهد. همین امروز ثبت نام کنید."
+        canonical="https://afshin-football.com"
         openGraph={{
-          url: 'https://ap-football.com',
-          title: 'آکادمی فوتبال AP - بهترین آموزش فوتبال برای همه سنین',
+          url: 'https://afshin-football.com',
+          title:
+            'آکادمی فوتبال افشین پیروانی - بهترین آموزش فوتبال برای همه سنین',
           description:
-            'آکادمی فوتبال AP با مربیان حرفه‌ای و امکانات مدرن، بهترین آموزش فوتبال را برای سنین ۸ تا ۳۰ سال ارائه می‌دهد.',
+            'آکادمی فوتبال افشین پیروانی با مربیان حرفه‌ای و امکانات مدرن، بهترین آموزش فوتبال را برای سنین ۸ تا ۳۰ سال ارائه می‌دهد.',
           images: [
             {
-              url: 'https://ap-football.com/og-image.jpg',
+              url: 'https://afshin-football.com/og-image.jpg',
               width: 1200,
               height: 630,
-              alt: 'آکادمی فوتبال AP',
+              alt: 'آکادمی فوتبال افشین پیروانی - بهترین آموزش فوتبال برای همه سنین',
             },
           ],
-          site_name: 'آکادمی فوتبال AP',
+          site_name: 'آکادمی فوتبال افشین پیروانی',
         }}
         twitter={{
-          handle: '@ap_football',
-          site: '@ap_football',
+          handle: '@afshin_football',
+          site: '@afshin_football',
           cardType: 'summary_large_image',
         }}
         additionalMetaTags={[
@@ -50,7 +51,7 @@ const HomePage: React.FC<HomePageProps> = ({ coaches }) => {
           },
           {
             name: 'author',
-            content: 'آکادمی فوتبال AP',
+            content: 'آکادمی فوتبال افشین پیروانی',
           },
         ]}
       />

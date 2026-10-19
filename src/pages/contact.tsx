@@ -2,7 +2,12 @@ import React from 'react';
 import { APP_CONFIG } from '@/constants/app';
 import Layout from '../components/Layout';
 import PageHero from '../components/PageHero';
-import { PhoneIcon, EnvelopeIcon, MapPinIcon, ClockIcon } from '@heroicons/react/24/outline';
+import {
+  PhoneIcon,
+  EnvelopeIcon,
+  MapPinIcon,
+  ClockIcon,
+} from '@heroicons/react/24/outline';
 
 const ContactPage: React.FC = () => {
   const handleContactSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -30,18 +35,18 @@ const ContactPage: React.FC = () => {
 
   return (
     <Layout
-      title="تماس با ما - آکادمی فوتبال AP"
-      description="با آکادمی فوتبال AP در تماس باشید. آدرس، شماره تلفن، ایمیل و ساعات کاری آکادمی."
-      canonical="https://ap-football.com/contact"
+      title="تماس با ما - آکادمی فوتبال افشین پیروانی"
+      description="با آکادمی فوتبال افشین پیروانی در تماس باشید. آدرس، شماره تلفن، ایمیل و ساعات کاری آکادمی."
+      canonical="https://afshin-football.com/contact"
       openGraph={{
-        title: 'تماس با ما - آکادمی فوتبال AP',
-        description: 'با آکادمی فوتبال AP در تماس باشید',
+        title: 'تماس با ما - آکادمی فوتبال افشین پیروانی',
+        description: 'با آکادمی فوتبال افشین پیروانی در تماس باشید',
         images: [
           {
-            url: 'https://ap-football.com/images/contact-og.jpg',
+            url: 'https://afshin-football.com/images/contact-og.jpg',
             width: 1200,
             height: 630,
-            alt: 'تماس با آکادمی فوتبال AP',
+            alt: 'تماس با آکادمی فوتبال افشین پیروانی',
           },
         ],
       }}
@@ -54,7 +59,6 @@ const ContactPage: React.FC = () => {
 
       <div className="section-padding bg-linear-to-br from-gray-50 to-gray-100">
         <div className="container-custom">
-
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Contact Form */}
             <div className="card-glass p-8 rounded-4xl">
@@ -64,7 +68,10 @@ const ContactPage: React.FC = () => {
               <form className="space-y-6" onSubmit={handleContactSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="firstName"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       نام
                     </label>
                     <input
@@ -78,7 +85,10 @@ const ContactPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="lastName"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       نام خانوادگی
                     </label>
                     <input
@@ -92,7 +102,10 @@ const ContactPage: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     ایمیل
                   </label>
                   <input
@@ -107,7 +120,10 @@ const ContactPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     شماره تلفن
                   </label>
                   <input
@@ -120,7 +136,10 @@ const ContactPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     پیام
                   </label>
                   <textarea
@@ -133,12 +152,10 @@ const ContactPage: React.FC = () => {
                   />
                 </div>
                 <p className="text-sm text-gray-600" aria-live="polite">
-                  با ارسال پیام، برنامه ایمیل شما برای ارسال آن به {APP_CONFIG.email} باز می‌شود.
+                  با ارسال پیام، برنامه ایمیل شما برای ارسال آن به{' '}
+                  {APP_CONFIG.email} باز می‌شود.
                 </p>
-                <button
-                  type="submit"
-                  className="w-full btn btn-primary"
-                >
+                <button type="submit" className="w-full btn btn-primary">
                   ارسال پیام
                 </button>
               </form>
@@ -185,7 +202,9 @@ const ContactPage: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">آدرس</h3>
-                      <p className="text-gray-700">{APP_CONFIG.address}، {APP_CONFIG.city}</p>
+                      <p className="text-gray-700">
+                        {APP_CONFIG.address}، {APP_CONFIG.city}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
@@ -193,8 +212,12 @@ const ContactPage: React.FC = () => {
                       <ClockIcon className="w-6 h-6 text-emerald-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">ساعات کاری</h3>
-                      <p className="text-gray-600">شنبه تا چهارشنبه: 8:00 - 22:00</p>
+                      <h3 className="font-semibold text-gray-900">
+                        ساعات کاری
+                      </h3>
+                      <p className="text-gray-600">
+                        شنبه تا چهارشنبه: 8:00 - 22:00
+                      </p>
                       <p className="text-gray-600">پنج‌شنبه: 8:00 - 18:00</p>
                     </div>
                   </div>
@@ -207,8 +230,13 @@ const ContactPage: React.FC = () => {
                   موقعیت مکانی
                 </h2>
                 <div className="bg-linear-to-br from-primary-50 to-primary-100 border border-primary-200 rounded-2xl min-h-64 p-6 flex flex-col items-center justify-center gap-3 text-center">
-                  <MapPinIcon className="w-10 h-10 text-primary-700" aria-hidden="true" />
-                  <p className="text-gray-800 font-medium">{APP_CONFIG.address}، {APP_CONFIG.city}</p>
+                  <MapPinIcon
+                    className="w-10 h-10 text-primary-700"
+                    aria-hidden="true"
+                  />
+                  <p className="text-gray-800 font-medium">
+                    {APP_CONFIG.address}، {APP_CONFIG.city}
+                  </p>
                   <a
                     href={`https://maps.google.com/?q=${encodeURIComponent(`${APP_CONFIG.address}, ${APP_CONFIG.city}`)}`}
                     target="_blank"

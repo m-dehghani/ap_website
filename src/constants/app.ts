@@ -4,28 +4,29 @@
  */
 
 export const APP_CONFIG = {
-  name: 'آکادمی فوتبال AP',
+  name: 'آکادمی فوتبال افشین پیروانی',
   tagline: 'جایی که قهرمانان ساخته می‌شوند',
   description:
-    'آکادمی فوتبال AP با مربیان حرفه‌ای و امکانات مدرن، بهترین آموزش فوتبال را برای سنین ۸ تا ۳۰ سال ارائه می‌دهد.',
-  domain: 'https://ap-football.com',
-  email: 'info@ap-football.com',
-  phone: '021-12345678',
-  address: 'مرکز آموزش فوتبال، مجموعه ورزشی مرکز شهر',
-  city: 'تهران',
+    'آکادمی فوتبال افشین پیروانی با مربیان حرفه‌ای و امکانات مدرن، بهترین آموزش فوتبال را برای سنین ۸ تا ۳۰ سال ارائه می‌دهد.',
+  domain: 'https://afshin-football.com',
+  email: 'info@afshin-football.com',
+  phone: '071-32345678',
+  address: 'مرکز آموزش فوتبال، مجموعه ورزشی دستغیب',
+  city: 'شیراز',
   foundedYear: 1393,
   socialLinks: {
-    instagram: 'https://instagram.com/ap_football',
-    telegram: 'https://t.me/ap_football',
-    youtube: 'https://youtube.com/@ap_football',
-    whatsapp: 'https://wa.me/982112345678',
+    instagram: 'https://instagram.com/afshin_football',
+    telegram: 'https://t.me/afshin_football',
+    youtube: 'https://youtube.com/@afshin_football',
+    whatsapp: 'https://wa.me/987132345678',
   },
   seo: {
-    defaultTitle: 'آکادمی فوتبال AP - بهترین آموزش فوتبال برای همه سنین',
+    defaultTitle:
+      'آکادمی فوتبال افشین پیروانی - بهترین آموزش فوتبال برای همه سنین',
     defaultDescription:
-      'آکادمی فوتبال AP با مربیان حرفه‌ای و امکانات مدرن، بهترین آموزش فوتبال را برای سنین ۸ تا ۳۰ سال ارائه می‌دهد. همین امروز ثبت نام کنید.',
+      'آکادمی فوتبال افشین پیروانی با مربیان حرفه‌ای و امکانات مدرن، بهترین آموزش فوتبال را برای سنین ۸ تا ۳۰ سال ارائه می‌دهد. همین امروز ثبت نام کنید.',
     ogImage: '/og-image.jpg',
-    twitterHandle: '@ap_football',
+    twitterHandle: '@afshin_football',
   },
 } as const;
 
@@ -46,9 +47,7 @@ export const NAVIGATION = {
       { label: 'اخبار و رویدادها', href: '/news' },
       { label: 'تماس با ما', href: '/contact' },
     ],
-    programs: [
-      { label: 'مشاهده همه برنامه‌ها', href: '/programs' },
-    ],
+    programs: [{ label: 'مشاهده همه برنامه‌ها', href: '/programs' }],
     legal: [
       { label: 'حریم خصوصی', href: '/privacy' },
       { label: 'قوانین و مقررات', href: '/terms' },
@@ -97,10 +96,14 @@ export const FORM_VALIDATION = {
 } as const;
 
 export const FOOTER_SOCIAL_LINKS = [
-  { name: 'Instagram', url: 'https://instagram.com/ap_football', icon: '📸' },
-  { name: 'Telegram', url: 'https://t.me/ap_football', icon: '💬' },
-  { name: 'YouTube', url: 'https://youtube.com/@ap_football', icon: '🎥' },
-  { name: 'WhatsApp', url: 'https://wa.me/982112345678', icon: '📱' },
+  {
+    name: 'Instagram',
+    url: 'https://instagram.com/afshin_football',
+    icon: '📸',
+  },
+  { name: 'Telegram', url: 'https://t.me/afshin_football', icon: '💬' },
+  { name: 'YouTube', url: 'https://youtube.com/@afshin_football', icon: '🎥' },
+  { name: 'WhatsApp', url: 'https://wa.me/987132345678', icon: '📱' },
 ] as const;
 
 export const FOOTER_TRAINING_HOURS = [
