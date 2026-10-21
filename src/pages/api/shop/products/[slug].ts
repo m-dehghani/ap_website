@@ -72,6 +72,23 @@ export default async function handler(
         },
       }),
     ]);
+    const relatedRatings = related.length
+      ? await db.shopReview.groupBy({
+          by: ['productId'],
+          where: {
+            productId: { in: related.map(({ id }) => id) },
+            isPublished: true,
+          },
+          _avg: { rating: true },
+          _count: { _all: true },
+        })
+      : [];
+    const ratingsByProductId = new Map(
+      relatedRatings.map((relatedRating) => [
+        relatedRating.productId,
+        relatedRating,
+      ]),
+    );
     const now = new Date();
     return res.status(200).json({
       product: {
@@ -109,6 +126,8 @@ export default async function handler(
           (sum, variant) => sum + getAvailableStock(variant),
           0,
         ),
+        averageRating: ratingsByProductId.get(item.id)?._avg.rating ?? 0,
+        reviewCount: ratingsByProductId.get(item.id)?._count._all ?? 0,
       })),
     });
   } catch (error) {
