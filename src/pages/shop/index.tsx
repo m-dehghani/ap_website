@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import Layout from '@/components/Layout';
-import ProductCard, { type ShopProductCardData } from '@/components/shop/ProductCard';
+import ProductCard, {
+  type ShopProductCardData,
+} from '@/components/shop/ProductCard';
 
 interface ShopListing {
   products: ShopProductCardData[];
@@ -37,12 +39,14 @@ export default function ShopPage() {
     void fetch(`/api/shop/products?${params}`)
       .then(async (response) => {
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'دریافت محصولات ناموفق بود');
+        if (!response.ok)
+          throw new Error(data.message || 'دریافت محصولات ناموفق بود');
         if (active) setListing(data);
       })
       .catch((loadError: unknown) => {
         console.error('Shop catalog request failed:', loadError);
-        if (active) setError('در دریافت محصولات مشکلی پیش آمد. دوباره تلاش کنید.');
+        if (active)
+          setError('در دریافت محصولات مشکلی پیش آمد. دوباره تلاش کنید.');
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -89,20 +93,26 @@ export default function ShopPage() {
   };
 
   return (
-    <Layout title="فروشگاه تجهیزات فوتبال" description="خرید کفش، لباس و تجهیزات فوتبال">
+    <Layout
+      title="فروشگاه تجهیزات فوتبال"
+      description="خرید کفش، لباس و تجهیزات فوتبال"
+    >
       <section className="bg-linear-to-br from-slate-950 to-primary-900 py-14 text-white">
         <div className="container-custom">
-          <p className="font-semibold text-primary-200">فروشگاه آکادمی فوتبال</p>
-          <h1 className="mt-2 text-4xl font-extrabold">تجهیزات بازی را پیدا کن</h1>
-          <p className="mt-3 max-w-2xl text-slate-200">
-            انتخابی از کفش، لباس و لوازم فوتبال؛ خرید آسان با پرداخت امن زرین‌پال.
-          </p>
+          <h1 className="mt-2 text-4xl font-extrabold">
+            تجهیزات بازی را پیدا کن
+          </h1>
         </div>
       </section>
 
       <section className="container-custom py-10">
-        <form onSubmit={applyFilters} className="mb-6 grid gap-3 rounded-2xl bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-6">
-          <label className="sr-only" htmlFor="shop-search">جستجوی محصول</label>
+        <form
+          onSubmit={applyFilters}
+          className="mb-6 grid gap-3 rounded-2xl bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-6"
+        >
+          <label className="sr-only" htmlFor="shop-search">
+            جستجوی محصول
+          </label>
           <input
             id="shop-search"
             value={search}
@@ -110,7 +120,9 @@ export default function ShopPage() {
             placeholder="جستجوی کفش، لباس و..."
             className="rounded-lg border border-slate-300 px-4 py-3 lg:col-span-2"
           />
-          <label className="sr-only" htmlFor="shop-category">دسته‌بندی</label>
+          <label className="sr-only" htmlFor="shop-category">
+            دسته‌بندی
+          </label>
           <select
             id="shop-category"
             value={category}
@@ -123,9 +135,15 @@ export default function ShopPage() {
             className="rounded-lg border border-slate-300 bg-white px-4 py-3"
           >
             <option value="">همه دسته‌ها</option>
-            {listing?.categories.map((item) => <option key={item} value={item}>{item}</option>)}
+            {listing?.categories.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
-          <label className="sr-only" htmlFor="shop-sort">مرتب‌سازی</label>
+          <label className="sr-only" htmlFor="shop-sort">
+            مرتب‌سازی
+          </label>
           <select
             id="shop-sort"
             value={sort}
@@ -142,7 +160,9 @@ export default function ShopPage() {
             <option value="price-asc">ارزان‌ترین</option>
             <option value="price-desc">گران‌ترین</option>
           </select>
-          <label className="sr-only" htmlFor="shop-min-price">حداقل قیمت به تومان</label>
+          <label className="sr-only" htmlFor="shop-min-price">
+            حداقل قیمت به تومان
+          </label>
           <input
             id="shop-min-price"
             type="number"
@@ -155,7 +175,9 @@ export default function ShopPage() {
             placeholder="حداقل قیمت (تومان)"
             className="min-w-0 rounded-lg border border-slate-300 px-4 py-3"
           />
-          <label className="sr-only" htmlFor="shop-max-price">حداکثر قیمت به تومان</label>
+          <label className="sr-only" htmlFor="shop-max-price">
+            حداکثر قیمت به تومان
+          </label>
           <input
             id="shop-max-price"
             type="number"
@@ -168,26 +190,39 @@ export default function ShopPage() {
             placeholder="حداکثر قیمت (تومان)"
             className="min-w-0 rounded-lg border border-slate-300 px-4 py-3"
           />
-          <button type="submit" className="btn btn-primary px-5 py-3 lg:col-span-2">
+          <button
+            type="submit"
+            className="btn btn-primary px-5 py-3 lg:col-span-2"
+          >
             جستجو و فیلتر
           </button>
         </form>
 
         {error && (
-          <div role="alert" className="mb-6 rounded-xl bg-rose-50 p-4 text-rose-800">
+          <div
+            role="alert"
+            className="mb-6 rounded-xl bg-rose-50 p-4 text-rose-800"
+          >
             {error}
           </div>
         )}
         {loading ? (
-          <p role="status" className="py-16 text-center text-slate-600">در حال بارگذاری محصولات...</p>
+          <p role="status" className="py-16 text-center text-slate-600">
+            در حال بارگذاری محصولات...
+          </p>
         ) : listing?.products.length ? (
           <>
             <p className="mb-5 text-sm text-slate-600">{listing.total} محصول</p>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {listing.products.map((product) => <ProductCard key={product.id} product={product} />)}
+              {listing.products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
             </div>
             {listing.pageCount > 1 && (
-              <nav className="mt-10 flex items-center justify-center gap-3" aria-label="صفحه‌بندی محصولات">
+              <nav
+                className="mt-10 flex items-center justify-center gap-3"
+                aria-label="صفحه‌بندی محصولات"
+              >
                 <button
                   type="button"
                   disabled={page <= 1}
@@ -199,7 +234,9 @@ export default function ShopPage() {
                 >
                   قبلی
                 </button>
-                <span aria-live="polite">صفحه {page} از {listing.pageCount}</span>
+                <span aria-live="polite">
+                  صفحه {page} از {listing.pageCount}
+                </span>
                 <button
                   type="button"
                   disabled={page >= listing.pageCount}
@@ -215,7 +252,9 @@ export default function ShopPage() {
             )}
           </>
         ) : (
-          <p className="py-16 text-center text-slate-600">محصولی با این مشخصات پیدا نشد.</p>
+          <p className="py-16 text-center text-slate-600">
+            محصولی با این مشخصات پیدا نشد.
+          </p>
         )}
       </section>
     </Layout>
