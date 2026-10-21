@@ -4,7 +4,7 @@ export default function Document() {
   return (
     <Html lang="fa-IR" dir="rtl">
       <Head>
-        <meta name="theme-color" content="#0284c7" />
+        <meta name="theme-color" content="#b91c1c" />
         <meta name="description" content="آکادمی فوتبال AP - بهترین آموزش فوتبال برای همه سنین" />
 
         {/* Favicon */}

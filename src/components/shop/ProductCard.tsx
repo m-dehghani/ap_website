@@ -61,7 +61,7 @@ export default function ProductCard({
   };
 
   return (
-    <article className="group relative rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:z-10 hover:scale-[1.025] hover:shadow-xl focus-within:z-10 focus-within:scale-[1.025]">
+    <article className="group relative rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-xl focus-within:z-10 focus-within:shadow-xl">
       <Link
         href={`/shop/${encodeURIComponent(product.slug)}`}
         aria-label={`مشاهده ${product.name}`}
@@ -98,8 +98,8 @@ export default function ProductCard({
           )}
         </div>
         <div className="p-4">
-          <p className="text-xs font-semibold text-primary-700">{product.category}</p>
-          <h3 className="mt-1 rounded font-bold text-slate-900 group-hover:text-primary-700">
+          <p className="text-sm font-semibold text-primary-700">{product.category}</p>
+          <h3 className="mt-1 rounded text-base font-bold leading-snug text-slate-900 group-hover:text-primary-700">
             {product.name}
           </h3>
           <div className="mt-2 flex items-center gap-1 text-sm text-amber-600">
@@ -107,24 +107,22 @@ export default function ProductCard({
             <span>{averageRating.toFixed(1)}</span>
             <span className="text-slate-500">({reviewCount} دیدگاه)</span>
           </div>
-          <p className="mt-2 font-bold text-slate-900">
+          <p className="mt-2 text-lg font-bold leading-snug text-slate-900">
             {formatToman(product.displayPrice)}
             {discounted && (
-              <del className="mr-2 text-sm font-normal text-slate-500">
+              <del className="mr-2 text-sm font-normal text-slate-600">
                 {formatToman(product.regularPrice)}
               </del>
             )}
           </p>
-          <div className="max-h-0 overflow-hidden transition-[max-height] duration-200 group-hover:max-h-24 group-focus-visible:max-h-24">
-            <p className="pt-2 text-sm text-slate-600">
-              {product.shortDescription || 'مشاهده توضیحات و انتخاب گزینه‌ها'}
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            {product.shortDescription || 'مشاهده توضیحات و انتخاب گزینه‌ها'}
+          </p>
+          {product.availableStock > 0 && product.availableStock < 2 && (
+            <p className="mt-2 text-sm font-semibold text-rose-700">
+              فقط {product.availableStock} عدد باقی مانده
             </p>
-            {product.availableStock > 0 && product.availableStock < 2 && (
-              <p className="mt-1 text-sm font-semibold text-rose-700">
-                فقط {product.availableStock} عدد باقی مانده
-              </p>
-            )}
-          </div>
+          )}
           {product.availableStock === 0 && !product.isComingSoon && (
             <p className="mt-2 text-sm text-slate-500">ناموجود</p>
           )}
@@ -137,7 +135,7 @@ export default function ProductCard({
           favorite ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'
         }
         aria-pressed={favorite}
-        className="absolute left-3 top-3 z-10 rounded-full bg-white/95 p-2 text-rose-600 shadow transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+        className="absolute left-3 top-3 z-10 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/95 p-2 text-rose-600 shadow transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
       >
         {favorite ? (
           <HeartSolidIcon className="h-5 w-5" />
