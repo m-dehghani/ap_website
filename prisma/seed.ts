@@ -5,6 +5,12 @@ const prisma = await getPrisma();
 
 async function clearDatabase() {
   // Children before parents to satisfy foreign keys.
+  await prisma.shopReview.deleteMany({});
+  await prisma.shopOrderItem.deleteMany({});
+  await prisma.shopOrder.deleteMany({});
+  await prisma.shopVariant.deleteMany({});
+  await prisma.shopProduct.deleteMany({});
+  await prisma.shopSettings.deleteMany({});
   await prisma.evaluation.deleteMany({});
   await prisma.attendance.deleteMany({});
   await prisma.session.deleteMany({});
@@ -28,7 +34,7 @@ async function clearDatabase() {
 }
 
 async function seedAcademy() {
-  for (const name of ['STUDENT', 'COACH', 'ADMIN']) {
+  for (const name of ['STUDENT', 'COACH', 'ADMIN', 'SHOP_MANAGER']) {
     await prisma.role.upsert({
       where: { name },
       update: {},
@@ -760,6 +766,153 @@ async function seedStories({
   });
 }
 
+async function seedShop() {
+  const image = (photo: string) =>
+    `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=1000&q=85`;
+  const products = [
+    {
+      slug: 'academy-match-football-boots',
+      name: 'کفش فوتبال چمن مصنوعی',
+      category: 'کفش فوتبال',
+      description: 'کفش سبک و خوش‌فرم برای تمرین‌های روزانه و بازی روی چمن مصنوعی.',
+      shortDescription: 'چسبندگی مطمئن و راحتی برای بازی‌های طولانی',
+      images: [image('photo-1542291026-7eec264c27ff')],
+      price: 2_450_000,
+      salePrice: 2_190_000,
+      isActive: true,
+      isComingSoon: false,
+      featured: true,
+      variants: [
+        { sku: 'AP-BOOT-39', size: '۳۹', color: 'قرمز', stock: 7, soldCount: 12 },
+        { sku: 'AP-BOOT-40', size: '۴۰', color: 'قرمز', stock: 5, soldCount: 18 },
+        { sku: 'AP-BOOT-41', size: '۴۱', color: 'قرمز', stock: 1, soldCount: 24 },
+        { sku: 'AP-BOOT-42', size: '۴۲', color: 'قرمز', stock: 4, soldCount: 9 },
+      ],
+    },
+    {
+      slug: 'academy-training-jersey',
+      name: 'پیراهن تمرینی آکادمی',
+      category: 'پوشاک',
+      description: 'پیراهن تمرینی سبک و تنفس‌پذیر مناسب جلسات تمرین و گرم‌کردن.',
+      shortDescription: 'پارچه سبک با آزادی حرکت بالا',
+      images: [image('photo-1521572163474-6864f9cf17ab')],
+      price: 890_000,
+      salePrice: 750_000,
+      isActive: true,
+      isComingSoon: false,
+      featured: true,
+      variants: [
+        { sku: 'AP-JERSEY-S', size: 'S', color: 'سرمه‌ای', stock: 8, soldCount: 16 },
+        { sku: 'AP-JERSEY-M', size: 'M', color: 'سرمه‌ای', stock: 10, soldCount: 22 },
+        { sku: 'AP-JERSEY-L', size: 'L', color: 'سرمه‌ای', stock: 6, soldCount: 11 },
+        { sku: 'AP-JERSEY-XL', size: 'XL', color: 'سرمه‌ای', stock: 3, soldCount: 5 },
+      ],
+    },
+    {
+      slug: 'performance-football-socks',
+      name: 'جوراب ساق‌بلند ورزشی',
+      category: 'جوراب',
+      description: 'جوراب ساق‌بلند ورزشی با بافت محکم و راحت برای استفاده همراه ساق‌بند.',
+      shortDescription: 'مناسب تمرین و مسابقه',
+      images: [image('photo-1586350977771-b3b0abb50cf4')],
+      price: 240_000,
+      salePrice: null,
+      isActive: true,
+      isComingSoon: false,
+      featured: true,
+      variants: [
+        { sku: 'AP-SOCK-SM', size: '۳۶-۴۰', color: 'سفید', stock: 14, soldCount: 31 },
+        { sku: 'AP-SOCK-LG', size: '۴۱-۴۵', color: 'سفید', stock: 11, soldCount: 26 },
+      ],
+    },
+    {
+      slug: 'academy-training-shorts',
+      name: 'شورت ورزشی تمرین',
+      category: 'پوشاک',
+      description: 'شورت ورزشی سبک برای تمرین فوتبال و فعالیت‌های بدنی روزانه.',
+      shortDescription: 'سبک، راحت و مناسب تمرین',
+      images: [image('photo-1591195853828-11db59a44f6b')],
+      price: 590_000,
+      salePrice: null,
+      isActive: true,
+      isComingSoon: false,
+      featured: true,
+      variants: [
+        { sku: 'AP-SHORT-M', size: 'M', color: 'مشکی', stock: 5, soldCount: 10 },
+        { sku: 'AP-SHORT-L', size: 'L', color: 'مشکی', stock: 8, soldCount: 14 },
+        { sku: 'AP-SHORT-XL', size: 'XL', color: 'مشکی', stock: 4, soldCount: 7 },
+      ],
+    },
+    {
+      slug: 'match-football',
+      name: 'توپ فوتبال تمرینی',
+      category: 'توپ',
+      description: 'توپ فوتبال مناسب تمرین تیمی، بازی دوستانه و استفاده روزمره.',
+      shortDescription: 'انتخابی مناسب برای تمرین‌های آکادمی',
+      images: [image('photo-1614632537190-23e4146777db')],
+      price: 1_350_000,
+      salePrice: null,
+      isActive: true,
+      isComingSoon: false,
+      featured: true,
+      variants: [
+        { sku: 'AP-BALL-5', size: 'سایز ۵', color: 'سفید و آبی', stock: 9, soldCount: 19 },
+      ],
+    },
+    {
+      slug: 'football-shin-guards',
+      name: 'ساق‌بند فوتبال',
+      category: 'تجهیزات',
+      description: 'ساق‌بند محافظ و سبک برای تمرین و مسابقه فوتبال.',
+      shortDescription: 'محافظت سبک و راحت زیر جوراب',
+      images: [image('photo-1517466787929-bc90951d0974')],
+      price: 420_000,
+      salePrice: null,
+      isActive: true,
+      isComingSoon: false,
+      featured: true,
+      variants: [
+        { sku: 'AP-SHIN-S', size: 'کوچک', color: 'مشکی', stock: 6, soldCount: 8 },
+        { sku: 'AP-SHIN-M', size: 'متوسط', color: 'مشکی', stock: 9, soldCount: 13 },
+        { sku: 'AP-SHIN-L', size: 'بزرگ', color: 'مشکی', stock: 5, soldCount: 6 },
+      ],
+    },
+    {
+      slug: 'academy-tracksuit',
+      name: 'ست گرم‌کن آکادمی',
+      category: 'پوشاک',
+      description: 'ست گرم‌کن سبک مناسب رفت‌وآمد به تمرین و گرم‌کردن پیش از بازی.',
+      shortDescription: 'به‌زودی در سایزبندی کامل',
+      images: [image('photo-1551488831-00ddcb6c6bd3')],
+      price: 2_100_000,
+      salePrice: null,
+      isActive: true,
+      isComingSoon: true,
+      availableAt: new Date('2026-11-15T00:00:00.000Z'),
+      featured: true,
+      variants: [
+        { sku: 'AP-TRACK-M', size: 'M', color: 'سرمه‌ای', stock: 0, soldCount: 0 },
+        { sku: 'AP-TRACK-L', size: 'L', color: 'سرمه‌ای', stock: 0, soldCount: 0 },
+      ],
+    },
+  ];
+
+  for (const { variants, ...product } of products) {
+    await prisma.shopProduct.create({
+      data: {
+        ...product,
+        variants: { create: variants },
+      },
+    });
+  }
+
+  await prisma.shopSettings.upsert({
+    where: { id: 'default' },
+    update: {},
+    create: { id: 'default', shippingFee: 100_000 },
+  });
+}
+
 async function seedNews() {
   await prisma.newsCategory.createMany({
     data: [
@@ -890,6 +1043,7 @@ async function main() {
 
   await clearDatabase();
   await seedAcademy();
+  await seedShop();
   const catalog = await seedCoachesAndPrograms(demoPassword);
   await seedDemoUsers(
     catalog.programs.kids.id,
@@ -912,6 +1066,7 @@ async function main() {
     `- ${await prisma.testimonial.count()} testimonials, ${await prisma.successStory.count()} success stories`,
   );
   console.log(`- ${await prisma.newsArticle.count()} news articles`);
+  console.log(`- ${await prisma.shopProduct.count()} shop products`);
   console.log(`- ${await prisma.statistic.count()} statistics`);
 }
 

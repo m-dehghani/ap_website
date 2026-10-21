@@ -35,6 +35,8 @@ model User {
   attendance    Attendance[]
   evaluations   Evaluation[]
   verificationChallenges VerificationChallenge[]
+  shopOrders    ShopOrder[]
+  shopReviews   ShopReview[]
 
   @@map("users")
 }
@@ -436,8 +438,135 @@ model NewsletterSubscriber {
   @@map("newsletter_subscribers")
 }
 
+model ShopProduct {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  category         String
+  description      String
+  shortDescription String?
+  images           String[] @default([])
+  price            Int
+  salePrice        Int?
+  saleStartsAt     DateTime?
+  saleEndsAt       DateTime?
+  isActive         Boolean  @default(false)
+  isComingSoon     Boolean  @default(false)
+  availableAt      DateTime?
+  featured         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  variants ShopVariant[]
+  reviews  ShopReview[]
+  items    ShopOrderItem[]
+
+  @@index([isActive, featured, createdAt])
+  @@index([category, isActive])
+  @@map("shop_products")
+}
+
+model ShopVariant {
+  id            String @id @default(cuid())
+  productId     String
+  sku           String @unique
+  size          String?
+  color         String?
+  priceOverride Int?
+  stock         Int    @default(0)
+  reserved      Int    @default(0)
+  soldCount     Int    @default(0)
+  isActive      Boolean @default(true)
+
+  product ShopProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  items   ShopOrderItem[]
+
+  @@index([productId])
+  @@map("shop_variants")
+}
+
+model ShopOrder {
+  id          String   @id @default(cuid())
+  orderNumber String   @unique
+  fullName    String
+  phone       String
+  email       String?
+  address     String
+  province    String?
+  city        String
+  postalCode  String
+  subtotal    Int
+  shippingFee Int
+  totalAmount Int
+  status      String   @default("PENDING_PAYMENT")
+  authority   String?  @unique
+  expiresAt   DateTime
+  paidAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String?
+
+  user  User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items ShopOrderItem[]
+  reviews ShopReview[]
+
+  @@index([status, createdAt])
+  @@index([phone, createdAt])
+  @@map("shop_orders")
+}
+
+model ShopOrderItem {
+  id          String @id @default(cuid())
+  orderId     String
+  productId   String?
+  variantId   String?
+  productName String
+  sku         String
+  size        String?
+  color       String?
+  quantity    Int
+  unitPrice   Int
+  lineTotal   Int
+
+  order   ShopOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product ShopProduct? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant ShopVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@map("shop_order_items")
+}
+
+model ShopReview {
+  id          String   @id @default(cuid())
+  productId   String
+  userId      String
+  orderId     String
+  rating      Int
+  body        String
+  mediaUrls   String[] @default([])
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product ShopProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order   ShopOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId, orderId])
+  @@index([productId, isPublished, createdAt])
+  @@map("shop_reviews")
+}
+
+model ShopSettings {
+  id          String   @id @default("default")
+  shippingFee Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  @@map("shop_settings")
+}
+
 // Status values are stored as strings with default values:
-// UserRole: STUDENT, ADMIN, COACH
+// UserRole: STUDENT, ADMIN, COACH, SHOP_MANAGER
 // RegistrationStatus: PENDING, APPROVED, CANCELLED, COMPLETED
 // PaymentStatus: PENDING, COMPLETED, FAILED, REFUNDED
 // PaymentMethod: ONLINE, CASH, BANK_TRANSFER

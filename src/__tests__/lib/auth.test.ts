@@ -1,7 +1,7 @@
 // @vitest-environment node
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { authorizeAdmin, normalizePhone } from '@/lib/auth';
+import { authorizeAdmin, authorizeShopManager, normalizePhone } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
 import { jwtVerify } from 'jose';
 
@@ -70,6 +70,42 @@ describe('authorization helpers', () => {
 
     expect(allowed).toBe(true);
     expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('allows a shop manager based on the current database role', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({ role: 'SHOP_MANAGER' });
+    const res = createResponse();
+    const allowed = await authorizeShopManager(
+      { cookies: { auth_token: 'signed-token' } } as never,
+      res as never,
+    );
+
+    expect(allowed).toBe(true);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('allows an admin to manage the shop', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({ role: 'ADMIN' });
+    const res = createResponse();
+    const allowed = await authorizeShopManager(
+      { cookies: { auth_token: 'signed-token' } } as never,
+      res as never,
+    );
+
+    expect(allowed).toBe(true);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('denies shop management to a student', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({ role: 'STUDENT' });
+    const res = createResponse();
+    const allowed = await authorizeShopManager(
+      { cookies: { auth_token: 'signed-token' } } as never,
+      res as never,
+    );
+
+    expect(allowed).toBe(false);
+    expect(res.status).toHaveBeenCalledWith(403);
   });
 
   it('normalizes Persian and Arabic phone digits and separators', () => {

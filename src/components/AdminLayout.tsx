@@ -15,25 +15,61 @@ export default function AdminLayout({
 }: AdminLayoutProps) {
   const router = useRouter();
   const isAdminRoute = router.pathname.startsWith('/admin');
+  const isShopRoute = router.pathname.startsWith('/admin/shop');
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (isAdminRoute && !loading && user?.role !== 'ADMIN') {
-      void router.replace('/login');
+    const canOpenRoute =
+      user?.role === 'ADMIN' ||
+      (isShopRoute && user?.role === 'SHOP_MANAGER');
+    if (isAdminRoute && !loading && !canOpenRoute) {
+      void router.replace(user?.role === 'SHOP_MANAGER' ? '/admin/shop' : '/login');
     }
-  }, [isAdminRoute, loading, router, user?.role]);
+  }, [isAdminRoute, isShopRoute, loading, router, user?.role]);
 
   if (!isAdminRoute) {
     return <>{children}</>;
   }
 
-  if (loading || user?.role !== 'ADMIN') {
+  const canOpenRoute =
+    user?.role === 'ADMIN' ||
+    (isShopRoute && user?.role === 'SHOP_MANAGER');
+
+  if (loading || !canOpenRoute) {
     return (
       <div
         className="flex min-h-screen items-center justify-center"
         role="status"
       >
         <span className="text-gray-600">در حال بررسی دسترسی...</span>
+      </div>
+    );
+  }
+
+  if (user?.role === 'SHOP_MANAGER' && isShopRoute) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <aside className="fixed inset-y-0 right-0 z-40 hidden w-64 bg-white shadow-xl lg:block">
+          <div className="border-b border-gray-200 px-6 py-5">
+            <Link href="/admin/shop" className="text-lg font-bold text-slate-900">
+              مدیریت فروشگاه AP
+            </Link>
+          </div>
+          <nav className="space-y-2 p-4" aria-label="مدیریت فروشگاه">
+            <Link href="/admin/shop" className="block rounded-lg bg-primary-50 px-4 py-3 font-semibold text-primary-700">
+              محصولات، سفارش‌ها و تنظیمات
+            </Link>
+            <Link href="/" className="block rounded-lg px-4 py-3 text-slate-600 hover:bg-slate-100">
+              مشاهده سایت
+            </Link>
+          </nav>
+        </aside>
+        <div className="lg:mr-64">
+          <header className="border-b border-gray-200 bg-white px-6 py-4">
+            <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+          </header>
+          <main className="p-5 lg:p-8">{children}</main>
+        </div>
       </div>
     );
   }
@@ -97,6 +133,18 @@ export default function AdminLayout({
             <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               مدیریت محتوا
             </div>
+
+            <Link
+              href="/admin/shop"
+              className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                router.pathname.startsWith('/admin/shop')
+                  ? 'bg-amber-50 text-amber-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <span className="ml-3" aria-hidden="true">⚽</span>
+              فروشگاه
+            </Link>
 
             <Link
               href="/admin/programs"

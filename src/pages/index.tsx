@@ -8,6 +8,7 @@ import SuccessStories from '../components/SuccessStories';
 import NewsUpdates from '../components/NewsUpdates';
 import Testimonials from '../components/Testimonials';
 import CTA from '../components/CTA';
+import ShopSpotlight from '@/components/shop/ShopSpotlight';
 import { getCoaches } from '../services/coachService';
 import { CoachViewModel } from '@/types/viewModels/coach';
 
@@ -58,6 +59,7 @@ const HomePage: React.FC<HomePageProps> = ({ coaches }) => {
 
       <div>
         <Hero />
+        <ShopSpotlight />
         <Features />
         {/* ProgramsPage removed - requires database connection. Add it back when DB is configured. */}
         <CoachSpotlight coaches={coaches} />

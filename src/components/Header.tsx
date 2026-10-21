@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bars3Icon, XMarkIcon, UserCircleIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, UserCircleIcon, ArrowRightOnRectangleIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { NAVIGATION } from '@/constants/app';
 import { useAuth } from '@/hooks/useAuth';
+import { readShopCart } from '@/lib/shop-cart';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const router = useRouter();
   const { user, loading, logout } = useAuth();
 
@@ -18,6 +20,15 @@ const Header: React.FC = () => {
     router.events.on('routeChangeStart', closeMenu);
     return () => router.events.off('routeChangeStart', closeMenu);
   }, [router.events]);
+
+  useEffect(() => {
+    const updateCartCount = () => {
+      setCartCount(readShopCart().reduce((count, item) => count + item.quantity, 0));
+    };
+    updateCartCount();
+    window.addEventListener('ap-shop-storage', updateCartCount);
+    return () => window.removeEventListener('ap-shop-storage', updateCartCount);
+  }, []);
 
   const isActive = (href: string) =>
     href === '/'
@@ -68,6 +79,18 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="hidden lg:flex items-center gap-3">
+            <Link
+              href="/shop/cart"
+              className="relative rounded-lg p-2 text-slate-700 hover:bg-slate-100"
+              aria-label={`سبد خرید، ${cartCount} کالا`}
+            >
+              <ShoppingBagIcon className="h-6 w-6" />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-primary-600 px-1 text-center text-xs text-white">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
             {!loading && !user ? (
               <>
                 <Link href="/contact" className="btn btn-outline px-4 py-2 text-sm">
@@ -85,6 +108,11 @@ const Header: React.FC = () => {
                 {user.role === 'ADMIN' && (
                   <Link href="/admin" className="btn btn-outline px-4 py-2 text-sm">
                     پنل مدیریت
+                  </Link>
+                )}
+                {user.role === 'SHOP_MANAGER' && (
+                  <Link href="/admin/shop" className="btn btn-outline px-4 py-2 text-sm">
+                    مدیریت فروشگاه
                   </Link>
                 )}
                 {user.role === 'COACH' && (
@@ -160,6 +188,13 @@ const Header: React.FC = () => {
                     {item.label}
                   </Link>
                 ))}
+                <Link
+                  href="/shop/cart"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="rounded-lg px-4 py-3 font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  سبد خرید ({cartCount})
+                </Link>
                 {!loading && !user ? (
                   <>
                     <Link
@@ -186,6 +221,15 @@ const Header: React.FC = () => {
                         className="btn btn-outline mt-2 w-full text-center"
                       >
                         پنل مدیریت
+                      </Link>
+                    )}
+                    {user.role === 'SHOP_MANAGER' && (
+                      <Link
+                        href="/admin/shop"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="btn btn-outline mt-2 w-full text-center"
+                      >
+                        مدیریت فروشگاه
                       </Link>
                     )}
                     {user.role === 'COACH' && (

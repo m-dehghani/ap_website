@@ -69,7 +69,9 @@ export default async function handler(
     ]);
 
     const candidates = [
-      ...(user && ['STUDENT', 'ADMIN'].includes(user.role) ? [user] : []),
+      ...(user && ['STUDENT', 'ADMIN', 'SHOP_MANAGER'].includes(user.role)
+        ? [user]
+        : []),
       ...(coach?.isActive ? [{ ...coach, role: 'COACH' }] : []),
     ];
     const matchingUsers = (

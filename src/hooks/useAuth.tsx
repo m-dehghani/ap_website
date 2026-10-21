@@ -6,7 +6,7 @@ interface User {
   email: string | null;
   firstName: string;
   lastName: string;
-  role: 'STUDENT' | 'COACH' | 'ADMIN';
+  role: 'STUDENT' | 'COACH' | 'ADMIN' | 'SHOP_MANAGER';
   phone?: string;
   birthDate?: string | null;
 }
@@ -95,6 +95,8 @@ function getDashboardPath(role: string): string {
   switch (role) {
     case 'ADMIN':
       return '/admin';
+    case 'SHOP_MANAGER':
+      return '/admin/shop';
     case 'COACH':
       return '/coach/dashboard';
     case 'STUDENT':
