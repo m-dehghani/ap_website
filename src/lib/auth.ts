@@ -88,6 +88,40 @@ export async function authorizeAdmin(
   return true;
 }
 
+export async function authorizeShopManager(
+  req: NextApiRequest,
+  res: NextApiResponse,
+): Promise<boolean> {
+  const token = req.cookies.auth_token;
+  if (!token) {
+    res.status(401).json({ message: 'احراز هویت نشده' });
+    return false;
+  }
+
+  let userId: string;
+  try {
+    const { payload } = await jwtVerify(token, getJwtSecret());
+    if (typeof payload.userId !== 'string') {
+      res.status(401).json({ message: 'توکن نامعتبر است' });
+      return false;
+    }
+    userId = payload.userId;
+  } catch {
+    res.status(401).json({ message: 'توکن نامعتبر یا منقضی شده' });
+    return false;
+  }
+
+  const db = await getPrisma();
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  if (user?.role === 'SHOP_MANAGER' || user?.role === 'ADMIN') return true;
+
+  res.status(403).json({ message: 'دسترسی مجاز نیست' });
+  return false;
+}
+
 export type StaffSession = {
   id: string;
   role: 'ADMIN' | 'COACH';

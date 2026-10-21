@@ -10,6 +10,7 @@ interface LayoutProps {
   description?: string;
   canonical?: string;
   openGraph?: {
+    type?: 'website' | 'product';
     title?: string;
     description?: string;
     images?: Array<{
@@ -38,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({
         canonical={canonical}
         noindex={noindex}
         openGraph={{
-          type: 'website',
+          type: openGraph?.type || 'website',
           locale: 'fa_IR',
           site_name: APP_CONFIG.name,
           title: openGraph?.title || title,

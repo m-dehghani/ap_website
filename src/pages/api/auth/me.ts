@@ -63,7 +63,7 @@ export default async function handler(
       },
     });
 
-    if (user && ['STUDENT', 'ADMIN'].includes(user.role)) {
+    if (user && ['STUDENT', 'ADMIN', 'SHOP_MANAGER'].includes(user.role)) {
       return res.status(200).json({ user });
     }
 

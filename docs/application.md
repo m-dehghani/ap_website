@@ -103,6 +103,33 @@ profile-verification Prisma migration before deploying. Marketing campaigns are
 limited to students who opted in through their profile; coaches can only
 message students in their own programs.
 
+### Academy shop
+
+The `/shop` storefront supports public browsing and guest checkout. Product
+prices, sale prices, shipping fees, and order totals are stored in toman;
+Zarinpal receives rial amounts. Each SKU/size/color variant tracks physical
+stock, pending reservations, and completed sales separately. Checkout reserves
+stock for 15 minutes; the Zarinpal callback verifies the total before decrementing
+stock. Expired reservations are released during subsequent catalog/checkout
+activity. A successful payment received after an expired reservation is flagged
+for manual refund follow-up rather than overselling inventory.
+
+Run `npx prisma migrate deploy` before deployment. To grant shop management
+access to an existing user, first apply the migration, then update that user's
+database role, for example:
+
+```sql
+UPDATE "users" SET "role" = 'SHOP_MANAGER' WHERE "email" = 'manager@example.com';
+```
+
+Shop managers can manage products,
+orders, reviews, and the configurable shipping fee; regular academy admin users
+can also access the shop panel. Product and review media are validated HTTPS
+URLs because the project does not currently configure an upload/storage service.
+Ratings and reviews are accepted only from signed-in students whose account is
+attached to a paid order for that product; submissions remain unpublished until
+a shop manager approves them. Guest favorites are stored in that browser only.
+
 ### Internationalization (i18n)
 
 - **Locales**: `fa` (default), `en`

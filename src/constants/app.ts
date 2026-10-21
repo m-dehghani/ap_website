@@ -33,6 +33,7 @@ export const APP_CONFIG = {
 export const NAVIGATION = {
   main: [
     { label: 'خانه', href: '/' },
+    { label: 'فروشگاه', href: '/shop' },
     { label: 'برنامه‌ها', href: '/programs' },
     { label: 'مربیان', href: '/coaches' },
     { label: 'اخبار', href: '/news' },
@@ -41,6 +42,7 @@ export const NAVIGATION = {
   footer: {
     quickLinks: [
       { label: 'درباره آکادمی', href: '/about' },
+      { label: 'فروشگاه', href: '/shop' },
       { label: 'برنامه‌های آموزشی', href: '/programs' },
       { label: 'مربیان ما', href: '/coaches' },
       { label: 'داستان‌های موفقیت', href: '/success' },

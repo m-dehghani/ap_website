@@ -26,6 +26,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin }) => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <Link href="/admin/shop" className="block">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-l-4 border-amber-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">فروشگاه</h3>
+                    <p className="text-gray-600">مدیریت کالاها، سفارش‌ها و نظرات</p>
+                  </div>
+                  <div className="w-16 h-16 bg-amber-100 rounded-xl flex items-center justify-center text-3xl" aria-hidden="true">⚽</div>
+                </div>
+              </div>
+            </Link>
             <Link href="/admin/programs" className="block">
               <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-l-4 border-primary-500">
                 <div className="flex items-center justify-between">
