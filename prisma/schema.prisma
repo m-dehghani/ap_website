@@ -25,8 +25,8 @@ model User {
   emailVerifiedAt DateTime?
   phoneVerifiedAt DateTime?
   marketingOptIn Boolean @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
   roleDefinition Role             @relation(fields: [role], references: [name])
@@ -37,6 +37,7 @@ model User {
   verificationChallenges VerificationChallenge[]
   shopOrders    ShopOrder[]
   shopReviews   ShopReview[]
+  shopReviewVotes ShopReviewVote[]
 
   @@map("users")
 }
@@ -551,10 +552,26 @@ model ShopReview {
   product ShopProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   order   ShopOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  votes   ShopReviewVote[]
 
   @@unique([productId, userId, orderId])
   @@index([productId, isPublished, createdAt])
   @@map("shop_reviews")
+}
+
+model ShopReviewVote {
+  reviewId  String
+  userId    String
+  vote      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  review ShopReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([reviewId, userId])
+  @@index([reviewId, vote])
+  @@map("shop_review_votes")
 }
 
 model ShopSettings {

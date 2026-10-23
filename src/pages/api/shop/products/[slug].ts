@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getOptionalAccountId } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
 import { getAvailableStock, getVariantPrice } from '@/lib/shop';
 
@@ -26,19 +27,42 @@ export default async function handler(
         reviews: {
           where: { isPublished: true },
           orderBy: { createdAt: 'desc' },
-          take: 30,
           select: {
             id: true,
+            userId: true,
             rating: true,
             body: true,
             mediaUrls: true,
             createdAt: true,
             user: { select: { firstName: true, lastName: true } },
+            votes: { select: { userId: true, vote: true } },
           },
         },
       },
     });
     if (!product) return res.status(404).json({ message: 'محصول یافت نشد' });
+    const viewerId = await getOptionalAccountId(req);
+    const helpfulScores = new Map<string, number>();
+    const reviews = product.reviews
+      .map(({ votes, ...review }) => {
+        const likes = votes.filter(({ vote }) => vote === 1).length;
+        const dislikes = votes.filter(({ vote }) => vote === -1).length;
+        helpfulScores.set(review.id, likes - dislikes);
+        return {
+          ...review,
+          likes,
+          dislikes,
+          viewerVote: votes.find(({ userId }) => userId === viewerId)?.vote ?? 0,
+          canVote: Boolean(viewerId) && review.userId !== viewerId,
+        };
+      })
+      .sort(
+        (first, second) =>
+          (helpfulScores.get(second.id) ?? 0) -
+            (helpfulScores.get(first.id) ?? 0) ||
+          second.likes - first.likes ||
+          second.createdAt.getTime() - first.createdAt.getTime(),
+      );
 
     const [rating, related] = await Promise.all([
       db.shopReview.aggregate({
@@ -93,6 +117,7 @@ export default async function handler(
     return res.status(200).json({
       product: {
         ...product,
+        reviews,
         displayPrice: Math.min(
           ...product.variants.map((variant) =>
             getVariantPrice(product, variant, now),

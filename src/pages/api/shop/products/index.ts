@@ -6,7 +6,8 @@ import {
   releaseExpiredShopOrders,
 } from '@/lib/shop';
 
-const PAGE_SIZE = 12;
+const DEFAULT_PAGE_SIZE = 12;
+const PAGE_SIZES = [8, 12, 24, 48] as const;
 
 export default async function handler(
   req: NextApiRequest,
@@ -22,6 +23,9 @@ export default async function handler(
     Number.isSafeInteger(pageValue) && pageValue > 0 && pageValue <= 10_000
       ? pageValue
       : 1;
+  const requestedPageSize = Number(req.query.pageSize ?? DEFAULT_PAGE_SIZE);
+  const pageSize =
+    PAGE_SIZES.find((size) => size === requestedPageSize) ?? DEFAULT_PAGE_SIZE;
   const category =
     typeof req.query.category === 'string'
       ? req.query.category.slice(0, 80)
@@ -67,7 +71,7 @@ export default async function handler(
           }
         : {}),
     };
-    const [initialTotal, categories] = await Promise.all([
+    const [initialTotal, categories, priceProducts] = await Promise.all([
       db.shopProduct.count({ where }),
       db.shopProduct.findMany({
         where: { isActive: true },
@@ -75,7 +79,33 @@ export default async function handler(
         distinct: ['category'],
         orderBy: { category: 'asc' },
       }),
+      db.shopProduct.findMany({
+        where: { isActive: true },
+        select: {
+          price: true,
+          salePrice: true,
+          saleStartsAt: true,
+          saleEndsAt: true,
+          variants: {
+            where: { isActive: true },
+            select: { priceOverride: true },
+          },
+        },
+      }),
     ]);
+    const now = new Date();
+    const productPrices = priceProducts.map((product) =>
+      Math.min(
+        ...product.variants.map((variant) =>
+          getVariantPrice(product, variant, now),
+        ),
+        product.price,
+      ),
+    );
+    const priceRange = {
+      min: productPrices.length ? Math.min(...productPrices) : 0,
+      max: productPrices.length ? Math.max(...productPrices) : 0,
+    };
     let total = initialTotal;
     const orderBy = [{ createdAt: 'desc' as const }];
 
@@ -99,7 +129,6 @@ export default async function handler(
           },
         },
       });
-      const now = new Date();
       const matchingProducts = allProducts
         .map((product) => ({
           product,
@@ -137,7 +166,7 @@ export default async function handler(
       }
       total = matchingProducts.length;
       products = matchingProducts
-        .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+        .slice((page - 1) * pageSize, page * pageSize)
         .map(({ product }) => product);
     } else if (sort === 'popular') {
       const [allProducts, sales] = await Promise.all([
@@ -162,7 +191,7 @@ export default async function handler(
             b.createdAt.getTime() - a.createdAt.getTime(),
         )
         .map(({ id }) => id)
-        .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+        .slice((page - 1) * pageSize, page * pageSize);
       const selected = await db.shopProduct.findMany({
         where: { id: { in: productIds } },
         include: {
@@ -205,7 +234,6 @@ export default async function handler(
           },
         },
       });
-      const now = new Date();
       const direction = sort === 'price-asc' ? 1 : -1;
       products = all
         .map((product) => ({
@@ -218,14 +246,14 @@ export default async function handler(
           ),
         }))
         .sort((a, b) => direction * (a.displayPrice - b.displayPrice))
-        .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+        .slice((page - 1) * pageSize, page * pageSize)
         .map(({ product }) => product);
     } else {
       products = await db.shopProduct.findMany({
         where,
         orderBy,
-        skip: (page - 1) * PAGE_SIZE,
-        take: PAGE_SIZE,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
         include: {
           variants: {
             where: { isActive: true },
@@ -258,7 +286,6 @@ export default async function handler(
     const reviewsByProduct = new Map(
       reviewCounts.map((review) => [review.productId, review]),
     );
-    const now = new Date();
     return res.status(200).json({
       products: products.map((product) => ({
         ...product,
@@ -284,10 +311,11 @@ export default async function handler(
         reviewCount: reviewsByProduct.get(product.id)?._count._all ?? 0,
       })),
       page,
-      pageSize: PAGE_SIZE,
+      pageSize,
       total,
-      pageCount: Math.ceil(total / PAGE_SIZE),
+      pageCount: Math.ceil(total / pageSize),
       categories: categories.map(({ category }) => category),
+      priceRange,
     });
   } catch (error) {
     console.error('Shop product listing error:', error);

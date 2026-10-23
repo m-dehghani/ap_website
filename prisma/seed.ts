@@ -5,6 +5,7 @@ const prisma = await getPrisma();
 
 async function clearDatabase() {
   // Children before parents to satisfy foreign keys.
+  await prisma.shopReviewVote.deleteMany({});
   await prisma.shopReview.deleteMany({});
   await prisma.shopOrderItem.deleteMany({});
   await prisma.shopOrder.deleteMany({});
@@ -170,6 +171,7 @@ async function seedDemoUsers(programId: string, programPrice: number, demoPasswo
       medicalConditions: 'ندارد',
     },
   });
+  return { student, password };
 }
 
 async function seedCoachesAndPrograms(demoPassword: string) {
@@ -566,6 +568,129 @@ async function seedShop() {
   });
 }
 
+async function seedShopReviews(
+  primaryStudentId: string,
+  password: string,
+) {
+  const reviewers = [
+    { id: primaryStudentId },
+    ...(await Promise.all(
+      [
+        { email: 'shop.reviewer.one@apfootball.com', firstName: 'پارسا', lastName: 'محمدی' },
+        { email: 'shop.reviewer.two@apfootball.com', firstName: 'امیرعلی', lastName: 'کریمی' },
+        { email: 'shop.reviewer.three@apfootball.com', firstName: 'سینا', lastName: 'حسینی' },
+      ].map(async (reviewer) => {
+        const user = await prisma.user.create({
+          data: { ...reviewer, password, role: 'STUDENT' },
+          select: { id: true },
+        });
+        return user;
+      }),
+    )),
+  ];
+  const reviewContent = [
+    {
+      slug: 'academy-match-football-boots',
+      rating: 5,
+      body: 'برای تمرین روی چمن مصنوعی خیلی راحت است و چسبندگی خوبی دارد. بعد از چند جلسه هنوز کیفیتش مثل روز اول است.',
+    },
+    {
+      slug: 'academy-training-jersey',
+      rating: 5,
+      body: 'پارچه سبک و خنکی دارد و موقع تمرین حرکت را محدود نمی‌کند. سایز انتخابی هم دقیق بود.',
+    },
+    {
+      slug: 'performance-football-socks',
+      rating: 4,
+      body: 'کیفیت بافت خوب است و موقع دویدن سر نمی‌خورد. برای تمرین‌های طولانی انتخاب مناسبی است.',
+    },
+    {
+      slug: 'match-football',
+      rating: 5,
+      body: 'توپ خوش‌دست و مناسبی برای تمرین تیمی است و بعد از چند بازی فرم خودش را حفظ کرده.',
+    },
+    {
+      slug: 'football-shin-guards',
+      rating: 4,
+      body: 'سبک است و زیر جوراب راحت قرار می‌گیرد. برای تمرین روزانه کاملاً کاربردی است.',
+    },
+    {
+      slug: 'academy-training-shorts',
+      rating: 5,
+      body: 'راحت و سبک است و دوخت خوبی دارد. برای تمرین فوتبال آزادی حرکت خوبی می‌دهد.',
+    },
+  ];
+
+  for (const [index, content] of reviewContent.entries()) {
+    const product = await prisma.shopProduct.findUnique({
+      where: { slug: content.slug },
+      include: { variants: { where: { isActive: true }, take: 1 } },
+    });
+    const variant = product?.variants[0];
+    if (!product || !variant) {
+      throw new Error(`Cannot seed review for missing product ${content.slug}`);
+    }
+
+    const reviewer = reviewers[index % reviewers.length];
+    const createdAt = new Date(Date.UTC(2026, 8, 20 + index));
+    const order = await prisma.shopOrder.create({
+      data: {
+        orderNumber: `SEED-REVIEW-${index + 1}`,
+        fullName: index === 0 ? 'آرمان رضایی' : `بازیکن آکادمی ${index}`,
+        phone: `0912345600${index}`,
+        address: 'تهران، آدرس نمونه',
+        city: 'تهران',
+        postalCode: `12345678${index}`,
+        subtotal: variant.priceOverride ?? product.price,
+        shippingFee: 0,
+        totalAmount: variant.priceOverride ?? product.price,
+        status: 'DELIVERED',
+        paidAt: createdAt,
+        expiresAt: createdAt,
+        createdAt,
+        userId: reviewer.id,
+        items: {
+          create: {
+            productId: product.id,
+            variantId: variant.id,
+            productName: product.name,
+            sku: variant.sku,
+            size: variant.size,
+            color: variant.color,
+            quantity: 1,
+            unitPrice: variant.priceOverride ?? product.price,
+            lineTotal: variant.priceOverride ?? product.price,
+          },
+        },
+      },
+      select: { id: true },
+    });
+    const review = await prisma.shopReview.create({
+      data: {
+        productId: product.id,
+        userId: reviewer.id,
+        orderId: order.id,
+        rating: content.rating,
+        body: content.body,
+        isPublished: true,
+        createdAt,
+      },
+      select: { id: true },
+    });
+    const voters = reviewers.filter(({ id }) => id !== reviewer.id);
+    const voteValues = index % 3 === 0 ? [1, 1, -1] : index % 3 === 1 ? [1, 1, 1] : [1, -1, -1];
+    await prisma.shopReviewVote.createMany({
+      data: voters.map(({ id }, voteIndex) => ({
+        reviewId: review.id,
+        userId: id,
+        vote: voteValues[voteIndex],
+        createdAt,
+        updatedAt: createdAt,
+      })),
+    });
+  }
+}
+
 async function seedNews() {
   await prisma.newsCategory.createMany({
     data: [
@@ -602,7 +727,12 @@ async function main() {
   await seedAcademy();
   await seedShop();
   const catalog = await seedCoachesAndPrograms(demoPassword);
-  await seedDemoUsers(catalog.programs.kids.id, catalog.programs.kids.price, demoPassword);
+  const demoUsers = await seedDemoUsers(
+    catalog.programs.kids.id,
+    catalog.programs.kids.price,
+    demoPassword,
+  );
+  await seedShopReviews(demoUsers.student.id, demoUsers.password);
   await seedStories(catalog);
   await seedNews();
 

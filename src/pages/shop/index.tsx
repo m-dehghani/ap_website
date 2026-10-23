@@ -7,8 +7,7 @@ import ProductCard, {
 } from '@/components/shop/ProductCard';
 import { formatToman } from '@/lib/format';
 
-const MAX_PRICE = 2_147_483_000;
-const PRICE_STEP = 1_000;
+const PAGE_SIZE_OPTIONS = [8, 12, 24, 48] as const;
 
 interface ShopListing {
   products: ShopProductCardData[];
@@ -16,11 +15,13 @@ interface ShopListing {
   pageCount: number;
   total: number;
   categories: string[];
+  priceRange: { min: number; max: number };
 }
 
 export default function ShopPage() {
   const [listing, setListing] = useState<ShopListing | null>(null);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(12);
   const [sort, setSort] = useState('recent');
   const [category, setCategory] = useState('');
   const [search, setSearch] = useState('');
@@ -33,6 +34,11 @@ export default function ShopPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filterToggleRef = useRef<HTMLButtonElement>(null);
   const filterCloseRef = useRef<HTMLButtonElement>(null);
+  const priceBounds = listing?.priceRange ?? { min: 0, max: 0 };
+  const priceStep = Math.max(
+    1,
+    Math.floor((priceBounds.max - priceBounds.min) / 1000),
+  );
 
   useEffect(() => {
     if (!filtersOpen) return;
@@ -73,6 +79,7 @@ export default function ShopPage() {
   useEffect(() => {
     const params = new URLSearchParams({
       page: String(page),
+      pageSize: String(pageSize),
       sort,
       ...(category ? { category } : {}),
       ...(query ? { search: query } : {}),
@@ -98,7 +105,7 @@ export default function ShopPage() {
     return () => {
       active = false;
     };
-  }, [page, sort, category, query, priceRange]);
+  }, [page, pageSize, sort, category, query, priceRange]);
 
   const applyFilters = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -109,14 +116,16 @@ export default function ShopPage() {
     const parsedMaxPrice = nextMaxPrice ? Number(nextMaxPrice) : null;
     if (
       (parsedMinPrice !== null &&
-        (!Number.isSafeInteger(parsedMinPrice) || parsedMinPrice < 0)) ||
+        (!Number.isSafeInteger(parsedMinPrice) ||
+          parsedMinPrice < 0 ||
+          parsedMinPrice > priceBounds.max)) ||
       (parsedMaxPrice !== null &&
         (!Number.isSafeInteger(parsedMaxPrice) ||
           parsedMaxPrice < 0 ||
-          parsedMaxPrice > 2_147_483_647)) ||
+          parsedMaxPrice > priceBounds.max)) ||
       (parsedMinPrice !== null &&
-        (parsedMinPrice > 2_147_483_647 ||
-          (parsedMaxPrice !== null && parsedMinPrice > parsedMaxPrice)))
+        parsedMaxPrice !== null &&
+        parsedMinPrice > parsedMaxPrice)
     ) {
       setError('محدوده قیمت را به‌صورت عدد صحیح معتبر وارد کنید.');
       return;
@@ -318,15 +327,16 @@ export default function ShopPage() {
                     <input
                       id="shop-min-price"
                       type="range"
-                      min={0}
-                      max={MAX_PRICE}
-                      step={PRICE_STEP}
-                      value={minPrice || 0}
-                      aria-valuetext={formatToman(Number(minPrice || 0))}
+                      min={priceBounds.min}
+                      max={priceBounds.max}
+                      step={priceStep}
+                      value={minPrice || priceBounds.min}
+                      disabled={priceBounds.min === priceBounds.max}
+                      aria-valuetext={formatToman(Number(minPrice || priceBounds.min))}
                       onChange={(event) => {
                         const nextMin = Number(event.target.value);
-                        const value = Math.min(nextMin, Number(maxPrice || MAX_PRICE));
-                        setMinPrice(value === 0 ? '' : String(value));
+                        const value = Math.min(nextMin, Number(maxPrice || priceBounds.max));
+                        setMinPrice(value === priceBounds.min ? '' : String(value));
                       }}
                       className="shop-price-slider"
                       dir="ltr"
@@ -338,7 +348,7 @@ export default function ShopPage() {
                         حداکثر
                       </label>
                       <output htmlFor="shop-max-price" className="text-sm font-bold text-red-800">
-                        {maxPrice && Number(maxPrice) < MAX_PRICE
+                        {maxPrice && Number(maxPrice) < priceBounds.max
                           ? formatToman(Number(maxPrice))
                           : 'بدون محدودیت'}
                       </output>
@@ -346,25 +356,26 @@ export default function ShopPage() {
                     <input
                       id="shop-max-price"
                       type="range"
-                      min={0}
-                      max={MAX_PRICE}
-                      step={PRICE_STEP}
-                      value={maxPrice || MAX_PRICE}
+                      min={priceBounds.min}
+                      max={priceBounds.max}
+                      step={priceStep}
+                      value={maxPrice || priceBounds.max}
+                      disabled={priceBounds.min === priceBounds.max}
                       aria-valuetext={
                         maxPrice ? formatToman(Number(maxPrice)) : 'بدون محدودیت'
                       }
                       onChange={(event) => {
                         const nextMax = Number(event.target.value);
-                        const value = Math.max(nextMax, Number(minPrice || 0));
-                        setMaxPrice(value >= MAX_PRICE ? '' : String(value));
+                        const value = Math.max(nextMax, Number(minPrice || priceBounds.min));
+                        setMaxPrice(value >= priceBounds.max ? '' : String(value));
                       }}
                       className="shop-price-slider"
                       dir="ltr"
                     />
                   </div>
                   <div className="flex justify-between text-xs text-slate-500" dir="ltr">
-                    <span>۰ تومان</span>
-                    <span>حداکثر قیمت</span>
+                    <span>{formatToman(priceBounds.min)}</span>
+                    <span>{formatToman(priceBounds.max)}</span>
                   </div>
                 </fieldset>
               </div>
@@ -401,7 +412,29 @@ export default function ShopPage() {
           </p>
         ) : listing?.products.length ? (
           <>
-            <p className="mb-3 text-sm font-medium text-slate-600 sm:text-base">{listing.total} محصول</p>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm font-medium text-slate-600 sm:text-base">
+                {listing.total} محصول
+              </p>
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                نمایش در هر صفحه
+                <select
+                  value={pageSize}
+                  onChange={(event) => {
+                    const nextPageSize = Number(event.target.value);
+                    if (!PAGE_SIZE_OPTIONS.some((size) => size === nextPageSize)) return;
+                    setLoading(true);
+                    setPageSize(nextPageSize);
+                    setPage(1);
+                  }}
+                  className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-100"
+                >
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <option key={size} value={size}>{size}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
             <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
               {listing.products.map((product) => (
                 <ProductCard key={product.id} product={product} />
