@@ -8,22 +8,22 @@ import {
   HeartIcon,
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
-import {
-  APP_CONFIG,
-  NAVIGATION,
-  FOOTER_SOCIAL_LINKS,
-  FOOTER_TRAINING_HOURS,
-} from '@/constants/app';
+import { NAVIGATION } from '@/constants/app';
 import { CTA_CONTENT } from '@/constants/content';
+import { SiteInfoViewModel } from '@/types/viewModels/site';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  site?: SiteInfoViewModel | null;
+}
+
+const Footer: React.FC<FooterProps> = ({ site }) => {
   const currentYear = new Date().getFullYear();
 
-  const socialLinks = FOOTER_SOCIAL_LINKS;
+  const socialLinks = site?.socialLinks ?? [];
   const quickLinks = NAVIGATION.footer.quickLinks;
   const programs = NAVIGATION.footer.programs;
   const legalLinks = NAVIGATION.footer.legal;
-  const trainingHours = FOOTER_TRAINING_HOURS;
+  const trainingHours = site?.trainingHours ?? [];
 
   return (
     <footer className="bg-linear-to-br from-navy-900 via-navy-800 to-navy-900 text-white relative overflow-hidden">
@@ -46,16 +46,17 @@ const Footer: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-2xl font-bold text-white">
-                    آکادمی فوتبال افشین پیروانی
+                    {site?.name ?? 'آکادمی فوتبال AP'}
                   </h3>
                   <p className="text-gray-200 font-medium">
-                    جایی که قهرمانان ساخته می‌شوند
+                    {site?.tagline ?? 'جایی که قهرمانان ساخته می‌شوند'}
                   </p>
                 </div>
               </div>
 
               <p className="text-gray-200 text-lg leading-relaxed max-w-md">
-                {APP_CONFIG.description}
+                {site?.description ??
+                  'ساخت آینده فوتبال از طریق آموزش حرفه‌ای، مربیگری کارآزموده و امکانات مدرن.'}
               </p>
 
               {/* Enhanced Contact Info */}
@@ -66,10 +67,10 @@ const Footer: React.FC = () => {
                   </div>
                   <div>
                     <a
-                      href={`tel:${APP_CONFIG.phone.replace(/[^\d+]/g, '')}`}
+                      href={`tel:${site?.phone?.replace(/[^\d+]/g, '') ?? ''}`}
                       className="text-white font-medium hover:underline"
                     >
-                      {APP_CONFIG.phone}
+                      {site?.phone ?? ''}
                     </a>
                     <p className="text-gray-300 text-sm">24 ساعته در دسترس</p>
                   </div>
@@ -81,10 +82,10 @@ const Footer: React.FC = () => {
                   </div>
                   <div>
                     <a
-                      href={`mailto:${APP_CONFIG.email}`}
+                      href={`mailto:${site?.email ?? ''}`}
                       className="text-white font-medium hover:underline"
                     >
-                      {APP_CONFIG.email}
+                      {site?.email ?? ''}
                     </a>
                     <p className="text-gray-300 text-sm">پاسخ سریع تضمینی</p>
                   </div>
@@ -96,9 +97,9 @@ const Footer: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-white font-medium">
-                      {APP_CONFIG.address}
+                      {site?.address ?? ''}
                     </p>
-                    <p className="text-gray-300 text-sm">{APP_CONFIG.city}</p>
+                    <p className="text-gray-300 text-sm">{site?.city ?? ''}</p>
                   </div>
                 </div>
               </div>
@@ -206,7 +207,8 @@ const Footer: React.FC = () => {
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <div className="flex items-center gap-2">
                 <p className="text-gray-400">
-                  © {currentYear} {APP_CONFIG.name}. تمام حقوق محفوظ است.
+                  © {currentYear} {site?.name ?? 'آکادمی فوتبال AP'}. تمام حقوق
+                  محفوظ است.
                 </p>
                 <span className="text-gray-600">•</span>
                 <p className="text-gray-400 flex items-center">

@@ -5,6 +5,7 @@ import type { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
+import { HandThumbDownIcon, HandThumbUpIcon } from '@heroicons/react/24/outline';
 import Layout from '@/components/Layout';
 import ProductCard, { type ShopProductCardData } from '@/components/shop/ProductCard';
 import SocialShare from '@/components/shop/SocialShare';
@@ -74,6 +75,10 @@ interface ProductDetail extends ShopProductCardData {
     body: string;
     mediaUrls: string[];
     createdAt: string;
+    likes: number;
+    dislikes: number;
+    viewerVote: number;
+    canVote: boolean;
     user: { firstName: string; lastName: string };
   }>;
 }
@@ -116,6 +121,7 @@ export default function ShopProductPage({
   const [reviewBody, setReviewBody] = useState('');
   const [reviewMedia, setReviewMedia] = useState('');
   const [reviewBusy, setReviewBusy] = useState(false);
+  const [voteBusyId, setVoteBusyId] = useState('');
 
   useEffect(() => {
     if (!router.isReady || typeof router.query.slug !== 'string') return;
@@ -227,6 +233,61 @@ export default function ShopProductPage({
       toast.error(submitError instanceof Error ? submitError.message : 'ثبت دیدگاه ناموفق بود');
     } finally {
       setReviewBusy(false);
+    }
+  };
+
+  const submitReviewVote = async (reviewId: string, vote: -1 | 1) => {
+    if (!user) {
+      toast.error('برای رأی دادن به دیدگاه‌ها ابتدا وارد حساب کاربری شوید');
+      return;
+    }
+
+    const review = product?.reviews.find((item) => item.id === reviewId);
+    if (!review || !review.canVote || voteBusyId) return;
+
+    setVoteBusyId(reviewId);
+    try {
+      const nextVote = review.viewerVote === vote ? 0 : vote;
+      const response = await fetch(
+        `/api/shop/reviews/${encodeURIComponent(reviewId)}/vote`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ vote: nextVote }),
+        },
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'ثبت رأی ناموفق بود');
+
+      setProduct((current) => {
+        if (!current) return current;
+        const reviews = current.reviews
+          .map((item) =>
+            item.id === reviewId
+              ? {
+                  ...item,
+                  likes: data.likes,
+                  dislikes: data.dislikes,
+                  viewerVote: data.vote,
+                }
+              : item,
+          )
+          .sort(
+            (first, second) =>
+              second.likes - second.dislikes -
+                (first.likes - first.dislikes) ||
+              second.likes - first.likes ||
+              new Date(second.createdAt).getTime() -
+                new Date(first.createdAt).getTime(),
+          );
+        return { ...current, reviews };
+      });
+    } catch (voteError) {
+      toast.error(
+        voteError instanceof Error ? voteError.message : 'ثبت رأی ناموفق بود',
+      );
+    } finally {
+      setVoteBusyId('');
     }
   };
 
@@ -351,6 +412,9 @@ export default function ShopProductPage({
 
             <section className="mt-14" aria-labelledby="reviews-title">
               <h2 id="reviews-title" className="text-2xl font-bold text-slate-900">دیدگاه خریداران</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                دیدگاه‌های مفیدتر و پربازخوردتر در ابتدای فهرست نمایش داده می‌شوند.
+              </p>
               {product.reviews.length ? (
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   {product.reviews.map((review) => (
@@ -360,6 +424,39 @@ export default function ShopProductPage({
                         <span className="text-amber-600" aria-label={`امتیاز ${review.rating} از ۵`}>{'★'.repeat(review.rating)}</span>
                       </div>
                       <p className="mt-2 whitespace-pre-wrap text-slate-700">{review.body}</p>
+                      <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
+                        <span className="ml-auto text-xs text-slate-500">این دیدگاه مفید بود؟</span>
+                        <button
+                          type="button"
+                          onClick={() => void submitReviewVote(review.id, 1)}
+                          disabled={Boolean(user) && !review.canVote || voteBusyId === review.id}
+                          aria-label={`مفید بود، ${review.likes} پسند`}
+                          aria-pressed={review.viewerVote === 1}
+                          className={`inline-flex min-h-10 items-center gap-1 rounded-lg px-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:cursor-not-allowed disabled:opacity-50 ${
+                            review.viewerVote === 1
+                              ? 'bg-red-100 text-red-800'
+                              : 'text-slate-600 hover:bg-red-50 hover:text-red-800'
+                          }`}
+                        >
+                          <HandThumbUpIcon aria-hidden="true" className="size-4" />
+                          {review.likes}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void submitReviewVote(review.id, -1)}
+                          disabled={Boolean(user) && !review.canVote || voteBusyId === review.id}
+                          aria-label={`مفید نبود، ${review.dislikes} مخالفت`}
+                          aria-pressed={review.viewerVote === -1}
+                          className={`inline-flex min-h-10 items-center gap-1 rounded-lg px-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:cursor-not-allowed disabled:opacity-50 ${
+                            review.viewerVote === -1
+                              ? 'bg-red-100 text-red-800'
+                              : 'text-slate-600 hover:bg-red-50 hover:text-red-800'
+                          }`}
+                        >
+                          <HandThumbDownIcon aria-hidden="true" className="size-4" />
+                          {review.dislikes}
+                        </button>
+                      </div>
                       {review.mediaUrls.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-3">
                           {review.mediaUrls.map((url) => isVideo(url) ? (

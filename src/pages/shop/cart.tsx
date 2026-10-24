@@ -23,6 +23,20 @@ interface CheckoutValues {
   postalCode: string;
 }
 
+interface Province {
+  id: string;
+  name: string;
+  nameEn?: string | null;
+  shippingFee: number;
+}
+
+interface City {
+  id: string;
+  name: string;
+  nameEn?: string | null;
+  shippingFee: number | null;
+}
+
 const emptyCheckout: CheckoutValues = {
   fullName: '',
   phone: '',
@@ -39,6 +53,8 @@ export default function ShopCartPage() {
   const [error, setError] = useState('');
   const [shippingFee, setShippingFee] = useState<number | null>(null);
   const [shippingError, setShippingError] = useState('');
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
 
   const cartSnapshot = useSyncExternalStore(
     (onChange) => subscribeShopStorage('ap-shop-cart', onChange),
@@ -47,6 +63,44 @@ export default function ShopCartPage() {
   );
   const cart = useMemo(() => parseShopCartSnapshot(cartSnapshot), [cartSnapshot]);
 
+  // Load provinces on mount
+  useEffect(() => {
+    void fetch('/api/admin/content/provinces')
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'دریافت استان‌ها ناموفق بود');
+        setProvinces(data);
+      })
+      .catch((provinceError: unknown) => {
+        console.error('Province load failed:', provinceError);
+        toast.error('لیست استان‌ها دریافت نشد');
+      });
+  }, []);
+
+  // Load cities when province changes
+  useEffect(() => {
+    if (!values.province) {
+      setCities([]);
+      setValues((prev) => ({ ...prev, city: '' }));
+      return;
+    }
+    void fetch(`/api/admin/content/cities?province=${encodeURIComponent(values.province)}`)
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'دریافت شهرها ناموفق بود');
+        setCities(data);
+        // Reset city if it's not in the new list
+        if (values.city && !data.some((c: City) => c.name === values.city)) {
+          setValues((prev) => ({ ...prev, city: '' }));
+        }
+      })
+      .catch((cityError: unknown) => {
+        console.error('City load failed:', cityError);
+        toast.error('لیست شهرها دریافت نشد');
+      });
+  }, [values.province]);
+
+  // Load shipping fee settings on mount
   useEffect(() => {
     void fetch('/api/shop/settings')
       .then(async (response) => {
@@ -72,6 +126,16 @@ export default function ShopCartPage() {
     } catch (saveError) {
       toast.error(saveError instanceof Error ? saveError.message : 'ذخیره سبد خرید ناموفق بود');
     }
+  };
+
+  const handleProvinceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const provinceName = event.target.value;
+    setValues((prev) => ({ ...prev, province: provinceName, city: '' }));
+  };
+
+  const handleCityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const cityName = event.target.value;
+    setValues((prev) => ({ ...prev, city: cityName }));
   };
 
   const submitCheckout = async (event: FormEvent<HTMLFormElement>) => {
@@ -138,7 +202,9 @@ export default function ShopCartPage() {
         {cart.length === 0 ? (
           <div className="mt-6 rounded-2xl bg-white p-8 text-center shadow-sm">
             <p className="text-slate-700">سبد خرید شما خالی است.</p>
-            <Link href="/shop" className="btn btn-primary mt-5 inline-flex px-5 py-3">رفتن به فروشگاه</Link>
+            <Link href="/shop" className="btn btn-primary mt-5 inline-flex px-5 py-3">
+              رفتن به فروشگاه
+            </Link>
           </div>
         ) : (
           <div className="mt-7 grid items-start gap-8 lg:grid-cols-[1fr_1.1fr]">
@@ -212,12 +278,37 @@ export default function ShopCartPage() {
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block">
-                  <span className="mb-1 block font-semibold">استان (اختیاری)</span>
-                  <input autoComplete="address-level1" value={values.province} onChange={(event) => setValues({ ...values, province: event.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-3" />
+                  <span className="mb-1 block font-semibold">استان</span>
+                  <select
+                    required
+                    value={values.province}
+                    onChange={handleProvinceChange}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-3 bg-white"
+                  >
+                    <option value="">استان را انتخاب کنید</option>
+                    {provinces.map((p) => (
+                      <option key={p.id} value={p.name}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <label className="block">
                   <span className="mb-1 block font-semibold">شهر</span>
-                  <input required autoComplete="address-level2" value={values.city} onChange={(event) => setValues({ ...values, city: event.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-3" />
+                  <select
+                    required
+                    value={values.city}
+                    onChange={handleCityChange}
+                    disabled={cities.length === 0}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-3 bg-white disabled:bg-slate-100"
+                  >
+                    <option value="">شهر را انتخاب کنید</option>
+                    {cities.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               </div>
               <label className="block">

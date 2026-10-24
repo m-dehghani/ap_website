@@ -20,10 +20,11 @@ export default function AdminLayout({
 
   useEffect(() => {
     const canOpenRoute =
-      user?.role === 'ADMIN' ||
-      (isShopRoute && user?.role === 'SHOP_MANAGER');
+      user?.role === 'ADMIN' || (isShopRoute && user?.role === 'SHOP_MANAGER');
     if (isAdminRoute && !loading && !canOpenRoute) {
-      void router.replace(user?.role === 'SHOP_MANAGER' ? '/admin/shop' : '/login');
+      void router.replace(
+        user?.role === 'SHOP_MANAGER' ? '/admin/shop' : '/login',
+      );
     }
   }, [isAdminRoute, isShopRoute, loading, router, user?.role]);
 
@@ -32,8 +33,7 @@ export default function AdminLayout({
   }
 
   const canOpenRoute =
-    user?.role === 'ADMIN' ||
-    (isShopRoute && user?.role === 'SHOP_MANAGER');
+    user?.role === 'ADMIN' || (isShopRoute && user?.role === 'SHOP_MANAGER');
 
   if (loading || !canOpenRoute) {
     return (
@@ -49,17 +49,33 @@ export default function AdminLayout({
   if (user?.role === 'SHOP_MANAGER' && isShopRoute) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <aside className="fixed inset-y-0 right-0 z-40 hidden w-64 bg-white shadow-xl lg:block">
+        <aside className="relative z-40 w-full bg-white shadow-xl lg:fixed lg:inset-y-0 lg:right-0 lg:w-64">
           <div className="border-b border-gray-200 px-6 py-5">
-            <Link href="/admin/shop" className="text-lg font-bold text-slate-900">
+            <Link
+              href="/admin/shop"
+              className="text-lg font-bold text-slate-900"
+            >
               مدیریت فروشگاه AP
             </Link>
           </div>
           <nav className="space-y-2 p-4" aria-label="مدیریت فروشگاه">
-            <Link href="/admin/shop" className="block rounded-lg bg-primary-50 px-4 py-3 font-semibold text-primary-700">
+            <Link
+              href="/admin/shop"
+              aria-current={
+                router.pathname === '/admin/shop' ? 'page' : undefined
+              }
+              className={`block rounded-lg px-4 py-3 font-semibold ${
+                router.pathname === '/admin/shop'
+                  ? 'bg-primary-50 text-primary-700'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
               محصولات، سفارش‌ها و تنظیمات
             </Link>
-            <Link href="/" className="block rounded-lg px-4 py-3 text-slate-600 hover:bg-slate-100">
+            <Link
+              href="/"
+              className="block rounded-lg px-4 py-3 text-slate-600 hover:bg-slate-100"
+            >
               مشاهده سایت
             </Link>
           </nav>
@@ -101,13 +117,17 @@ export default function AdminLayout({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <nav
+            className="flex-1 px-4 py-6 space-y-2 overflow-y-auto"
+            aria-label="پنل مدیریت"
+          >
             <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               منو اصلی
             </div>
 
             <Link
               href="/admin"
+              aria-current={router.pathname === '/admin' ? 'page' : undefined}
               className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                 router.pathname === '/admin'
                   ? 'bg-primary-50 text-primary-700'
@@ -135,19 +155,59 @@ export default function AdminLayout({
             </div>
 
             <Link
+              href="/admin/content"
+              aria-current={
+                router.pathname.startsWith('/admin/content')
+                  ? 'page'
+                  : undefined
+              }
+              className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                router.pathname.startsWith('/admin/content')
+                  ? 'bg-violet-50 text-violet-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <svg
+                className="w-5 h-5 ml-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 5a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm9 0a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1V5zM4 14a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1v-5zm9 0a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1v-5z"
+                />
+              </svg>
+              مدیریت محتوای سایت
+            </Link>
+
+            <Link
               href="/admin/shop"
+              aria-current={
+                router.pathname.startsWith('/admin/shop') ? 'page' : undefined
+              }
               className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                 router.pathname.startsWith('/admin/shop')
                   ? 'bg-amber-50 text-amber-700'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <span className="ml-3" aria-hidden="true">⚽</span>
+              <span className="ml-3" aria-hidden="true">
+                ⚽
+              </span>
               فروشگاه
             </Link>
 
             <Link
               href="/admin/programs"
+              aria-current={
+                router.pathname.startsWith('/admin/programs')
+                  ? 'page'
+                  : undefined
+              }
               className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                 router.pathname.startsWith('/admin/programs')
                   ? 'bg-primary-50 text-primary-700'
@@ -172,6 +232,11 @@ export default function AdminLayout({
 
             <Link
               href="/admin/coaches"
+              aria-current={
+                router.pathname.startsWith('/admin/coaches')
+                  ? 'page'
+                  : undefined
+              }
               className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                 router.pathname.startsWith('/admin/coaches')
                   ? 'bg-emerald-50 text-emerald-700'
@@ -196,6 +261,11 @@ export default function AdminLayout({
 
             <Link
               href="/admin/students"
+              aria-current={
+                router.pathname.startsWith('/admin/students')
+                  ? 'page'
+                  : undefined
+              }
               className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                 router.pathname.startsWith('/admin/students')
                   ? 'bg-amber-50 text-amber-700'
@@ -220,6 +290,9 @@ export default function AdminLayout({
 
             <Link
               href="/staff/notifications"
+              aria-current={
+                router.pathname === '/staff/notifications' ? 'page' : undefined
+              }
               className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                 router.pathname === '/staff/notifications'
                   ? 'bg-cyan-50 text-cyan-700'
@@ -244,6 +317,11 @@ export default function AdminLayout({
 
             <Link
               href="/admin/sessions"
+              aria-current={
+                router.pathname.startsWith('/admin/sessions')
+                  ? 'page'
+                  : undefined
+              }
               className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                 router.pathname.startsWith('/admin/sessions')
                   ? 'bg-purple-50 text-purple-700'
@@ -272,6 +350,7 @@ export default function AdminLayout({
 
             <Link
               href="/contact"
+              aria-current={router.pathname === '/contact' ? 'page' : undefined}
               className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                 router.pathname === '/contact'
                   ? 'bg-gray-50 text-gray-700'

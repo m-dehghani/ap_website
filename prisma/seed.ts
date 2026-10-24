@@ -5,6 +5,7 @@ const prisma = await getPrisma();
 
 async function clearDatabase() {
   // Children before parents to satisfy foreign keys.
+  await prisma.shopReviewVote.deleteMany({});
   await prisma.shopReview.deleteMany({});
   await prisma.shopOrderItem.deleteMany({});
   await prisma.shopOrder.deleteMany({});
@@ -270,6 +271,466 @@ async function seedAcademy() {
   });
 }
 
+async function seedProvinces() {
+  // Iran's 31 provinces with shipping fees (in Toman)
+  const provincesData = [
+    { name: 'تهران', nameEn: 'Tehran', shippingFee: 50000, displayOrder: 1 },
+    { name: 'مرکزی', nameEn: 'Markazi', shippingFee: 60000, displayOrder: 2 },
+    { name: 'قم', nameEn: 'Qom', shippingFee: 55000, displayOrder: 3 },
+    { name: 'قزوین', nameEn: 'Qazvin', shippingFee: 60000, displayOrder: 4 },
+    { name: 'گیلان', nameEn: 'Gilan', shippingFee: 70000, displayOrder: 5 },
+    {
+      name: 'مازندران',
+      nameEn: 'Mazandaran',
+      shippingFee: 70000,
+      displayOrder: 6,
+    },
+    { name: 'گلستان', nameEn: 'Golestan', shippingFee: 80000, displayOrder: 7 },
+    {
+      name: 'خوزستان',
+      nameEn: 'Khuzestan',
+      shippingFee: 90000,
+      displayOrder: 8,
+    },
+    { name: 'فارس', nameEn: 'Fars', shippingFee: 90000, displayOrder: 9 },
+    { name: 'کرمان', nameEn: 'Kerman', shippingFee: 100000, displayOrder: 10 },
+    {
+      name: 'کرمانشاه',
+      nameEn: 'Kermanshah',
+      shippingFee: 90000,
+      displayOrder: 11,
+    },
+    { name: 'همدان', nameEn: 'Hamedan', shippingFee: 75000, displayOrder: 12 },
+    {
+      name: 'کردستان',
+      nameEn: 'Kurdistan',
+      shippingFee: 95000,
+      displayOrder: 13,
+    },
+    { name: 'ایلام', nameEn: 'Ilam', shippingFee: 95000, displayOrder: 14 },
+    {
+      name: 'خراسان جنوبی',
+      nameEn: 'South Khorasan',
+      shippingFee: 120000,
+      displayOrder: 15,
+    },
+    {
+      name: 'خراسان رضوی',
+      nameEn: 'Razavi Khorasan',
+      shippingFee: 85000,
+      displayOrder: 16,
+    },
+    {
+      name: 'خراسان شمالی',
+      nameEn: 'North Khorasan',
+      shippingFee: 100000,
+      displayOrder: 17,
+    },
+    {
+      name: 'سیستان و بلوچستان',
+      nameEn: 'Sistan and Baluchestan',
+      shippingFee: 130000,
+      displayOrder: 17,
+    },
+    {
+      name: 'آذربایجان شرقی',
+      nameEn: 'East Azerbaijan',
+      shippingFee: 80000,
+      displayOrder: 18,
+    },
+    {
+      name: 'آذربایجان غربی',
+      nameEn: 'West Azerbaijan',
+      shippingFee: 85000,
+      displayOrder: 18,
+    },
+    { name: 'اردبیل', nameEn: 'Ardabil', shippingFee: 90000, displayOrder: 19 },
+    { name: 'زنجان', nameEn: 'Zanjan', shippingFee: 75000, displayOrder: 19 },
+    {
+      name: 'چهارمحال و بختیاری',
+      nameEn: 'Chaharmahal and Bakhtiari',
+      shippingFee: 85000,
+      displayOrder: 19,
+    },
+    {
+      name: 'لرستان',
+      nameEn: 'Lorestan',
+      shippingFee: 85000,
+      displayOrder: 19,
+    },
+    { name: 'ایلام', nameEn: 'Ilam', shippingFee: 95000, displayOrder: 19 },
+    { name: 'بوشهر', nameEn: 'Bushehr', shippingFee: 100000, displayOrder: 20 },
+    {
+      name: 'هرمزگان',
+      nameEn: 'Hormozgan',
+      shippingFee: 100000,
+      displayOrder: 20,
+    },
+    { name: 'یزد', nameEn: 'Yazd', shippingFee: 90000, displayOrder: 20 },
+    { name: 'البرز', nameEn: 'Alborz', shippingFee: 55000, displayOrder: 21 },
+  ];
+
+  for (const [_, prov] of provincesData.entries()) {
+    await prisma.province.upsert({
+      where: { name: prov.name },
+      update: {
+        shippingFee: prov.shippingFee,
+        displayOrder: prov.displayOrder,
+        isActive: true,
+      },
+      create: {
+        name: prov.name,
+        nameEn: prov.nameEn,
+        shippingFee: prov.shippingFee,
+        displayOrder: prov.displayOrder,
+        isActive: true,
+      },
+    });
+  }
+
+  // Add major cities for each province with their own shipping fees (or null to use province fee)
+  const citiesData: Array<{
+    provinceName: string;
+    cities: Array<{
+      name: string;
+      nameEn?: string;
+      shippingFee: number;
+      displayOrder?: number;
+    }>;
+  }> = [
+    // تهران
+    {
+      provinceName: 'تهران',
+      cities: [
+        {
+          name: 'تهران',
+          nameEn: 'Tehran',
+          shippingFee: 30000,
+          displayOrder: 1,
+        },
+        {
+          name: 'شمیرانات',
+          nameEn: 'Shemiranat',
+          shippingFee: 40000,
+          displayOrder: 2,
+        },
+        { name: 'ری', nameEn: 'Rey', shippingFee: 35000, displayOrder: 3 },
+        {
+          name: 'ورامین',
+          nameEn: 'Varamin',
+          shippingFee: 45000,
+          displayOrder: 4,
+        },
+        {
+          name: 'اسلامشهر',
+          nameEn: 'Islamshahr',
+          shippingFee: 40000,
+          displayOrder: 5,
+        },
+        {
+          name: 'پاکدشت',
+          nameEn: 'Pakdasht',
+          shippingFee: 50000,
+          displayOrder: 6,
+        },
+        {
+          name: 'دماوند',
+          nameEn: 'Damavand',
+          shippingFee: 55000,
+          displayOrder: 7,
+        },
+        { name: 'فشم', nameEn: 'Fasham', shippingFee: 60000, displayOrder: 8 },
+      ],
+    },
+    // مرکزی
+    {
+      provinceName: 'مرکزی',
+      cities: [
+        { name: 'اراک', shippingFee: 60000 },
+        { name: 'محلات', shippingFee: 70000 },
+        { name: 'دلیجان', shippingFee: 65000 },
+        { name: 'ساوه', shippingFee: 65000 },
+      ],
+    },
+    // قم
+    {
+      provinceName: 'قم',
+      cities: [
+        { name: 'قم', shippingFee: 40000 },
+        { name: 'سلفچگان', shippingFee: 55000 },
+      ],
+    },
+    // قزوین
+    {
+      provinceName: 'قزوین',
+      cities: [
+        { name: 'قزوین', shippingFee: 50000 },
+        { name: 'ابیک', shippingFee: 55000 },
+        { name: 'بویین‌زهرا', shippingFee: 65000 },
+      ],
+    },
+    // گیلان
+    {
+      provinceName: 'گیلان',
+      cities: [
+        { name: 'رشت', shippingFee: 60000 },
+        { name: 'انزلی', shippingFee: 65000 },
+        { name: 'لاهیجان', shippingFee: 70000 },
+        { name: 'رودسر', shippingFee: 75000 },
+      ],
+    },
+    // مازندران
+    {
+      provinceName: 'مازندران',
+      cities: [
+        { name: 'ساری', shippingFee: 65000 },
+        { name: 'بابل', shippingFee: 70000 },
+        { name: 'آمل', shippingFee: 65000 },
+        { name: 'نوشهر', shippingFee: 75000 },
+      ],
+    },
+    // گلستان
+    {
+      provinceName: 'گلستان',
+      cities: [
+        { name: 'گرگان', shippingFee: 75000 },
+        { name: 'گنبد کاووس', shippingFee: 80000 },
+        { name: 'آق‌قلا', shippingFee: 85000 },
+      ],
+    },
+    // خوزستان
+    {
+      provinceName: 'خوزستان',
+      cities: [
+        { name: 'اهواز', shippingFee: 80000 },
+        { name: 'دزفول', shippingFee: 90000 },
+        { name: 'مسجدسلیمان', shippingFee: 95000 },
+        { name: 'شوش', shippingFee: 90000 },
+      ],
+    },
+    // فارس
+    {
+      provinceName: 'فارس',
+      cities: [
+        { name: 'شیراز', shippingFee: 70000 },
+        { name: 'مرودشت', shippingFee: 80000 },
+        { name: 'جهرم', shippingFee: 90000 },
+        { name: 'فسا', shippingFee: 95000 },
+      ],
+    },
+    // کرمان
+    {
+      provinceName: 'کرمان',
+      cities: [
+        { name: 'کرمان', shippingFee: 85000 },
+        { name: 'سیرجان', shippingFee: 95000 },
+        { name: 'رفسنجان', shippingFee: 90000 },
+        { name: 'بم', shippingFee: 100000 },
+      ],
+    },
+    // کرمانشاه
+    {
+      provinceName: 'کرمانشاه',
+      cities: [
+        { name: 'کرمانشاه', shippingFee: 80000 },
+        { name: 'اسلام‌آباد غرب', shippingFee: 90000 },
+        { name: 'کرند', shippingFee: 95000 },
+      ],
+    },
+    // همدان
+    {
+      provinceName: 'همدان',
+      cities: [
+        { name: 'همدان', shippingFee: 65000 },
+        { name: 'ملایر', shippingFee: 75000 },
+        { name: 'نهاوند', shippingFee: 75000 },
+      ],
+    },
+    // کردستان
+    {
+      provinceName: 'کردستان',
+      cities: [
+        { name: 'سنندج', shippingFee: 85000 },
+        { name: 'سقز', shippingFee: 95000 },
+        { name: 'مریوان', shippingFee: 95000 },
+      ],
+    },
+    // ایلام
+    {
+      provinceName: 'ایلام',
+      cities: [
+        { name: 'ایلام', shippingFee: 85000 },
+        { name: 'دهلران', shippingFee: 95000 },
+      ],
+    },
+    // خراسان جنوبی
+    {
+      provinceName: 'خراسان جنوبی',
+      cities: [
+        { name: 'بیرجند', shippingFee: 110000 },
+        { name: 'قائنات', shippingFee: 120000 },
+      ],
+    },
+    // خراسان رضوی
+    {
+      provinceName: 'خراسان رضوی',
+      cities: [
+        { name: 'مشهد', shippingFee: 70000 },
+        { name: 'نیشابور', shippingFee: 85000 },
+        { name: 'سبزوار', shippingFee: 90000 },
+        { name: 'تربت حیدریه', shippingFee: 95000 },
+      ],
+    },
+    // خراسان شمالی
+    {
+      provinceName: 'خراسان شمالی',
+      cities: [
+        { name: 'بجنورد', shippingFee: 90000 },
+        { name: 'شیروان', shippingFee: 100000 },
+        { name: 'اسفراین', shippingFee: 95000 },
+      ],
+    },
+    // سیستان و بلوچستان
+    {
+      provinceName: 'سیستان و بلوچستان',
+      cities: [
+        { name: 'زاهدان', shippingFee: 120000 },
+        { name: 'چابهار', shippingFee: 125000 },
+        { name: 'زابل', shippingFee: 130000 },
+      ],
+    },
+    // آذربایجان شرقی
+    {
+      provinceName: 'آذربایجان شرقی',
+      cities: [
+        { name: 'تبریز', shippingFee: 65000 },
+        { name: 'مراغه', shippingFee: 80000 },
+        { name: 'میانه', shippingFee: 85000 },
+        { name: 'اهر', shippingFee: 85000 },
+      ],
+    },
+    // آذربایجان غربی
+    {
+      provinceName: 'آذربایجان غربی',
+      cities: [
+        { name: 'ارومیه', shippingFee: 75000 },
+        { name: 'خوی', shippingFee: 85000 },
+        { name: 'مهاباد', shippingFee: 90000 },
+        { name: 'سلماس', shippingFee: 85000 },
+      ],
+    },
+    // اردبیل
+    {
+      provinceName: 'اردبیل',
+      cities: [
+        { name: 'اردبیل', shippingFee: 80000 },
+        { name: 'پارس‌آباد', shippingFee: 90000 },
+        { name: 'مشگین‌شهر', shippingFee: 90000 },
+      ],
+    },
+    // زنجان
+    {
+      provinceName: 'زنجان',
+      cities: [
+        { name: 'زنجان', shippingFee: 70000 },
+        { name: 'ابهر', shippingFee: 75000 },
+      ],
+    },
+    // چهارمحال و بختیاری
+    {
+      provinceName: 'چهارمحال و بختیاری',
+      cities: [
+        { name: 'شهرکرد', shippingFee: 75000 },
+        { name: 'بروجن', shippingFee: 85000 },
+        { name: 'لردگان', shippingFee: 90000 },
+      ],
+    },
+    // لرستان
+    {
+      provinceName: 'لرستان',
+      cities: [
+        { name: 'خرم‌آباد', shippingFee: 80000 },
+        { name: 'بروجرد', shippingFee: 85000 },
+        { name: 'دورود', shippingFee: 85000 },
+      ],
+    },
+    // ایلام
+    {
+      provinceName: 'ایلام',
+      cities: [
+        { name: 'ایلام', shippingFee: 85000 },
+        { name: 'دهلران', shippingFee: 95000 },
+      ],
+    },
+    // بوشهر
+    {
+      provinceName: 'بوشهر',
+      cities: [
+        { name: 'بوشهر', shippingFee: 90000 },
+        { name: 'گناوه', shippingFee: 100000 },
+        { name: 'دشتستان', shippingFee: 95000 },
+      ],
+    },
+    // هرمزگان
+    {
+      provinceName: 'هرمزگان',
+      cities: [
+        { name: 'بندر عباس', shippingFee: 90000 },
+        { name: 'قشم', shippingFee: 100000 },
+        { name: 'بندر لنک', shippingFee: 100000 },
+      ],
+    },
+    // یزد
+    {
+      provinceName: 'یزد',
+      cities: [
+        { name: 'یزد', shippingFee: 80000 },
+        { name: 'میدان', shippingFee: 90000 },
+        { name: 'اردکان', shippingFee: 90000 },
+      ],
+    },
+    // البرز
+    {
+      provinceName: 'البرز',
+      cities: [
+        { name: 'کرج', shippingFee: 40000 },
+        { name: 'نظرآباد', shippingFee: 55000 },
+        { name: 'طالقان', shippingFee: 60000 },
+        { name: 'چالوس', shippingFee: 65000 },
+      ],
+    },
+  ];
+
+  for (const { provinceName, cities } of citiesData) {
+    const province = await prisma.province.findUnique({
+      where: { name: provinceName },
+    });
+    if (!province) continue;
+    for (const city of cities) {
+      await prisma.city.upsert({
+        where: {
+          provinceId_name: { provinceId: province.id, name: city.name },
+        },
+        update: {
+          shippingFee: city.shippingFee,
+          isActive: true,
+          displayOrder: city.displayOrder ?? 0,
+        },
+        create: {
+          name: city.name,
+          nameEn: city.nameEn,
+          provinceId: province.id,
+          shippingFee: city.shippingFee,
+          isActive: true,
+          displayOrder: city.displayOrder ?? 0,
+        },
+      });
+    }
+  }
+
+  console.log('Provinces and cities seeded successfully');
+}
+
 async function seedDemoUsers(
   programId: string,
   programPrice: number,
@@ -313,6 +774,7 @@ async function seedDemoUsers(
       medicalConditions: 'ندارد',
     },
   });
+  return { student, password };
 }
 
 async function seedCoachesAndPrograms(demoPassword: string) {
@@ -774,7 +1236,8 @@ async function seedShop() {
       slug: 'academy-match-football-boots',
       name: 'کفش فوتبال چمن مصنوعی',
       category: 'کفش فوتبال',
-      description: 'کفش سبک و خوش‌فرم برای تمرین‌های روزانه و بازی روی چمن مصنوعی.',
+      description:
+        'کفش سبک و خوش‌فرم برای تمرین‌های روزانه و بازی روی چمن مصنوعی.',
       shortDescription: 'چسبندگی مطمئن و راحتی برای بازی‌های طولانی',
       images: [image('photo-1542291026-7eec264c27ff')],
       price: 2_450_000,
@@ -783,17 +1246,42 @@ async function seedShop() {
       isComingSoon: false,
       featured: true,
       variants: [
-        { sku: 'AP-BOOT-39', size: '۳۹', color: 'قرمز', stock: 7, soldCount: 12 },
-        { sku: 'AP-BOOT-40', size: '۴۰', color: 'قرمز', stock: 5, soldCount: 18 },
-        { sku: 'AP-BOOT-41', size: '۴۱', color: 'قرمز', stock: 1, soldCount: 24 },
-        { sku: 'AP-BOOT-42', size: '۴۲', color: 'قرمز', stock: 4, soldCount: 9 },
+        {
+          sku: 'AP-BOOT-39',
+          size: '۳۹',
+          color: 'قرمز',
+          stock: 7,
+          soldCount: 12,
+        },
+        {
+          sku: 'AP-BOOT-40',
+          size: '۴۰',
+          color: 'قرمز',
+          stock: 5,
+          soldCount: 18,
+        },
+        {
+          sku: 'AP-BOOT-41',
+          size: '۴۱',
+          color: 'قرمز',
+          stock: 1,
+          soldCount: 24,
+        },
+        {
+          sku: 'AP-BOOT-42',
+          size: '۴۲',
+          color: 'قرمز',
+          stock: 4,
+          soldCount: 9,
+        },
       ],
     },
     {
       slug: 'academy-training-jersey',
       name: 'پیراهن تمرینی آکادمی',
       category: 'پوشاک',
-      description: 'پیراهن تمرینی سبک و تنفس‌پذیر مناسب جلسات تمرین و گرم‌کردن.',
+      description:
+        'پیراهن تمرینی سبک و تنفس‌پذیر مناسب جلسات تمرین و گرم‌کردن.',
       shortDescription: 'پارچه سبک با آزادی حرکت بالا',
       images: [image('photo-1521572163474-6864f9cf17ab')],
       price: 890_000,
@@ -802,17 +1290,42 @@ async function seedShop() {
       isComingSoon: false,
       featured: true,
       variants: [
-        { sku: 'AP-JERSEY-S', size: 'S', color: 'سرمه‌ای', stock: 8, soldCount: 16 },
-        { sku: 'AP-JERSEY-M', size: 'M', color: 'سرمه‌ای', stock: 10, soldCount: 22 },
-        { sku: 'AP-JERSEY-L', size: 'L', color: 'سرمه‌ای', stock: 6, soldCount: 11 },
-        { sku: 'AP-JERSEY-XL', size: 'XL', color: 'سرمه‌ای', stock: 3, soldCount: 5 },
+        {
+          sku: 'AP-JERSEY-S',
+          size: 'S',
+          color: 'سرمه‌ای',
+          stock: 8,
+          soldCount: 16,
+        },
+        {
+          sku: 'AP-JERSEY-M',
+          size: 'M',
+          color: 'سرمه‌ای',
+          stock: 10,
+          soldCount: 22,
+        },
+        {
+          sku: 'AP-JERSEY-L',
+          size: 'L',
+          color: 'سرمه‌ای',
+          stock: 6,
+          soldCount: 11,
+        },
+        {
+          sku: 'AP-JERSEY-XL',
+          size: 'XL',
+          color: 'سرمه‌ای',
+          stock: 3,
+          soldCount: 5,
+        },
       ],
     },
     {
       slug: 'performance-football-socks',
       name: 'جوراب ساق‌بلند ورزشی',
       category: 'جوراب',
-      description: 'جوراب ساق‌بلند ورزشی با بافت محکم و راحت برای استفاده همراه ساق‌بند.',
+      description:
+        'جوراب ساق‌بلند ورزشی با بافت محکم و راحت برای استفاده همراه ساق‌بند.',
       shortDescription: 'مناسب تمرین و مسابقه',
       images: [image('photo-1586350977771-b3b0abb50cf4')],
       price: 240_000,
@@ -821,8 +1334,20 @@ async function seedShop() {
       isComingSoon: false,
       featured: true,
       variants: [
-        { sku: 'AP-SOCK-SM', size: '۳۶-۴۰', color: 'سفید', stock: 14, soldCount: 31 },
-        { sku: 'AP-SOCK-LG', size: '۴۱-۴۵', color: 'سفید', stock: 11, soldCount: 26 },
+        {
+          sku: 'AP-SOCK-SM',
+          size: '۳۶-۴۰',
+          color: 'سفید',
+          stock: 14,
+          soldCount: 31,
+        },
+        {
+          sku: 'AP-SOCK-LG',
+          size: '۴۱-۴۵',
+          color: 'سفید',
+          stock: 11,
+          soldCount: 26,
+        },
       ],
     },
     {
@@ -838,16 +1363,35 @@ async function seedShop() {
       isComingSoon: false,
       featured: true,
       variants: [
-        { sku: 'AP-SHORT-M', size: 'M', color: 'مشکی', stock: 5, soldCount: 10 },
-        { sku: 'AP-SHORT-L', size: 'L', color: 'مشکی', stock: 8, soldCount: 14 },
-        { sku: 'AP-SHORT-XL', size: 'XL', color: 'مشکی', stock: 4, soldCount: 7 },
+        {
+          sku: 'AP-SHORT-M',
+          size: 'M',
+          color: 'مشکی',
+          stock: 5,
+          soldCount: 10,
+        },
+        {
+          sku: 'AP-SHORT-L',
+          size: 'L',
+          color: 'مشکی',
+          stock: 8,
+          soldCount: 14,
+        },
+        {
+          sku: 'AP-SHORT-XL',
+          size: 'XL',
+          color: 'مشکی',
+          stock: 4,
+          soldCount: 7,
+        },
       ],
     },
     {
       slug: 'match-football',
       name: 'توپ فوتبال تمرینی',
       category: 'توپ',
-      description: 'توپ فوتبال مناسب تمرین تیمی، بازی دوستانه و استفاده روزمره.',
+      description:
+        'توپ فوتبال مناسب تمرین تیمی، بازی دوستانه و استفاده روزمره.',
       shortDescription: 'انتخابی مناسب برای تمرین‌های آکادمی',
       images: [image('photo-1614632537190-23e4146777db')],
       price: 1_350_000,
@@ -856,7 +1400,13 @@ async function seedShop() {
       isComingSoon: false,
       featured: true,
       variants: [
-        { sku: 'AP-BALL-5', size: 'سایز ۵', color: 'سفید و آبی', stock: 9, soldCount: 19 },
+        {
+          sku: 'AP-BALL-5',
+          size: 'سایز ۵',
+          color: 'سفید و آبی',
+          stock: 9,
+          soldCount: 19,
+        },
       ],
     },
     {
@@ -872,16 +1422,35 @@ async function seedShop() {
       isComingSoon: false,
       featured: true,
       variants: [
-        { sku: 'AP-SHIN-S', size: 'کوچک', color: 'مشکی', stock: 6, soldCount: 8 },
-        { sku: 'AP-SHIN-M', size: 'متوسط', color: 'مشکی', stock: 9, soldCount: 13 },
-        { sku: 'AP-SHIN-L', size: 'بزرگ', color: 'مشکی', stock: 5, soldCount: 6 },
+        {
+          sku: 'AP-SHIN-S',
+          size: 'کوچک',
+          color: 'مشکی',
+          stock: 6,
+          soldCount: 8,
+        },
+        {
+          sku: 'AP-SHIN-M',
+          size: 'متوسط',
+          color: 'مشکی',
+          stock: 9,
+          soldCount: 13,
+        },
+        {
+          sku: 'AP-SHIN-L',
+          size: 'بزرگ',
+          color: 'مشکی',
+          stock: 5,
+          soldCount: 6,
+        },
       ],
     },
     {
       slug: 'academy-tracksuit',
       name: 'ست گرم‌کن آکادمی',
       category: 'پوشاک',
-      description: 'ست گرم‌کن سبک مناسب رفت‌وآمد به تمرین و گرم‌کردن پیش از بازی.',
+      description:
+        'ست گرم‌کن سبک مناسب رفت‌وآمد به تمرین و گرم‌کردن پیش از بازی.',
       shortDescription: 'به‌زودی در سایزبندی کامل',
       images: [image('photo-1551488831-00ddcb6c6bd3')],
       price: 2_100_000,
@@ -891,8 +1460,20 @@ async function seedShop() {
       availableAt: new Date('2026-11-15T00:00:00.000Z'),
       featured: true,
       variants: [
-        { sku: 'AP-TRACK-M', size: 'M', color: 'سرمه‌ای', stock: 0, soldCount: 0 },
-        { sku: 'AP-TRACK-L', size: 'L', color: 'سرمه‌ای', stock: 0, soldCount: 0 },
+        {
+          sku: 'AP-TRACK-M',
+          size: 'M',
+          color: 'سرمه‌ای',
+          stock: 0,
+          soldCount: 0,
+        },
+        {
+          sku: 'AP-TRACK-L',
+          size: 'L',
+          color: 'سرمه‌ای',
+          stock: 0,
+          soldCount: 0,
+        },
       ],
     },
   ];
@@ -911,6 +1492,139 @@ async function seedShop() {
     update: {},
     create: { id: 'default', shippingFee: 100_000 },
   });
+}
+
+async function seedShopReviews(primaryStudentId: string, password: string) {
+  const reviewers = [
+    { id: primaryStudentId },
+    ...(await Promise.all(
+      [
+        {
+          email: 'shop.reviewer.one@apfootball.com',
+          firstName: 'پارسا',
+          lastName: 'محمدی',
+        },
+        {
+          email: 'shop.reviewer.two@apfootball.com',
+          firstName: 'امیرعلی',
+          lastName: 'کریمی',
+        },
+        {
+          email: 'shop.reviewer.three@apfootball.com',
+          firstName: 'سینا',
+          lastName: 'حسینی',
+        },
+      ].map(async (reviewer) => {
+        const user = await prisma.user.create({
+          data: { ...reviewer, password, role: 'STUDENT' },
+          select: { id: true },
+        });
+        return user;
+      }),
+    )),
+  ];
+  const reviewContent = [
+    {
+      slug: 'academy-match-football-boots',
+      rating: 5,
+      body: 'برای تمرین روی چمن مصنوعی خیلی راحت است و چسبندگی خوبی دارد. بعد از چند جلسه هنوز کیفیتش مثل روز اول است.',
+    },
+    {
+      slug: 'academy-training-jersey',
+      rating: 5,
+      body: 'پارچه سبک و خنکی دارد و موقع تمرین حرکت را محدود نمی‌کند. سایز انتخابی هم دقیق بود.',
+    },
+    {
+      slug: 'performance-football-socks',
+      rating: 4,
+      body: 'کیفیت بافت خوب است و موقع دویدن سر نمی‌خورد. برای تمرین‌های طولانی انتخاب مناسبی است.',
+    },
+    {
+      slug: 'match-football',
+      rating: 5,
+      body: 'توپ خوش‌دست و مناسبی برای تمرین تیمی است و بعد از چند بازی فرم خودش را حفظ کرده.',
+    },
+    {
+      slug: 'football-shin-guards',
+      rating: 4,
+      body: 'سبک است و زیر جوراب راحت قرار می‌گیرد. برای تمرین روزانه کاملاً کاربردی است.',
+    },
+    {
+      slug: 'academy-training-shorts',
+      rating: 5,
+      body: 'راحت و سبک است و دوخت خوبی دارد. برای تمرین فوتبال آزادی حرکت خوبی می‌دهد.',
+    },
+  ];
+
+  for (const [index, content] of reviewContent.entries()) {
+    const product = await prisma.shopProduct.findUnique({
+      where: { slug: content.slug },
+      include: { variants: { where: { isActive: true }, take: 1 } },
+    });
+    const variant = product?.variants[0];
+    if (!product || !variant) {
+      throw new Error(`Cannot seed review for missing product ${content.slug}`);
+    }
+
+    const reviewer = reviewers[index % reviewers.length];
+    const createdAt = new Date(Date.UTC(2026, 8, 20 + index));
+    const order = await prisma.shopOrder.create({
+      data: {
+        orderNumber: `SEED-REVIEW-${index + 1}`,
+        fullName: index === 0 ? 'آرمان رضایی' : `بازیکن آکادمی ${index}`,
+        phone: `0912345600${index}`,
+        address: 'تهران، آدرس نمونه',
+        city: 'تهران',
+        postalCode: `12345678${index}`,
+        subtotal: variant.priceOverride ?? product.price,
+        shippingFee: 0,
+        totalAmount: variant.priceOverride ?? product.price,
+        status: 'DELIVERED',
+        paidAt: createdAt,
+        expiresAt: createdAt,
+        createdAt,
+        userId: reviewer.id,
+        items: {
+          create: {
+            productId: product.id,
+            variantId: variant.id,
+            productName: product.name,
+            sku: variant.sku,
+            size: variant.size,
+            color: variant.color,
+            quantity: 1,
+            unitPrice: variant.priceOverride ?? product.price,
+            lineTotal: variant.priceOverride ?? product.price,
+          },
+        },
+      },
+      select: { id: true },
+    });
+    const review = await prisma.shopReview.create({
+      data: {
+        productId: product.id,
+        userId: reviewer.id,
+        orderId: order.id,
+        rating: content.rating,
+        body: content.body,
+        isPublished: true,
+        createdAt,
+      },
+      select: { id: true },
+    });
+    const voters = reviewers.filter(({ id }) => id !== reviewer.id);
+    const voteValues =
+      index % 3 === 0 ? [1, 1, -1] : index % 3 === 1 ? [1, 1, 1] : [1, -1, -1];
+    await prisma.shopReviewVote.createMany({
+      data: voters.map(({ id }, voteIndex) => ({
+        reviewId: review.id,
+        userId: id,
+        vote: voteValues[voteIndex],
+        createdAt,
+        updatedAt: createdAt,
+      })),
+    });
+  }
 }
 
 async function seedNews() {
@@ -1043,6 +1757,7 @@ async function main() {
 
   await clearDatabase();
   await seedAcademy();
+  await seedProvinces();
   await seedShop();
   const catalog = await seedCoachesAndPrograms(demoPassword);
   await seedDemoUsers(

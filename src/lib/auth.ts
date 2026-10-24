@@ -50,6 +50,46 @@ export async function authorizeStudent(
   return userId;
 }
 
+export async function getOptionalAccountId(
+  req: NextApiRequest,
+): Promise<string | null> {
+  const token = req.cookies.auth_token;
+  if (!token) return null;
+
+  try {
+    const { payload } = await jwtVerify(token, getJwtSecret());
+    if (typeof payload.userId !== 'string') return null;
+
+    const db = await getPrisma();
+    const user = await db.user.findUnique({
+      where: { id: payload.userId },
+      select: { id: true, role: true },
+    });
+    if (
+      user &&
+      ['STUDENT', 'ADMIN', 'SHOP_MANAGER'].includes(user.role)
+    ) {
+      return user.id;
+    }
+    return null;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'JWTExpired') return null;
+    if (error instanceof Error && error.name === 'JOSEError') return null;
+    throw error;
+  }
+}
+
+export async function authorizeAccount(
+  req: NextApiRequest,
+  res: NextApiResponse,
+): Promise<string | null> {
+  const accountId = await getOptionalAccountId(req);
+  if (accountId) return accountId;
+
+  res.status(401).json({ message: 'برای رأی دادن ابتدا وارد حساب کاربری شوید' });
+  return null;
+}
+
 export async function authorizeAdmin(
   req: NextApiRequest,
   res: NextApiResponse,

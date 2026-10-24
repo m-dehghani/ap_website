@@ -117,6 +117,25 @@ export default async function handler(
           where: { id: 'default' },
           select: { shippingFee: true },
         });
+
+        // Get shipping fee from province/city
+        let shippingFee = settings?.shippingFee ?? 0;
+        if (input.province && input.city) {
+          const city = await tx.city.findFirst({
+            where: {
+              name: input.city,
+              province: { name: input.province },
+              isActive: true,
+            },
+            include: { province: true },
+          });
+          if (city?.shippingFee !== null && city?.shippingFee !== undefined) {
+            shippingFee = city.shippingFee;
+          } else if (city?.province?.shippingFee !== null && city?.province?.shippingFee !== undefined) {
+            shippingFee = city.province.shippingFee;
+          }
+        }
+
         const variants = await tx.shopVariant.findMany({
           where: {
             id: { in: input.items.map(({ variantId }) => variantId) },
@@ -143,7 +162,6 @@ export default async function handler(
           };
         });
         const subtotal = lines.reduce((total, line) => total + line.lineTotal, 0);
-        const shippingFee = settings?.shippingFee ?? 0;
         const totalAmount = subtotal + shippingFee;
         if (!isValidTomanAmount(totalAmount)) {
           throw new Error('INVALID_PAYMENT_AMOUNT');

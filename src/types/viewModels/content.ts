@@ -105,6 +105,7 @@ export interface FacilityViewModel {
 }
 
 export interface NewsCategoryViewModel {
+  id: string;
   slug: string;
   name: string;
   icon: string;
@@ -125,6 +126,92 @@ export interface NewsArticleViewModel {
   comments: number;
   featured: boolean;
   publishedAt: string;
+}
+
+export interface AcademyInfoViewModel {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  phone: string;
+  email: string;
+  privacyEmail: string | null;
+  address: string;
+  city: string;
+  foundedYear: number | null;
+}
+
+export interface HeroContentViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaSecondaryLabel: string;
+  ctaSecondaryHref: string;
+  bgGradient: string;
+  stats: Record<string, string>;
+  statLabels: Record<string, string>;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+export interface HeroAchievementViewModel {
+  id: string;
+  icon: string;
+  number: string;
+  label: string;
+  color: string;
+  bg: string;
+  position: string;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+export interface FeaturesContentViewModel {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+  color: string;
+  bgColor: string;
+  iconColor: string;
+  stats: string;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+export interface FeatureStatItemViewModel {
+  id: string;
+  number: string;
+  label: string;
+  description: string | null;
+  icon: string;
+  color: string;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+export interface CTAContentViewModel {
+  id: string;
+  title: string;
+  description: string;
+  primaryCTALabel: string;
+  primaryCTAHref: string;
+  secondaryCTALabel: string;
+  secondaryCTAHref: string;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+export interface AboutContentViewModel {
+  id: string;
+  section: string;
+  title: string;
+  content: Record<string, any>;
+  isActive: boolean;
+  displayOrder: number;
 }
 
 export interface NewsCardViewModel
@@ -246,6 +333,7 @@ export function toFacilityViewModel(facility: Record<string, any>): FacilityView
 
 export function toNewsCategoryViewModel(category: Record<string, any>): NewsCategoryViewModel {
   return {
+    id: category.id,
     slug: category.slug,
     name: category.name,
     icon: category.icon,
@@ -268,5 +356,105 @@ export function toNewsArticleViewModel(article: Record<string, any>): NewsArticl
     comments: article.comments,
     featured: article.featured,
     publishedAt: article.publishedAt.toISOString(),
+  };
+}
+
+export function toAcademyInfoViewModel(info: Record<string, any>): AcademyInfoViewModel {
+  return {
+    id: info.id,
+    name: info.name,
+    tagline: info.tagline,
+    description: info.description,
+    phone: info.phone,
+    email: info.email,
+    privacyEmail: info.privacyEmail,
+    address: info.address,
+    city: info.city,
+    foundedYear: info.foundedYear,
+  };
+}
+
+export function toHeroContentViewModel(content: Record<string, any>): HeroContentViewModel {
+  return {
+    id: content.id,
+    title: content.title,
+    subtitle: content.subtitle,
+    description: content.description,
+    ctaLabel: content.ctaLabel,
+    ctaHref: content.ctaHref,
+    ctaSecondaryLabel: content.ctaSecondaryLabel,
+    ctaSecondaryHref: content.ctaSecondaryHref,
+    bgGradient: content.bgGradient,
+    stats: content.stats,
+    statLabels: content.statLabels,
+    isActive: content.isActive,
+    displayOrder: content.displayOrder,
+  };
+}
+
+export function toHeroAchievementViewModel(content: Record<string, any>): HeroAchievementViewModel {
+  return {
+    id: content.id,
+    icon: content.icon,
+    number: content.number,
+    label: content.label,
+    color: content.color,
+    bg: content.bg,
+    position: content.position,
+    isActive: content.isActive,
+    displayOrder: content.displayOrder,
+  };
+}
+
+export function toFeaturesContentViewModel(content: Record<string, any>): FeaturesContentViewModel {
+  return {
+    id: content.id,
+    icon: content.icon,
+    title: content.title,
+    description: content.description,
+    color: content.color,
+    bgColor: content.bgColor,
+    iconColor: content.iconColor,
+    stats: content.stats,
+    isActive: content.isActive,
+    displayOrder: content.displayOrder,
+  };
+}
+
+export function toFeatureStatItemViewModel(content: Record<string, any>): FeatureStatItemViewModel {
+  return {
+    id: content.id,
+    number: content.number,
+    label: content.label,
+    description: content.description,
+    icon: content.icon,
+    color: content.color,
+    isActive: content.isActive,
+    displayOrder: content.displayOrder,
+  };
+}
+
+export function toCTAContentViewModel(content: Record<string, any>): CTAContentViewModel {
+  return {
+    id: content.id,
+    title: content.title,
+    description: content.description,
+    primaryCTALabel: content.primaryCTALabel,
+    primaryCTAHref: content.primaryCTAHref,
+    secondaryCTALabel: content.secondaryCTALabel,
+    secondaryCTAHref: content.secondaryCTAHref,
+    isActive: content.isActive,
+    displayOrder: content.displayOrder,
+  };
+}
+
+export function toAboutContentViewModel(content: Record<string, any>): AboutContentViewModel {
+  return {
+    id: content.id,
+    section: content.section,
+    title: content.title,
+    content: content.content,
+    isActive: content.isActive,
+    displayOrder: content.displayOrder,
   };
 }

@@ -8,12 +8,6 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 import { getIcon } from '@/lib/icons';
-import {
-  SUCCESS_ACHIEVEMENTS,
-  SUCCESS_TESTIMONIALS,
-  SUCCESS_STATISTICS,
-  SUCCESS_MILESTONES,
-} from '@/constants/content';
 import { useAnimatedStat } from '@/hooks/useAnimatedStat';
 import type {
   AnimatedStatisticViewModel,
@@ -24,7 +18,13 @@ import type {
 
 type TabType = 'achievements' | 'testimonials' | 'statistics';
 
-// Filter Component
+interface SuccessStoriesProps {
+  stories: SuccessAchievementViewModel[];
+  testimonials: SuccessTestimonialViewModel[];
+  statistics: AnimatedStatisticViewModel[];
+  milestones: SuccessMilestoneViewModel[];
+}
+
 function FilterChips({
   activeFilter,
   onFilterChange,
@@ -48,7 +48,7 @@ function FilterChips({
             activeFilter === filter.id
               ? 'bg-emerald-700 text-white shadow-lg'
               : 'bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300'
-          }`}
+          }`}  
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           aria-pressed={activeFilter === filter.id}
@@ -61,7 +61,6 @@ function FilterChips({
   );
 }
 
-// Achievement Card Component
 function AchievementCard({
   achievement,
   index,
@@ -77,7 +76,6 @@ function AchievementCard({
       className="bg-white rounded-2xl shadow-lg overflow-hidden"
     >
       <div className="bg-linear-to-r from-emerald-500 to-emerald-600 p-6 text-white relative overflow-hidden">
-        {/* Background pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-24 h-24 bg-white rounded-full -translate-y-12 translate-x-12" />
           <div className="absolute bottom-0 left-0 w-16 h-16 bg-white rounded-full translate-y-8 -translate-x-8" />
@@ -108,7 +106,6 @@ function AchievementCard({
           {achievement.description}
         </p>
 
-        {/* Quote */}
         <div className="bg-gray-50 rounded-lg p-4 relative">
           <ChatBubbleLeftRightIcon className="w-6 h-6 text-emerald-600 mb-2" />
           <p className="text-gray-700 italic text-sm">
@@ -116,7 +113,6 @@ function AchievementCard({
           </p>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
           <StatItem
             value={achievement.stats.goals}
@@ -165,9 +161,7 @@ function StatItem({
 
   return (
     <div className="text-center">
-      <div
-        className={`w-10 h-10 ${colorClasses[color]} rounded-full flex items-center justify-center mx-auto mb-2`}
-      >
+      <div className={`w-10 h-10 ${colorClasses[color]} rounded-full flex items-center justify-center mx-auto mb-2`}>
         {icon}
       </div>
       <div className="text-lg font-bold text-gray-900">{value}</div>
@@ -176,7 +170,6 @@ function StatItem({
   );
 }
 
-// Testimonial Card Component
 function TestimonialCard({
   testimonial,
   index,
@@ -222,7 +215,7 @@ function TestimonialCard({
         <span className="text-emerald-300 text-4xl absolute -top-2 -right-2">
           &ldquo;
         </span>
-        <span className="relative z-10">&quot;{testimonial.text}&quot;</span>
+        <span className="relative z-10">"{testimonial.text}"</span>
       </blockquote>
 
       <div className="flex items-center justify-between text-sm pt-4 border-t border-gray-100">
@@ -235,7 +228,6 @@ function TestimonialCard({
   );
 }
 
-// Statistic Card Component
 function StatisticCard({
   stat,
   index,
@@ -275,7 +267,6 @@ function StatisticCard({
   );
 }
 
-// Timeline Item Component
 function TimelineItem({
   milestone,
   index,
@@ -301,30 +292,14 @@ function TimelineItem({
   );
 }
 
-export default function SuccessStories() {
+export default function SuccessStoriesComponent({ stories, testimonials, statistics, milestones }: SuccessStoriesProps) {
   const [activeTab, setActiveTab] = useState<TabType>('achievements');
   const [achievementFilter, setAchievementFilter] = useState('all');
   const [testimonialFilter, setTestimonialFilter] = useState('all');
 
-  const achievements: SuccessAchievementViewModel[] = [...SUCCESS_ACHIEVEMENTS];
-  const testimonials: SuccessTestimonialViewModel[] = [...SUCCESS_TESTIMONIALS];
-  const statistics: AnimatedStatisticViewModel[] = [...SUCCESS_STATISTICS];
-  const milestones: SuccessMilestoneViewModel[] = [...SUCCESS_MILESTONES];
-
-  // Filter functions
-  const filteredAchievements =
-    achievementFilter === 'all'
-      ? achievements
-      : achievements.filter((a) => a.program === achievementFilter);
-
-  const filteredTestimonials =
-    testimonialFilter === 'all'
-      ? testimonials
-      : testimonials.filter((t) => t.program === testimonialFilter);
-
   const achievementFilters = [
     { id: 'all', label: 'همه', icon: <TrophyIcon className="w-4 h-4" /> },
-    ...Array.from(new Set(achievements.map((a) => a.program))).map((p) => ({
+    ...Array.from(new Set(stories.map((a) => a.program))).map((p) => ({
       id: p,
       label: p,
       icon: <FunnelIcon className="w-4 h-4" />,
@@ -344,16 +319,24 @@ export default function SuccessStories() {
     })),
   ];
 
+  const filteredAchievements =
+    achievementFilter === 'all'
+      ? stories
+      : stories.filter((a) => a.program === achievementFilter);
+
+  const filteredTestimonials =
+    testimonialFilter === 'all'
+      ? testimonials
+      : testimonials.filter((t) => t.program === testimonialFilter);
+
   return (
     <section className="py-20 bg-linear-to-br from-emerald-50 to-emerald-100 relative overflow-hidden">
-      {/* Background decoration */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-emerald-300 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-300 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -373,48 +356,38 @@ export default function SuccessStories() {
           </p>
         </motion.div>
 
-        {/* Tab Navigation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="flex justify-center mb-12"
         >
-          <div
-            className="bg-white rounded-xl p-2 shadow-lg flex items-center gap-2"
-            role="group"
-            aria-label="دسته‌بندی داستان‌های موفقیت"
-          >
-            {(['achievements', 'testimonials', 'statistics'] as TabType[]).map(
-              (tab) => (
-                <motion.button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                    activeTab === tab
-                      ? 'bg-emerald-600 text-white shadow-lg'
-                      : 'text-gray-600 hover:text-emerald-600'
-                  }`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  aria-pressed={activeTab === tab}
-                >
-                  {tab === 'achievements' && <TrophyIcon className="w-4 h-4" />}
-                  {tab === 'testimonials' && (
-                    <ChatBubbleLeftRightIcon className="w-4 h-4" />
-                  )}
-                  {tab === 'statistics' && <StarIcon className="w-4 h-4" />}
-                  {tab === 'achievements' && 'دستاوردهای بزرگ'}
-                  {tab === 'testimonials' && 'نظرات و تجربیات'}
-                  {tab === 'statistics' && 'آمار موفقیت'}
-                </motion.button>
-              ),
-            )}
+          <div className="bg-white rounded-xl p-2 shadow-lg flex items-center gap-2" role="group" aria-label="دسته‌بندی داستان‌های موفقیت">
+            {(['achievements', 'testimonials', 'statistics'] as TabType[]).map((tab) => (
+              <motion.button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                  activeTab === tab
+                    ? 'bg-emerald-600 text-white shadow-lg'
+                    : 'text-gray-600 hover:text-emerald-600'
+                }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                aria-pressed={activeTab === tab}
+              >
+                {tab === 'achievements' && <TrophyIcon className="w-4 h-4" />}
+                {tab === 'testimonials' && <ChatBubbleLeftRightIcon className="w-4 h-4" />}
+                {tab === 'statistics' && <StarIcon className="w-4 h-4" />}
+                {tab === 'achievements' && 'دستاوردهای بزرگ'}
+                {tab === 'testimonials' && 'نظرات و تجربیات'}
+                {tab === 'statistics' && 'آمار موفقیت'}
+              </motion.button>
+            ))}
           </div>
         </motion.div>
 
-        {/* Content */}
         <AnimatePresence mode="wait">
           {activeTab === 'achievements' && (
             <motion.div
@@ -431,11 +404,7 @@ export default function SuccessStories() {
               />
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                 {filteredAchievements.map((achievement, index) => (
-                  <AchievementCard
-                    key={achievement.id}
-                    achievement={achievement}
-                    index={index}
-                  />
+                  <AchievementCard key={achievement.id} achievement={achievement} index={index} />
                 ))}
               </div>
               {filteredAchievements.length === 0 && (
@@ -461,11 +430,7 @@ export default function SuccessStories() {
               />
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredTestimonials.map((testimonial, index) => (
-                  <TestimonialCard
-                    key={testimonial.id}
-                    testimonial={testimonial}
-                    index={index}
-                  />
+                  <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
                 ))}
               </div>
               {filteredTestimonials.length === 0 && (
@@ -490,7 +455,6 @@ export default function SuccessStories() {
                 ))}
               </div>
 
-              {/* Success Timeline */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -503,11 +467,7 @@ export default function SuccessStories() {
                 </h3>
                 <div className="space-y-4">
                   {milestones.map((milestone, index) => (
-                    <TimelineItem
-                      key={index}
-                      milestone={milestone}
-                      index={index}
-                    />
+                    <TimelineItem key={index} milestone={milestone} index={index} />
                   ))}
                 </div>
               </motion.div>

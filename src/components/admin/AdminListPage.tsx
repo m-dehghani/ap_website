@@ -6,6 +6,36 @@ import { Button } from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import type { TableColumn } from '@/components/ui/Table';
 
+type AccentColor =
+  | 'primary'
+  | 'emerald'
+  | 'secondary'
+  | 'amber'
+  | 'purple'
+  | 'red'
+  | 'indigo'
+  | 'teal'
+  | 'orange'
+  | 'cyan'
+  | 'rose';
+
+function getAccentClasses(accent: AccentColor, variant: 'bg' | 'hover' = 'bg'): string {
+  const colors: Record<AccentColor, { bg: string; hover: string }> = {
+    primary: { bg: 'bg-primary-600 hover:bg-primary-700', hover: 'hover:text-primary-600 hover:bg-primary-50' },
+    emerald: { bg: 'bg-emerald-600 hover:bg-emerald-700', hover: 'hover:text-emerald-600 hover:bg-emerald-50' },
+    secondary: { bg: 'bg-secondary-600 hover:bg-secondary-700', hover: 'hover:text-secondary-600 hover:bg-secondary-50' },
+    amber: { bg: 'bg-amber-600 hover:bg-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
+    purple: { bg: 'bg-purple-600 hover:bg-purple-700', hover: 'hover:text-purple-600 hover:bg-purple-50' },
+    red: { bg: 'bg-red-600 hover:bg-red-700', hover: 'hover:text-red-600 hover:bg-red-50' },
+    indigo: { bg: 'bg-indigo-600 hover:bg-indigo-700', hover: 'hover:text-indigo-600 hover:bg-indigo-50' },
+    teal: { bg: 'bg-teal-600 hover:bg-teal-700', hover: 'hover:text-teal-600 hover:bg-teal-50' },
+    orange: { bg: 'bg-orange-600 hover:bg-orange-700', hover: 'hover:text-orange-600 hover:bg-orange-50' },
+    cyan: { bg: 'bg-cyan-600 hover:bg-cyan-700', hover: 'hover:text-cyan-600 hover:bg-cyan-50' },
+    rose: { bg: 'bg-rose-600 hover:bg-rose-700', hover: 'hover:text-rose-600 hover:bg-rose-50' },
+  };
+  return colors[accent]?.[variant] ?? colors.primary[variant];
+}
+
 interface AdminListPageProps<T extends { id: string }> {
   title: string;
   description: string;
@@ -15,7 +45,7 @@ interface AdminListPageProps<T extends { id: string }> {
   fetchFn: () => Promise<T[]>;
   deleteFn: (id: string) => Promise<void>;
   editHref: (item: T) => string;
-  accent?: 'primary' | 'emerald';
+  accent?: AccentColor;
   confirmDeleteMessage?: string;
   emptyMessage?: string;
 }
@@ -26,18 +56,13 @@ function AddItemLink({
   children,
 }: {
   href: string;
-  accent: 'primary' | 'emerald';
+  accent: AccentColor;
   children: React.ReactNode;
 }) {
-  const accentClasses =
-    accent === 'emerald'
-      ? 'bg-emerald-600 hover:bg-emerald-700'
-      : 'bg-primary-600 hover:bg-primary-700';
-
   return (
     <Link
       href={href}
-      className={`inline-flex items-center px-4 py-2 text-white rounded-lg transition-colors ${accentClasses}`}
+      className={`inline-flex items-center px-4 py-2 text-white rounded-lg transition-colors ${getAccentClasses(accent, 'bg')}`}
     >
       <svg
         className="w-5 h-5 ml-2"
@@ -73,10 +98,7 @@ export function AdminListPage<T extends { id: string }>({
 }: AdminListPageProps<T>) {
   const { data, loading, error, refetch } = useFetch(fetchFn);
   const deleteActions = useDelete(deleteFn);
-  const accentClasses =
-    accent === 'emerald'
-      ? 'hover:text-emerald-600 hover:bg-emerald-50'
-      : 'hover:text-primary-600 hover:bg-primary-50';
+  const accentClasses = getAccentClasses(accent, 'hover');
 
   const handleDelete = async (id: string) => {
     if (await deleteActions.handleDelete(id, confirmDeleteMessage)) {

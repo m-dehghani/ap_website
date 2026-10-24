@@ -39,3 +39,27 @@ export async function deleteResource(url: string): Promise<void> {
     throw new Error(await getResponseError(response));
   }
 }
+
+export async function postJson<T>(url: string, data: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error(await getResponseError(response));
+  }
+  return response.json() as Promise<T>;
+}
+
+export async function putJson<T>(url: string, data: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error(await getResponseError(response));
+  }
+  return response.json() as Promise<T>;
+}

@@ -1,11 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SparklesIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import {
-  FEATURES,
-  FEATURE_STATS,
-  ADDITIONAL_FEATURES,
-} from '@/constants/content';
 import { getIcon } from '@/lib/icons';
 import { useAnimatedStat } from '@/hooks/useAnimatedStat';
 import type {
@@ -13,7 +8,11 @@ import type {
   FeatureViewModel,
 } from '@/types/viewModels/content';
 
-// 3D Tilt Card Component
+interface FeaturesProps {
+  features: FeatureViewModel[];
+  stats: AnimatedStatisticViewModel[];
+}
+
 function FeatureCard3D({
   feature,
   index,
@@ -82,7 +81,6 @@ function FeatureCard3D({
           }}
           transition={{ duration: 0.3 }}
         >
-          {/* Icon with Animation */}
           <motion.div
             className="mb-6"
             animate={{ scale: isExpanded ? 1.1 : 1 }}
@@ -103,7 +101,6 @@ function FeatureCard3D({
               >
                 {getIcon(feature.icon, feature.iconColor)}
               </motion.div>
-              {/* Glow effect */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent opacity-0"
                 animate={{ opacity: isExpanded ? 1 : 0 }}
@@ -112,7 +109,6 @@ function FeatureCard3D({
             </div>
           </motion.div>
 
-          {/* Content */}
           <AnimatePresence mode="wait">
             {!isExpanded && (
               <motion.div
@@ -181,7 +177,6 @@ function FeatureCard3D({
             )}
           </AnimatePresence>
 
-          {/* Gradient Border Effect */}
           <motion.div
             className={`absolute inset-0 bg-linear-to-r ${feature.color} rounded-2xl`}
             animate={{ opacity: isExpanded ? 0.15 : 0 }}
@@ -189,7 +184,6 @@ function FeatureCard3D({
           />
         </motion.div>
 
-        {/* Expand/Collapse Button */}
         <motion.button
           onClick={onToggle}
           className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium text-gray-700 shadow-lg hover:bg-white transition-all"
@@ -204,7 +198,6 @@ function FeatureCard3D({
   );
 }
 
-// Counter Animation Component
 function AnimatedStat({
   stat,
   index,
@@ -240,18 +233,13 @@ function AnimatedStat({
   );
 }
 
-const Features: React.FC = () => {
-  const features = FEATURES;
-  const stats = FEATURE_STATS;
-  const additionalFeatures = ADDITIONAL_FEATURES;
+const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
   return (
     <section className="section-padding bg-linear-to-br from-gray-50 to-gray-100 relative overflow-hidden">
-      {/* Enhanced Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNkYzI2MjYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSI0Ii8+PC9nPjwvZz48L3N2Zz4=')] animate-rotate-slow"></div>
-        {/* Floating gradient orbs */}
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-300 rounded-full blur-3xl opacity-20 animate-blob" />
         <div
           className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary-300 rounded-full blur-3xl opacity-20 animate-blob"
@@ -264,7 +252,6 @@ const Features: React.FC = () => {
       </div>
 
       <div className="container-custom relative z-10">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -273,8 +260,8 @@ const Features: React.FC = () => {
           className="text-center mb-20"
         >
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-600 text-sm font-medium mb-6">
-            <SparklesIcon className="w-4 h-4 mr-2" />
-            چرا آکادمی افشین پیروانی
+            <SparklesIcon className="w-4 h-4 ml-2" />
+            چرا آکادمی AP
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gray-900 text-balance">
             چرا{' '}
@@ -288,7 +275,6 @@ const Features: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Features Grid with 3D Cards */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -308,7 +294,6 @@ const Features: React.FC = () => {
           ))}
         </motion.div>
 
-        {/* Stats Section with Animated Counters */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -317,7 +302,6 @@ const Features: React.FC = () => {
           className="relative mb-20"
         >
           <div className="bg-linear-to-r from-primary-600 to-primary-700 rounded-4xl p-8 md:p-12 text-white shadow-elegant-xl relative overflow-hidden">
-            {/* Background pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -translate-y-16 translate-x-16" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full translate-y-12 -translate-x-12" />
@@ -342,7 +326,6 @@ const Features: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Additional Features with Image */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -351,7 +334,6 @@ const Features: React.FC = () => {
           className="mb-20"
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Image with Parallax */}
             <motion.div
               className="relative"
               whileInView={{ y: [50, 0] }}
@@ -368,7 +350,6 @@ const Features: React.FC = () => {
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent rounded-4xl" />
 
-                {/* Floating Stats Card */}
                 <motion.div
                   className="absolute top-6 right-6 glass-card p-4 rounded-xl"
                   initial={{ opacity: 0, x: 50 }}
@@ -382,7 +363,6 @@ const Features: React.FC = () => {
                   <div className="text-white/80 text-sm">رضایت بازیکنان</div>
                 </motion.div>
 
-                {/* Badge */}
                 <motion.div
                   className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg"
                   initial={{ opacity: 0, y: 50 }}
@@ -404,7 +384,6 @@ const Features: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Content */}
             <motion.div
               className="space-y-8"
               initial={{ opacity: 0, x: -50 }}
@@ -423,7 +402,32 @@ const Features: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {additionalFeatures.map((feature, index) => (
+                {[
+                  {
+                    icon: 'RocketLaunchIcon',
+                    title: 'آموزش هدفمند',
+                    description:
+                      'برنامه‌های ساختاریافته با اهداف مشخص و پیشرفت قابل اندازه‌گیری.',
+                  },
+                  {
+                    icon: 'HeartIcon',
+                    title: 'توجه فردی',
+                    description:
+                      'مربیگری شخصی‌سازی‌شده تا هر بازیکن پشتیبانی اختصاصی دریافت کند.',
+                  },
+                  {
+                    icon: 'CogIcon',
+                    title: 'روحیه تیمی',
+                    description:
+                      'تقویت همکاری و مهارت‌های کار گروهی در زمین و خارج از آن.',
+                  },
+                  {
+                    icon: 'SparklesIcon',
+                    title: 'استاندارد بالا',
+                    description:
+                      'استانداردهای آموزشی بین‌المللی برای آمادگی رقابتی.',
+                  },
+                ].map((feature, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: 30 }}
@@ -462,7 +466,6 @@ const Features: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Call to Action */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -471,7 +474,6 @@ const Features: React.FC = () => {
           className="text-center"
         >
           <div className="bg-linear-to-r from-secondary-50 to-secondary-100 rounded-4xl p-12 border border-secondary-200 relative overflow-hidden">
-            {/* Background decoration */}
             <div className="absolute inset-0 opacity-5">
               <div className="absolute top-0 right-0 w-32 h-32 bg-secondary-300 rounded-full -translate-y-16 translate-x-16" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-secondary-300 rounded-full translate-y-12 -translate-x-12" />
@@ -511,4 +513,4 @@ const Features: React.FC = () => {
   );
 };
 
-export default Features;
+export default FeaturesComponent;
