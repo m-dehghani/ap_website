@@ -5,13 +5,13 @@ import PageHero from '@/components/PageHero';
 
 const SuccessPage: React.FC = () => (
   <Layout
-    title="داستان‌های موفقیت - آکادمی فوتبال AP"
-    description="افتخارات، تجربه‌ها و مسیر پیشرفت بازیکنان آکادمی فوتبال AP."
+    title="داستان‌های موفقیت - آکادمی فوتبال افشین پیروانی"
+    description="افتخارات، تجربه‌ها و مسیر پیشرفت بازیکنان آکادمی فوتبال افشین پیروانی."
     canonical="https://ap-football.com/success"
   >
     <PageHero
       title="داستان‌های موفقیت"
-      description="افتخارات، تجربه‌ها و مسیر پیشرفت بازیکنان آکادمی فوتبال AP."
+      description="افتخارات، تجربه‌ها و مسیر پیشرفت بازیکنان آکادمی فوتبال افشین پیروانی."
       badge="پیشرفت بازیکنان"
     />
     <SuccessStories />

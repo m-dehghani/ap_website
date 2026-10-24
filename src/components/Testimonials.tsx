@@ -63,7 +63,8 @@ const Testimonials: React.FC = () => {
 
               {/* Author */}
               <div className="flex items-center">
-                {testimonial.image && !testimonial.image.startsWith('/api/placeholder/') ? (
+                {testimonial.image &&
+                !testimonial.image.startsWith('/api/placeholder/') ? (
                   <img
                     src={testimonial.image}
                     alt=""
@@ -78,9 +79,9 @@ const Testimonials: React.FC = () => {
                   </div>
                 )}
                 <div className="text-right">
-                                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-gray-900">
                     {testimonial.name}
-                                  </h3>
+                  </h3>
                   <p className="text-sm text-gray-500">{testimonial.role}</p>
                 </div>
               </div>
@@ -126,8 +127,8 @@ const Testimonials: React.FC = () => {
               آماده نوشتن داستان موفقیت خود هستید؟
             </h3>
             <p className="text-primary-100 mb-6">
-              به صدها بازیکن بپیوندید که بازی خود را در آکادمی فوتبال AP متحول
-              کرده‌اند.
+              به صدها بازیکن بپیوندید که بازی خود را در آکادمی فوتبال افشین
+              پیروانی متحول کرده‌اند.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <motion.a

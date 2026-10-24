@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import {
-  TrophyIcon,
-  ArrowLeftIcon,
-} from '@heroicons/react/24/outline';
+import { TrophyIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { getIcon } from '@/lib/icons';
 import {
   HERO_SLIDES,
@@ -12,7 +9,11 @@ import {
   STAT_LABELS,
 } from '@/constants/content';
 
-const PARTICLE_COLORS = ['rgba(14,165,233,0.6)', 'rgba(249,115,22,0.6)', 'rgba(34,197,94,0.6)'];
+const PARTICLE_COLORS = [
+  'rgba(14,165,233,0.6)',
+  'rgba(249,115,22,0.6)',
+  'rgba(34,197,94,0.6)',
+];
 
 // Particle System Component
 function ParticleSystem({
@@ -26,14 +27,26 @@ function ParticleSystem({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
-  const particlesRef = useRef<Array<{
-    x: number; y: number; vx: number; vy: number;
-    radius: number; color: string; opacity: number;
-  }>>([]);
+  const particlesRef = useRef<
+    Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+      color: string;
+      opacity: number;
+    }>
+  >([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || reducedMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (
+      !canvas ||
+      reducedMotion ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+      return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -60,7 +73,7 @@ function ParticleSystem({
       if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particlesRef.current.forEach(p => {
+      particlesRef.current.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
 
@@ -107,26 +120,32 @@ export default function Hero() {
   const statLabels = STAT_LABELS;
 
   useEffect(() => {
-    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const motionPreference = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    );
     const updatePreference = () => setReducedMotion(motionPreference.matches);
     updatePreference();
     motionPreference.addEventListener('change', updatePreference);
-    return () => motionPreference.removeEventListener('change', updatePreference);
+    return () =>
+      motionPreference.removeEventListener('change', updatePreference);
   }, []);
 
   const currentSlideData = slides[currentSlide];
 
   // Trigger stat animations when slide changes
   useEffect(() => {
-      const timer = setTimeout(() => {
-        setStatsAnimated(false);
-        setTimeout(() => setStatsAnimated(true), 100);
-      }, 0);
-      return () => clearTimeout(timer);
-    }, [currentSlide]);
+    const timer = setTimeout(() => {
+      setStatsAnimated(false);
+      setTimeout(() => setStatsAnimated(true), 100);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [currentSlide]);
 
   return (
-    <section className="relative min-h-[92vh] flex items-center overflow-hidden" aria-labelledby="hero-title">
+    <section
+      className="relative min-h-[92vh] flex items-center overflow-hidden"
+      aria-labelledby="hero-title"
+    >
       {/* Enhanced Background with Particles */}
       <div
         className={`absolute inset-0 bg-linear-to-br ${currentSlideData.bgGradient} transition-all duration-1000`}
@@ -239,7 +258,7 @@ export default function Hero() {
                   <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-linear-to-br from-white/20 to-white/5 text-center">
                     <span className="text-7xl xl:text-8xl mb-4">⚽</span>
                     <p className="text-2xl font-bold text-white drop-shadow-lg">
-                      آکادمی AP
+                      آکادمی فوتبال افشین پیروانی
                     </p>
                     <p className="text-white/90 mt-1 drop-shadow-lg">
                       تعالی از سال ۱۳۹۳
@@ -297,12 +316,11 @@ export default function Hero() {
                     ? 'w-8 h-3 bg-white'
                     : 'w-3 h-3 bg-white/40 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-navy-900'
                 }`}
-/>
+              />
             ))}
           </motion.div>
         </div>
       </div>
-
     </section>
   );
 }

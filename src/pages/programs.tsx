@@ -13,11 +13,11 @@ interface ProgramsPageProps extends SiteProps {
 function ProgramsPage({ programs }: ProgramsPageProps) {
   return (
     <Layout
-      title="برنامه‌های آموزشی - آکادمی فوتبال AP"
+      title="برنامه‌های آموزشی - آکادمی فوتبال افشین پیروانی"
       description="برنامه‌های آموزشی جامع فوتبال برای تمام سنین از 8 تا 30 سال. مربیان حرفه‌ای، امکانات مدرن و روش‌های آموزشی نوین."
       canonical="https://ap-football.com/programs"
       openGraph={{
-        title: 'برنامه‌های آموزشی - آکادمی فوتبال AP',
+        title: 'برنامه‌های آموزشی - آکادمی فوتبال افشین پیروانی',
         description:
           'برنامه‌های آموزشی جامع فوتبال برای تمام سنین از 8 تا 30 سال',
         images: [
@@ -25,7 +25,7 @@ function ProgramsPage({ programs }: ProgramsPageProps) {
             url: 'https://ap-football.com/images/programs-og.jpg',
             width: 1200,
             height: 630,
-            alt: 'برنامه‌های آموزشی آکادمی فوتبال AP',
+            alt: 'برنامه‌های آموزشی آکادمی فوتبال افشین پیروانی',
           },
         ],
       }}
