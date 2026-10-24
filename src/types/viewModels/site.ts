@@ -5,6 +5,7 @@
 
 export interface OpeningHourViewModel {
   id: string;
+  type: string;
   days: string;
   hours: string;
 }
@@ -26,6 +27,7 @@ export interface SiteInfoViewModel {
   address: string;
   city: string;
   foundedYear: number | null;
+  domain: string;
   officeHours: OpeningHourViewModel[];
   trainingHours: OpeningHourViewModel[];
   socialLinks: SocialLinkViewModel[];
@@ -35,6 +37,7 @@ export interface SiteInfoViewModel {
 export function toOpeningHourViewModel(hour: Record<string, any>): OpeningHourViewModel {
   return {
     id: hour.id,
+    type: hour.type,
     days: hour.days,
     hours: hour.hours,
   };
@@ -60,6 +63,7 @@ export function toSiteInfoViewModel(siteInfo: Record<string, any>): SiteInfoView
     address: siteInfo.address,
     city: siteInfo.city,
     foundedYear: siteInfo.foundedYear,
+    domain: siteInfo.domain,
     officeHours: siteInfo.officeHours?.map(toOpeningHourViewModel) || [],
     trainingHours: siteInfo.trainingHours?.map(toOpeningHourViewModel) || [],
     socialLinks: siteInfo.socialLinks?.map(toSocialLinkViewModel) || [],

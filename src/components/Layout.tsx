@@ -3,6 +3,7 @@ import { NextSeo } from 'next-seo';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { APP_CONFIG } from '@/constants/app';
+import { SiteInfoViewModel } from '@/types/viewModels/site';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -21,6 +22,7 @@ interface LayoutProps {
     }>;
   };
   noindex?: boolean;
+  site?: SiteInfoViewModel | null;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -30,6 +32,7 @@ const Layout: React.FC<LayoutProps> = ({
   canonical,
   openGraph,
   noindex = false,
+  site,
 }) => {
   return (
     <>
@@ -41,15 +44,15 @@ const Layout: React.FC<LayoutProps> = ({
         openGraph={{
           type: openGraph?.type || 'website',
           locale: 'fa_IR',
-          site_name: APP_CONFIG.name,
+          site_name: site?.name || APP_CONFIG.name,
           title: openGraph?.title || title,
           description: openGraph?.description || description,
           images: openGraph?.images || [
             {
-              url: `${APP_CONFIG.domain}${APP_CONFIG.seo.ogImage}`,
+              url: `${site?.domain || APP_CONFIG.domain}${APP_CONFIG.seo.ogImage}`,
               width: 1200,
               height: 630,
-              alt: APP_CONFIG.name,
+              alt: site?.name || APP_CONFIG.name,
             },
           ],
         }}
@@ -58,7 +61,8 @@ const Layout: React.FC<LayoutProps> = ({
           site: APP_CONFIG.seo.twitterHandle,
           cardType: 'summary_large_image',
         }}
-        additionalMetaTags={[{
+        additionalMetaTags={[
+          {
             name: 'keywords',
             content: 'فوتبال, آکادمی فوتبال, آموزش فوتبال, تمرین فوتبال, مربی فوتبال, ورزش, تهران',
           },
@@ -77,9 +81,9 @@ const Layout: React.FC<LayoutProps> = ({
         ]}
       />
       <div className="min-h-screen flex flex-col bg-slate-50">
-        <Header />
+        <Header site={site} />
         <main id="main-content" className="flex-1">{children}</main>
-        <Footer />
+        <Footer site={site} />
       </div>
     </>
   );

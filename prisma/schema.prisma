@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "./generated"
+  provider = "prisma-client-js"
+  output   = "./node_modules/@prisma/client"
 }
 
 datasource db {
@@ -271,6 +271,7 @@ model AcademyInfo {
   address      String
   city         String
   foundedYear  Int? // Solar Hijri year
+  domain       String? // Website domain
   updatedAt    DateTime @updatedAt
 
   @@map("academy_info")
@@ -416,6 +417,142 @@ model NewsArticle {
 
   @@index([publishedAt])
   @@map("news_articles")
+}
+
+// Hero slider content for home page
+model HeroContent {
+  id            String   @id @default(cuid())
+  title         String
+  subtitle      String
+  description   String
+  ctaLabel      String
+  ctaHref       String
+  ctaSecondaryLabel String
+  ctaSecondaryHref  String
+  bgGradient    String
+  stats         Json     // { players: "500+", championships: "25+", ... }
+  statLabels    Json     // { players: "بازیکن آموزش‌دیده", ... }
+  isActive      Boolean  @default(true)
+  displayOrder  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("hero_contents")
+}
+
+// Hero achievement badges (floating cards on hero)
+model HeroAchievement {
+  id           String   @id @default(cuid())
+  icon         String
+  number       String
+  label        String
+  color        String
+  bg           String
+  position     String
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("hero_achievements")
+}
+
+// Features section content for home page
+model FeaturesContent {
+  id           String   @id @default(cuid())
+  icon         String
+  title        String
+  description  String
+  color        String
+  bgColor      String
+  iconColor    String
+  stats        String
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("features_contents")
+}
+
+// Feature stats (animated numbers in features section) - renamed from FeatureStat to avoid conflict with Statistic model
+model FeatureStatItem {
+  id           String   @id @default(cuid())
+  number       String
+  label        String
+  description  String?
+  icon         String
+  color        String
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("feature_stat_items")
+}
+
+// CTA section content
+model CTAContent {
+  id               String   @id @default(cuid())
+  title            String
+  description      String
+  primaryCTALabel  String
+  primaryCTAHref   String
+  secondaryCTALabel String
+  secondaryCTAHref  String
+  isActive         Boolean  @default(true)
+  displayOrder     Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("cta_contents")
+}
+
+// About page content
+model AboutContent {
+  id           String   @id @default(cuid())
+  section      String   // "story", "mission", "vision", "values", "team", "facilities"
+  title        String
+  content      Json     // Flexible JSON content
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([section])
+  @@map("about_contents")
+}
+
+model Province {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  nameEn       String?
+  shippingFee  Int      @default(0)
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cities       City[]
+
+  @@map("provinces")
+}
+
+model City {
+  id           String    @id @default(cuid())
+  name         String
+  nameEn       String?
+  provinceId   String
+  shippingFee  Int?      // If null, uses province's fee
+  isActive     Boolean   @default(true)
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  province     Province  @relation(fields: [provinceId], references: [id], onDelete: Cascade)
+
+  @@unique([provinceId, name])
+  @@map("cities")
 }
 
 model ContactMessage {

@@ -6,9 +6,17 @@ import {
   EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 import { APP_CONFIG } from '@/constants/app';
-import { CTA_CONTENT } from '@/constants/content';
 
-const CTA: React.FC = () => {
+interface CTAProps {
+  content: {
+    title: string;
+    description: string;
+    primaryCTA: { label: string; href: string };
+    secondaryCTA: { label: string; href: string };
+  };
+}
+
+const CTAComponent: React.FC<CTAProps> = ({ content }) => {
   return (
     <section className="section-padding bg-linear-to-r from-primary-600 to-primary-700">
       <div className="container-custom">
@@ -21,10 +29,10 @@ const CTA: React.FC = () => {
             className="max-w-4xl mx-auto"
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-              {CTA_CONTENT.title}
+              {content.title}
             </h2>
             <p className="text-xl md:text-2xl text-primary-100 mb-8 leading-relaxed">
-              {CTA_CONTENT.description}
+              {content.description}
             </p>
             <p className="text-lg text-primary-200 mb-12 max-w-3xl mx-auto">
               با مربیان حرفه‌ای، امکانات مدرن و برنامه‌های آموزشی جامع، آکادمی
@@ -32,7 +40,6 @@ const CTA: React.FC = () => {
             </p>
           </motion.div>
 
-          {/* Action Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -41,26 +48,25 @@ const CTA: React.FC = () => {
             className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16"
           >
             <motion.a
-              href={CTA_CONTENT.primaryCTA.href}
+              href={content.primaryCTA.href}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="group bg-secondary-500 hover:bg-secondary-600 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2 space-x-reverse"
             >
-              <span>{CTA_CONTENT.primaryCTA.label}</span>
+              <span>{content.primaryCTA.label}</span>
               <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </motion.a>
 
             <motion.a
-              href={CTA_CONTENT.secondaryCTA.href}
+              href={content.secondaryCTA.href}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/30"
             >
-              {CTA_CONTENT.secondaryCTA.label}
+              {content.secondaryCTA.label}
             </motion.a>
           </motion.div>
 
-          {/* Contact Info */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -143,7 +149,6 @@ const CTA: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Urgency Message */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -164,4 +169,4 @@ const CTA: React.FC = () => {
   );
 };
 
-export default CTA;
+export default CTAComponent;

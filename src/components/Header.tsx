@@ -6,8 +6,13 @@ import { Bars3Icon, XMarkIcon, UserCircleIcon, ArrowRightOnRectangleIcon, Shoppi
 import { NAVIGATION } from '@/constants/app';
 import { useAuth } from '@/hooks/useAuth';
 import { readShopCart } from '@/lib/shop-cart';
+import { SiteInfoViewModel } from '@/types/viewModels/site';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  site?: SiteInfoViewModel | null;
+}
+
+const Header: React.FC<HeaderProps> = ({ site }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const router = useRouter();
@@ -53,15 +58,15 @@ const Header: React.FC = () => {
             </div>
             <div>
               <p className="text-base font-bold text-navy-900 leading-tight">
-                آکادمی فوتبال
+                {site?.name ?? 'آکادمی فوتبال AP'}
               </p>
               <p className="text-xs font-medium text-slate-500">
-                AP Football Academy
+                {site?.tagline ?? 'AP Football Academy'}
               </p>
             </div>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden xl:flex items-center gap-1" aria-label="منوی اصلی">
             {navigation.map((item) => (
               <Link
                 key={item.label}
@@ -78,7 +83,7 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden xl:flex items-center gap-3">
             <Link
               href="/shop/cart"
               className="relative rounded-lg p-2 text-slate-700 hover:bg-slate-100"
@@ -143,14 +148,14 @@ const Header: React.FC = () => {
               <div className="flex items-center gap-3">
                 <div className="animate-pulse bg-gray-200 rounded h-8 w-20"></div>
                 <div className="animate-pulse bg-gray-200 rounded h-8 w-24"></div>
-                            </div>
+              </div>
             )}
           </div>
 
           <button
             type="button"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden rounded-xl border border-slate-200 p-2.5 text-slate-700 hover:bg-slate-50"
+            className="xl:hidden rounded-xl border border-slate-200 p-2.5 text-slate-700 hover:bg-slate-50"
             aria-label={isMenuOpen ? 'بستن منوی اصلی' : 'باز کردن منوی اصلی'}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-navigation"
@@ -169,10 +174,10 @@ const Header: React.FC = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden border-t border-slate-200 lg:hidden"
+              className="overflow-hidden border-t border-slate-200 xl:hidden"
               id="mobile-navigation"
             >
-              <nav className="flex flex-col gap-1 py-4">
+              <nav className="flex flex-col gap-1 py-4" aria-label="منوی اصلی">
                 {navigation.map((item) => (
                   <Link
                     key={item.label}

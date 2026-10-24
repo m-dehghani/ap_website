@@ -6,15 +6,35 @@ import {
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 import { getIcon } from '@/lib/icons';
-import {
-  HERO_SLIDES,
-  HERO_ACHIEVEMENTS,
-  STAT_LABELS,
-} from '@/constants/content';
+
+interface HeroSlide {
+  title: string;
+  subtitle: string;
+  description: string;
+  cta: { label: string; href: string };
+  ctaSecondary: { label: string; href: string };
+  bgGradient: string;
+  stats: Record<string, string>;
+  statLabels?: Record<string, string>;
+}
+
+interface HeroAchievement {
+  icon: string;
+  number: string;
+  label: string;
+  color: string;
+  bg: string;
+  position: string;
+}
+
+interface HeroProps {
+  slides: HeroSlide[];
+  achievements: HeroAchievement[];
+  statLabels: Record<string, string>;
+}
 
 const PARTICLE_COLORS = ['rgba(14,165,233,0.6)', 'rgba(249,115,22,0.6)', 'rgba(34,197,94,0.6)'];
 
-// Particle System Component
 function ParticleSystem({
   particleCount = 30,
   colors = PARTICLE_COLORS,
@@ -45,7 +65,6 @@ function ParticleSystem({
     resize();
     window.addEventListener('resize', resize);
 
-    // Initialize particles
     particlesRef.current = Array.from({ length: particleCount }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
@@ -64,7 +83,6 @@ function ParticleSystem({
         p.x += p.vx;
         p.y += p.vy;
 
-        // Wrap around edges
         if (p.x < 0) p.x = canvas.width;
         if (p.x > canvas.width) p.x = 0;
         if (p.y < 0) p.y = canvas.height;
@@ -97,14 +115,10 @@ function ParticleSystem({
   );
 }
 
-export default function Hero() {
+export default function Hero({ slides, achievements, statLabels }: HeroProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [statsAnimated, setStatsAnimated] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-
-  const slides = HERO_SLIDES;
-  const achievements = HERO_ACHIEVEMENTS;
-  const statLabels = STAT_LABELS;
 
   useEffect(() => {
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -114,20 +128,22 @@ export default function Hero() {
     return () => motionPreference.removeEventListener('change', updatePreference);
   }, []);
 
-  const currentSlideData = slides[currentSlide];
+  const currentSlideData = slides[currentSlide] ?? slides[0];
 
-  // Trigger stat animations when slide changes
   useEffect(() => {
-      const timer = setTimeout(() => {
-        setStatsAnimated(false);
-        setTimeout(() => setStatsAnimated(true), 100);
-      }, 0);
-      return () => clearTimeout(timer);
-    }, [currentSlide]);
+    const timer = setTimeout(() => {
+      setStatsAnimated(false);
+      setTimeout(() => setStatsAnimated(true), 100);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [currentSlide]);
+
+  if (slides.length === 0) {
+    return null;
+  }
 
   return (
     <section className="relative min-h-[92vh] flex items-center overflow-hidden" aria-labelledby="hero-title">
-      {/* Enhanced Background with Particles */}
       <div
         className={`absolute inset-0 bg-linear-to-br ${currentSlideData.bgGradient} transition-all duration-1000`}
       >
@@ -221,7 +237,7 @@ export default function Hero() {
                       {statsAnimated ? value : '0'}
                     </div>
                     <div className="text-xs sm:text-sm text-white/75 font-medium">
-                      {statLabels[key] ?? key}
+                      {currentSlideData.statLabels?.[key] ?? statLabels[key] ?? key}
                     </div>
                   </div>
                 ))}
@@ -253,7 +269,7 @@ export default function Hero() {
                     initial={{ opacity: 0, scale: 0.8, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.3 + index * 0.15 }}
-                    className={`absolute ${item.position} glass-card rounded-2xl p-4 shadow-elegant-lg animate-float min-w-[140px]`}
+                    className={`absolute ${item.position} glass-card rounded-2xl p-4 shadow-elegant-lg animate-float min-w-[140px}`}
                     style={{ animationDelay: `${index * 0.4}s` }}
                   >
                     <div className="flex items-center gap-3">
@@ -297,12 +313,11 @@ export default function Hero() {
                     ? 'w-8 h-3 bg-white'
                     : 'w-3 h-3 bg-white/40 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-navy-900'
                 }`}
-/>
+              />
             ))}
           </motion.div>
         </div>
       </div>
-
     </section>
   );
 }

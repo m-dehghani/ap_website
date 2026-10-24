@@ -1,7 +1,7 @@
 import React from 'react';
 import { GetServerSideProps } from 'next';
 import { NextSeo } from 'next-seo';
-import Layout from '../../components/Layout';
+import AdminLayout from '@/components/AdminLayout';
 import Link from 'next/link';
 
 interface AdminDashboardProps {
@@ -10,12 +10,14 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin }) => {
   return (
-    <Layout
-      title="پنل مدیریت - آکادمی فوتبال AP"
-      description="پنل مدیریت آکادمی فوتبال AP برای مدیریت برنامه‌ها، مربیان و دانشجویان"
-    >
-      <NextSeo noindex={true} nofollow={true} />
-      <div className="min-h-screen bg-gray-50">
+    <AdminLayout title="پنل مدیریت">
+      <NextSeo
+        title="پنل مدیریت - آکادمی فوتبال AP"
+        description="پنل مدیریت آکادمی فوتبال AP برای مدیریت برنامه‌ها، مربیان و دانشجویان"
+        noindex
+        nofollow
+      />
+      <div className="py-8">
         <div className="container-custom py-12">
           {/* Header */}
           <div className="mb-12">
@@ -84,6 +86,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin }) => {
                 </div>
               </div>
             </Link>
+            <Link href="/admin/content" className="block">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-l-4 border-indigo-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">مدیریت محتوای سایت</h3>
+                    <p className="text-gray-600">مدیریت هیرو، ویژگی‌ها، داستان‌ها، اخبار و...</p>
+                  </div>
+                  <div className="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center">
+                    <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
 
           {/* Quick Actions */}
@@ -128,7 +146,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin }) => {
           </div>
         </div>
       </div>
-    </Layout>
+    </AdminLayout>
   );
 };
 

@@ -97,7 +97,7 @@ export async function getFacilities(): Promise<FacilityViewModel[]> {
 export async function getNewsCategories(): Promise<NewsCategoryViewModel[]> {
   const prisma = await getPrisma();
   return prisma.newsCategory.findMany({
-    select: { slug: true, name: true, icon: true },
+    select: { id: true, slug: true, name: true, icon: true },
     orderBy: { displayOrder: 'asc' },
   });
 }

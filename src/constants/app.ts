@@ -36,7 +36,9 @@ export const NAVIGATION = {
     { label: 'فروشگاه', href: '/shop' },
     { label: 'برنامه‌ها', href: '/programs' },
     { label: 'مربیان', href: '/coaches' },
+    { label: 'درباره ما', href: '/about' },
     { label: 'اخبار', href: '/news' },
+    { label: 'داستان‌های موفقیت', href: '/success' },
     { label: 'تماس', href: '/contact' },
   ],
   footer: {

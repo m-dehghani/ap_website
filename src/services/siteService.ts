@@ -20,7 +20,6 @@ export async function getSiteInfo(): Promise<SiteInfoViewModel | null> {
       select: { id: true, name: true, ageRange: true },
     }),
   ]);
-
   if (!academy) return null;
 
   return {
@@ -33,6 +32,7 @@ export async function getSiteInfo(): Promise<SiteInfoViewModel | null> {
     address: academy.address,
     city: academy.city,
     foundedYear: academy.foundedYear,
+    domain: academy.domain ?? 'https://afshin-football.com',
     officeHours: hours
       .filter((h) => h.type === 'OFFICE')
       .map(toOpeningHourViewModel),

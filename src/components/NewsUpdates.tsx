@@ -10,17 +10,19 @@ import {
   MagnifyingGlassIcon,
   StarIcon,
 } from '@heroicons/react/24/outline';
-import { NEWS_CATEGORIES, NEWS_ARTICLES } from '@/constants/content';
-import type {
-  NewsArticleCardViewModel,
-  NewsContentType,
-} from '@/types/viewModels/content';
+import type { NewsCategoryViewModel } from '@/types/viewModels/content';
+import { NewsArticleViewModel } from '@/types/viewModels/content';
+
+interface NewsUpdatesProps {
+  categories: NewsCategoryViewModel[];
+  articles: NewsArticleViewModel[];
+}
 
 function NewsDetails({
   article,
   label,
 }: {
-  article: NewsArticleCardViewModel;
+  article: NewsArticleViewModel;
   label: string;
 }) {
   return (
@@ -40,16 +42,16 @@ function NewsDetails({
   );
 }
 
-function hasArticleImage(image: string | undefined): image is string {
+function hasArticleImage(image: string | null | undefined): image is string {
   return Boolean(image && !image.startsWith('/api/placeholder/'));
 }
 
-const getTypeIcon = (type: NewsContentType) => {
+const getTypeIcon = (type: string) => {
   switch (type) {
-    case 'video': {
+    case 'VIDEO': {
       return <PlayIcon className="w-5 h-5" />;
     }
-    case 'gallery': {
+    case 'GALLERY': {
       return <CameraIcon className="w-5 h-5" />;
     }
     default: {
@@ -58,12 +60,12 @@ const getTypeIcon = (type: NewsContentType) => {
   }
 };
 
-const getTypeLabel = (type: NewsContentType) => {
+const getTypeLabel = (type: string) => {
   switch (type) {
-    case 'video': {
+    case 'VIDEO': {
       return 'ویدئو';
     }
-    case 'gallery': {
+    case 'GALLERY': {
       return 'گالری';
     }
     default: {
@@ -72,12 +74,12 @@ const getTypeLabel = (type: NewsContentType) => {
   }
 };
 
-const getTypeColor = (type: NewsContentType) => {
+const getTypeColor = (type: string) => {
   switch (type) {
-    case 'video': {
+    case 'VIDEO': {
       return 'bg-red-600';
     }
-    case 'gallery': {
+    case 'GALLERY': {
       return 'bg-purple-600';
     }
     default: {
@@ -86,12 +88,12 @@ const getTypeColor = (type: NewsContentType) => {
   }
 };
 
-const getTypeBgColor = (type: NewsContentType) => {
+const getTypeBgColor = (type: string) => {
   switch (type) {
-    case 'video': {
+    case 'VIDEO': {
       return 'from-red-500 to-red-600';
     }
-    case 'gallery': {
+    case 'GALLERY': {
       return 'from-purple-500 to-purple-600';
     }
     default: {
@@ -100,8 +102,7 @@ const getTypeBgColor = (type: NewsContentType) => {
   }
 };
 
-// Featured News Card
-function FeaturedNewsCard({ article, index }: { article: NewsArticleCardViewModel; index: number }) {
+function FeaturedNewsCard({ article, index }: { article: NewsArticleViewModel; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -120,9 +121,7 @@ function FeaturedNewsCard({ article, index }: { article: NewsArticleCardViewMode
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="relative z-10 flex items-center justify-center">
-            <div
-              className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"
-            >
+            <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
               {getTypeIcon(article.type)}
             </div>
           </div>
@@ -142,11 +141,11 @@ function FeaturedNewsCard({ article, index }: { article: NewsArticleCardViewMode
         <div className="flex items-center justify-between text-sm text-gray-500">
           <div className="flex items-center gap-1">
             <CalendarDaysIcon className="w-4 h-4" />
-            <span>{article.date}</span>
+            <span>{article.publishedAt.slice(0, 10)}</span>
           </div>
           <div className="flex items-center gap-1">
             <ClockIcon className="w-4 h-4" />
-            <span>{article.readTime}</span>
+            <span>{article.readTimeMinutes} دقیقه</span>
           </div>
         </div>
         <h3 className="text-xl font-bold text-gray-900 line-clamp-2">
@@ -184,8 +183,7 @@ function FeaturedNewsCard({ article, index }: { article: NewsArticleCardViewMode
   );
 }
 
-// News Card Component
-function NewsCard({ article, index }: { article: NewsArticleCardViewModel; index: number }) {
+function NewsCard({ article, index }: { article: NewsArticleViewModel; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -204,9 +202,7 @@ function NewsCard({ article, index }: { article: NewsArticleCardViewModel; index
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="relative z-10 flex items-center justify-center">
-            <div
-              className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"
-            >
+            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
               {getTypeIcon(article.type)}
             </div>
           </div>
@@ -219,8 +215,8 @@ function NewsCard({ article, index }: { article: NewsArticleCardViewModel; index
 
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-primary-700 font-medium">{article.date}</span>
-          <span className="text-xs text-gray-500">{article.readTime}</span>
+          <span className="text-sm text-primary-700 font-medium">{article.publishedAt.slice(0, 10)}</span>
+          <span className="text-xs text-gray-500">{article.readTimeMinutes} دقیقه</span>
         </div>
 
         <h3 className="text-lg font-bold text-gray-900 line-clamp-2">
@@ -261,13 +257,12 @@ function NewsCard({ article, index }: { article: NewsArticleCardViewModel; index
   );
 }
 
-// Category Filter Component
 function CategoryFilter({ 
   categories, 
   selectedCategory, 
   onCategoryChange 
 }: { 
-  categories: typeof NEWS_CATEGORIES;
+  categories: NewsCategoryViewModel[];
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
 }) {
@@ -283,15 +278,15 @@ function CategoryFilter({
       {categories.map((category) => (
         <motion.button
           key={category.id}
-          onClick={() => onCategoryChange(category.id)}
+          onClick={() => onCategoryChange(category.slug)}
           className={`px-5 py-2.5 rounded-full font-medium transition-all flex items-center gap-2 ${
-            selectedCategory === category.id
+            selectedCategory === category.slug
               ? 'bg-navy-700 text-white shadow-lg'
               : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
           }`}
           whileHover={{ scale: 1.05, y: -2 }}
           whileTap={{ scale: 0.95 }}
-          aria-pressed={selectedCategory === category.id}
+          aria-pressed={selectedCategory === category.slug}
         >
           <span aria-hidden="true">{category.icon}</span>
           {category.name}
@@ -321,7 +316,6 @@ function NewsFollowCTA() {
   );
 }
 
-// Load More Button Component
 function LoadMoreButton({ onClick, hasMore }: { onClick: () => void; hasMore: boolean }) {
   if (!hasMore) return null;
 
@@ -345,15 +339,12 @@ function LoadMoreButton({ onClick, hasMore }: { onClick: () => void; hasMore: bo
   );
 }
 
-export default function NewsUpdates() {
+export default function NewsUpdates({ categories, articles }: NewsUpdatesProps) {
   const [selectedCategory, setSelectedCategory] = useState('all');
-    const [displayCount, setDisplayCount] = useState(6);
+  const [displayCount, setDisplayCount] = useState(6);
 
-    const categories = NEWS_CATEGORIES;
-  const allNews = NEWS_ARTICLES;
-
-  const featuredNews = allNews.filter((item) => item.featured);
-  const regularNews = allNews.filter((item) => !item.featured);
+  const featuredNews = articles.filter((item) => item.featured);
+  const regularNews = articles.filter((item) => !item.featured);
 
   const filteredNews = selectedCategory === 'all'
     ? regularNews
@@ -363,21 +354,19 @@ export default function NewsUpdates() {
   const hasMoreNews = displayedNews.length < filteredNews.length;
 
   const handleLoadMore = useCallback(() => {
-      setTimeout(() => {
-        setDisplayCount(prev => prev + 6);
-      }, 500);
-    }, []);
+    setTimeout(() => {
+      setDisplayCount((prev) => prev + 6);
+    }, 500);
+  }, []);
 
   return (
     <section className="py-20 bg-linear-to-br from-navy-50 to-navy-100 relative overflow-hidden">
-      {/* Background decoration */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-300 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary-300 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -397,7 +386,6 @@ export default function NewsUpdates() {
           </p>
         </motion.div>
 
-        {/* Featured News */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -418,14 +406,12 @@ export default function NewsUpdates() {
           </div>
         </motion.div>
 
-        {/* Category Filter */}
         <CategoryFilter
           categories={categories}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
         />
 
-        {/* News Grid */}
         <AnimatePresence mode="popLayout">
           <motion.div
             key={selectedCategory}
@@ -452,10 +438,8 @@ export default function NewsUpdates() {
           </motion.div>
         )}
 
-        {/* Load More Button */}
         <LoadMoreButton onClick={handleLoadMore} hasMore={hasMoreNews} />
 
-        {/* Newsletter Signup */}
         <NewsFollowCTA />
       </div>
     </section>
