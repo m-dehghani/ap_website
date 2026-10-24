@@ -13,18 +13,19 @@ interface CoachesPageProps {
 const CoachesPage: React.FC<CoachesPageProps> = ({ coaches }) => {
   return (
     <Layout
-      title="مربیان - آکادمی فوتبال AP"
-      description="آشنایی با تیم مربیگری حرفه‌ای آکادمی فوتبال AP. مربیان فیفا، تجربه بین‌المللی و تخصص در آموزش فوتبال."
+      title="مربیان - آکادمی فوتبال افشین پیروانی"
+      description="آشنایی با تیم مربیگری حرفه‌ای آکادمی فوتبال افشین پیروانی. مربیان فیفا، تجربه بین‌المللی و تخصص در آموزش فوتبال."
       canonical="https://ap-football.com/coaches"
       openGraph={{
-        title: 'مربیان - آکادمی فوتبال AP',
-        description: 'آشنایی با تیم مربیگری حرفه‌ای آکادمی فوتبال AP',
+        title: 'مربیان - آکادمی فوتبال افشین پیروانی',
+        description:
+          'آشنایی با تیم مربیگری حرفه‌ای آکادمی فوتبال افشین پیروانی. مربیان فیفا، تجربه بین‌المللی و تخصص در آموزش فوتبال.',
         images: [
           {
             url: 'https://ap-football.com/images/coaches-og.jpg',
             width: 1200,
             height: 630,
-            alt: 'مربیان آکادمی فوتبال AP',
+            alt: 'مربیان آکادمی فوتبال افشین پیروانی',
           },
         ],
       }}
@@ -33,12 +34,13 @@ const CoachesPage: React.FC<CoachesPageProps> = ({ coaches }) => {
         additionalMetaTags={[
           {
             name: 'keywords',
-            content: 'مربی فوتبال, مربی فیفا, آموزش فوتبال حرفه‌ای, مربی با تجربه, تیم مربیگری',
+            content:
+              'مربی فوتبال, مربی فیفا, آموزش فوتبال حرفه‌ای, مربی با تجربه, تیم مربیگری',
           },
         ]}
       />
       <PageHero
-        title="مربیان آکادمی فوتبال AP"
+        title="مربیان آکادمی فوتبال افشین پیروانی"
         description="با تیم مربیگری حرفه‌ای ما آشنا شوید؛ مربیانی با تجربه در آموزش بازیکنان در هر سطح."
         badge="تیم مربیگری"
       />
@@ -56,4 +58,4 @@ export async function getServerSideProps() {
       coaches,
     },
   };
-} 
+}

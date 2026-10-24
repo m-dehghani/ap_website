@@ -163,7 +163,8 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
         }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'ذخیره پروفایل ناموفق بود');
+      if (!response.ok)
+        throw new Error(result.message || 'ذخیره پروفایل ناموفق بود');
       setSavedBirthDate(result.user.birthDate);
       setProfile({
         firstName: result.user.firstName,
@@ -235,11 +236,14 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
         }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'ارسال کد ناموفق بود');
+      if (!response.ok)
+        throw new Error(result.message || 'ارسال کد ناموفق بود');
       setMessage(result.message);
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : 'ارسال کد ناموفق بود',
+        requestError instanceof Error
+          ? requestError.message
+          : 'ارسال کد ناموفق بود',
       );
     } finally {
       setBusyAction(null);
@@ -261,14 +265,17 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
         }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'تأیید کد ناموفق بود');
+      if (!response.ok)
+        throw new Error(result.message || 'تأیید کد ناموفق بود');
       setMessage(result.message);
       setVerificationCodes({ ...verificationCodes, [channel]: '' });
       setCurrentContact({ ...currentContact, [channel]: profile[channel] });
       await refreshUser();
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : 'تأیید کد ناموفق بود',
+        requestError instanceof Error
+          ? requestError.message
+          : 'تأیید کد ناموفق بود',
       );
     } finally {
       setBusyAction(null);
@@ -294,12 +301,15 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
         }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'ارسال کد ناموفق بود');
+      if (!response.ok)
+        throw new Error(result.message || 'ارسال کد ناموفق بود');
       setPasswordForm({ ...passwordForm, codeRequested: true });
       setMessage(result.message);
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : 'ارسال کد ناموفق بود',
+        requestError instanceof Error
+          ? requestError.message
+          : 'ارسال کد ناموفق بود',
       );
     } finally {
       setBusyAction(null);
@@ -321,7 +331,8 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
         }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'تأیید کد ناموفق بود');
+      if (!response.ok)
+        throw new Error(result.message || 'تأیید کد ناموفق بود');
       setPasswordForm({
         ...passwordForm,
         password: '',
@@ -332,7 +343,9 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
       setMessage(result.message);
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : 'تأیید کد ناموفق بود',
+        requestError instanceof Error
+          ? requestError.message
+          : 'تأیید کد ناموفق بود',
       );
     } finally {
       setBusyAction(null);
@@ -375,7 +388,8 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
         body: JSON.stringify({ registrationId }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'لغو ثبت‌نام ناموفق بود');
+      if (!response.ok)
+        throw new Error(result.message || 'لغو ثبت‌نام ناموفق بود');
       setMessage(result.message);
       await router.replace(router.asPath);
     } catch (requestError) {
@@ -396,7 +410,8 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
     try {
       const response = await fetch('/api/student/payments', { method: 'POST' });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'ایجاد پرداخت ناموفق بود');
+      if (!response.ok)
+        throw new Error(result.message || 'ایجاد پرداخت ناموفق بود');
       window.location.assign(result.paymentUrl);
     } catch (requestError) {
       setError(
@@ -410,11 +425,11 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
 
   return (
     <Layout
-      title="پنل دانش‌آموز - آکادمی فوتبال AP"
+      title="پنل دانش‌آموز - آکادمی فوتبال افشین پیروانی"
       description="مدیریت اطلاعات، ثبت‌نام‌ها و پرداخت‌های دانش‌آموز"
       noindex={true}
     >
-        <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50">
         <header className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
@@ -448,7 +463,9 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
 
           <section className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="bg-linear-to-r from-primary-600 to-primary-700 px-6 py-4 rounded-t-lg">
-              <h2 className="text-white text-lg font-semibold">اطلاعات پروفایل</h2>
+              <h2 className="text-white text-lg font-semibold">
+                اطلاعات پروفایل
+              </h2>
             </div>
             <form onSubmit={handleProfileSubmit} className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -499,7 +516,9 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                     onClick={() => void requestContactVerification('email')}
                     className="rounded-lg border border-primary-600 px-3 py-2 text-sm text-primary-700 disabled:opacity-50"
                   >
-                    {busyAction === 'verify:email' ? 'در حال ارسال...' : 'ارسال کد ایمیل'}
+                    {busyAction === 'verify:email'
+                      ? 'در حال ارسال...'
+                      : 'ارسال کد ایمیل'}
                   </button>
                   <label className="flex-1 text-sm text-gray-700">
                     کد ایمیل
@@ -519,7 +538,10 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                   </label>
                   <button
                     type="button"
-                    disabled={verificationCodes.email.length !== 6 || busyAction === 'confirm:email'}
+                    disabled={
+                      verificationCodes.email.length !== 6 ||
+                      busyAction === 'confirm:email'
+                    }
                     onClick={() => void confirmContactVerification('email')}
                     className="rounded-lg bg-primary-600 px-3 py-2 text-sm text-white disabled:opacity-50"
                   >
@@ -545,7 +567,9 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                     onClick={() => void requestContactVerification('phone')}
                     className="rounded-lg border border-primary-600 px-3 py-2 text-sm text-primary-700 disabled:opacity-50"
                   >
-                    {busyAction === 'verify:phone' ? 'در حال ارسال...' : 'ارسال کد پیامکی'}
+                    {busyAction === 'verify:phone'
+                      ? 'در حال ارسال...'
+                      : 'ارسال کد پیامکی'}
                   </button>
                   <label className="flex-1 text-sm text-gray-700">
                     کد پیامکی
@@ -565,7 +589,10 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                   </label>
                   <button
                     type="button"
-                    disabled={verificationCodes.phone.length !== 6 || busyAction === 'confirm:phone'}
+                    disabled={
+                      verificationCodes.phone.length !== 6 ||
+                      busyAction === 'confirm:phone'
+                    }
                     onClick={() => void confirmContactVerification('phone')}
                     className="rounded-lg bg-primary-600 px-3 py-2 text-sm text-white disabled:opacity-50"
                   >
@@ -593,13 +620,17 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                   type="checkbox"
                   checked={profile.marketingOptIn}
                   onChange={(event) =>
-                    setProfile({ ...profile, marketingOptIn: event.target.checked })
+                    setProfile({
+                      ...profile,
+                      marketingOptIn: event.target.checked,
+                    })
                   }
                   className="mt-1"
                 />
                 <span>
-                  مایلم اخبار و پیشنهادهای بازاریابی آکادمی را از طریق ایمیل یا پیامک دریافت کنم.
-                  هر زمان بخواهم می‌توانم این رضایت را لغو کنم.
+                  مایلم اخبار و پیشنهادهای بازاریابی آکادمی را از طریق ایمیل یا
+                  پیامک دریافت کنم. هر زمان بخواهم می‌توانم این رضایت را لغو
+                  کنم.
                 </span>
               </label>
               <button
@@ -613,9 +644,12 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
           </section>
 
           <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">تغییر رمز عبور</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              تغییر رمز عبور
+            </h2>
             <p className="mt-1 text-sm text-gray-600">
-              برای نهایی‌کردن تغییر رمز، کد تأیید به ایمیل یا تلفن فعلی شما ارسال می‌شود.
+              برای نهایی‌کردن تغییر رمز، کد تأیید به ایمیل یا تلفن فعلی شما
+              ارسال می‌شود.
             </p>
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <label className="text-sm font-medium text-gray-700">
@@ -630,8 +664,12 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                   }
                   className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                 >
-                  {currentContact.email && <option value="email">ایمیل فعلی</option>}
-                  {currentContact.phone && <option value="phone">تلفن فعلی</option>}
+                  {currentContact.email && (
+                    <option value="email">ایمیل فعلی</option>
+                  )}
+                  {currentContact.phone && (
+                    <option value="phone">تلفن فعلی</option>
+                  )}
                   {!currentContact.email && !currentContact.phone && (
                     <option value="phone">ابتدا ایمیل یا تلفن ثبت کنید</option>
                   )}
@@ -646,7 +684,10 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                   maxLength={128}
                   value={passwordForm.password}
                   onChange={(event) =>
-                    setPasswordForm({ ...passwordForm, password: event.target.value })
+                    setPasswordForm({
+                      ...passwordForm,
+                      password: event.target.value,
+                    })
                   }
                   className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                 />
@@ -690,7 +731,10 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
             {passwordForm.codeRequested ? (
               <button
                 type="button"
-                disabled={passwordForm.code.length !== 6 || busyAction === 'password-confirm'}
+                disabled={
+                  passwordForm.code.length !== 6 ||
+                  busyAction === 'password-confirm'
+                }
                 onClick={() => void confirmPasswordVerification()}
                 className="mt-4 rounded-lg bg-primary-600 px-5 py-2 text-white disabled:opacity-50"
               >
@@ -699,18 +743,24 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
             ) : (
               <button
                 type="button"
-                disabled={!passwordForm.password || busyAction === 'password-request'}
+                disabled={
+                  !passwordForm.password || busyAction === 'password-request'
+                }
                 onClick={() => void requestPasswordVerification()}
                 className="mt-4 rounded-lg bg-primary-600 px-5 py-2 text-white disabled:opacity-50"
               >
-                {busyAction === 'password-request' ? 'در حال ارسال...' : 'ارسال کد تأیید'}
+                {busyAction === 'password-request'
+                  ? 'در حال ارسال...'
+                  : 'ارسال کد تأیید'}
               </button>
             )}
           </section>
 
           <section className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="bg-linear-to-r from-primary-600 to-primary-700 px-6 py-4 rounded-t-lg flex flex-wrap justify-between items-center gap-3">
-              <h2 className="text-white text-lg font-semibold">ثبت‌نام‌های من</h2>
+              <h2 className="text-white text-lg font-semibold">
+                ثبت‌نام‌های من
+              </h2>
             </div>
             <div className="p-6">
               {student.registrations.length === 0 ? (
@@ -720,7 +770,8 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
               ) : (
                 <div className="space-y-4">
                   {student.registrations.map((registration) => {
-                    const registrationProfile = registrationProfiles[registration.id];
+                    const registrationProfile =
+                      registrationProfiles[registration.id];
                     const updateRegistrationProfile = (
                       field: keyof StudentRegistrationProfileFormValues,
                       value: string,
@@ -763,19 +814,25 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                                 : '—'}
                             </p>
                             <p className="text-gray-600 mt-1">
-                              وضعیت: {registrationStatus[registration.status] ?? registration.status}
+                              وضعیت:{' '}
+                              {registrationStatus[registration.status] ??
+                                registration.status}
                             </p>
                             <p className="text-gray-600 mt-1">
-                              شهریه: {formatToman(registration.totalAmount)} • پرداخت‌شده:{' '}
-                              {formatToman(registration.paidAmount)} • مانده:{' '}
-                              {formatToman(due)}
+                              شهریه: {formatToman(registration.totalAmount)} •
+                              پرداخت‌شده: {formatToman(registration.paidAmount)}{' '}
+                              • مانده: {formatToman(due)}
                             </p>
                           </div>
                           {canCancel && (
                             <button
                               type="button"
-                              disabled={busyAction === `cancel:${registration.id}`}
-                              onClick={() => void handleCancellation(registration.id)}
+                              disabled={
+                                busyAction === `cancel:${registration.id}`
+                              }
+                              onClick={() =>
+                                void handleCancellation(registration.id)
+                              }
                               className="rounded-lg border border-red-300 px-4 py-2 text-red-700 hover:bg-red-50 disabled:opacity-60"
                             >
                               {busyAction === `cancel:${registration.id}`
@@ -784,18 +841,20 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                             </button>
                           )}
                         </div>
-                        {activeStatuses.has(registration.status) && !canCancel && (
-                          <p className="mt-3 text-sm text-gray-600">
-                            برای لغو ثبت‌نامی که پرداخت آن آغاز یا انجام شده است،{' '}
-                            <Link
-                              href="/contact"
-                              className="text-primary-700 underline"
-                            >
-                              با آکادمی تماس بگیرید
-                            </Link>
-                            .
-                          </p>
-                        )}
+                        {activeStatuses.has(registration.status) &&
+                          !canCancel && (
+                            <p className="mt-3 text-sm text-gray-600">
+                              برای لغو ثبت‌نامی که پرداخت آن آغاز یا انجام شده
+                              است،{' '}
+                              <Link
+                                href="/contact"
+                                className="text-primary-700 underline"
+                              >
+                                با آکادمی تماس بگیرید
+                              </Link>
+                              .
+                            </p>
+                          )}
                         <details className="mt-4 border-t border-gray-100 pt-3">
                           <summary className="cursor-pointer text-sm font-medium text-primary-700">
                             ویرایش اطلاعات این ثبت‌نام
@@ -833,7 +892,10 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                                 maxLength={100}
                                 value={registrationProfile.parentName}
                                 onChange={(event) =>
-                                  updateRegistrationProfile('parentName', event.target.value)
+                                  updateRegistrationProfile(
+                                    'parentName',
+                                    event.target.value,
+                                  )
                                 }
                                 className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                               />
@@ -845,7 +907,10 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                                 maxLength={254}
                                 value={registrationProfile.parentEmail}
                                 onChange={(event) =>
-                                  updateRegistrationProfile('parentEmail', event.target.value)
+                                  updateRegistrationProfile(
+                                    'parentEmail',
+                                    event.target.value,
+                                  )
                                 }
                                 className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                               />
@@ -869,7 +934,9 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                               <input
                                 type="tel"
                                 maxLength={20}
-                                value={registrationProfile.emergencyContactPhone}
+                                value={
+                                  registrationProfile.emergencyContactPhone
+                                }
                                 onChange={(event) =>
                                   updateRegistrationProfile(
                                     'emergencyContactPhone',
@@ -918,48 +985,54 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
               <div className="mt-8 border-t border-gray-200 pt-6">
                 {studentAge === null ? (
                   <p className="text-sm text-gray-600">
-                    برای نمایش برنامه‌های متناسب با سن، تاریخ تولد شمسی را در پروفایل ثبت کنید.
+                    برای نمایش برنامه‌های متناسب با سن، تاریخ تولد شمسی را در
+                    پروفایل ثبت کنید.
                   </p>
                 ) : (
                   <>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    برنامه‌های مناسب سن شما ({toPersianDigits(studentAge)} سال)
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-600">
-                    فقط برنامه‌هایی نمایش داده می‌شوند که محدوده سنی آن‌ها با تاریخ تولد ثبت‌شده شما سازگار است.
-                  </p>
-                  {availablePrograms.length > 0 ? (
-                    <ul className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      {availablePrograms.map((program) => (
-                        <li
-                          key={program.id}
-                          className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 p-4"
-                        >
-                          <div>
-                            <p className="font-semibold text-gray-900">{program.name}</p>
-                            <p className="text-sm text-gray-600">
-                              {toPersianDigits(program.minAge)} تا {toPersianDigits(program.maxAge)} سال •{' '}
-                              {formatToman(program.price)}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            disabled={busyAction === `enroll:${program.id}`}
-                            onClick={() => void handleEnrollment(program.id)}
-                            className="shrink-0 rounded-lg bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 disabled:opacity-60"
-                          >
-                            {busyAction === `enroll:${program.id}`
-                              ? 'در حال ثبت‌نام...'
-                              : 'ثبت‌نام'}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="mt-4 text-sm text-gray-600">
-                      در حال حاضر برنامه فعالی متناسب با سن شما وجود ندارد.
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      برنامه‌های مناسب سن شما ({toPersianDigits(studentAge)}{' '}
+                      سال)
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-600">
+                      فقط برنامه‌هایی نمایش داده می‌شوند که محدوده سنی آن‌ها با
+                      تاریخ تولد ثبت‌شده شما سازگار است.
                     </p>
-                  )}
+                    {availablePrograms.length > 0 ? (
+                      <ul className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {availablePrograms.map((program) => (
+                          <li
+                            key={program.id}
+                            className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 p-4"
+                          >
+                            <div>
+                              <p className="font-semibold text-gray-900">
+                                {program.name}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {toPersianDigits(program.minAge)} تا{' '}
+                                {toPersianDigits(program.maxAge)} سال •{' '}
+                                {formatToman(program.price)}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              disabled={busyAction === `enroll:${program.id}`}
+                              onClick={() => void handleEnrollment(program.id)}
+                              className="shrink-0 rounded-lg bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 disabled:opacity-60"
+                            >
+                              {busyAction === `enroll:${program.id}`
+                                ? 'در حال ثبت‌نام...'
+                                : 'ثبت‌نام'}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-4 text-sm text-gray-600">
+                        در حال حاضر برنامه فعالی متناسب با سن شما وجود ندارد.
+                      </p>
+                    )}
                   </>
                 )}
               </div>
@@ -969,7 +1042,9 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
           <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">پرداخت شهریه</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  پرداخت شهریه
+                </h2>
                 <p className="mt-1 text-gray-600">
                   مانده شهریه برنامه‌های فعال: {formatToman(totalDue)}
                 </p>
@@ -980,7 +1055,9 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                 onClick={() => void handlePayment()}
                 className="rounded-lg bg-green-600 px-5 py-2 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {busyAction === 'payment' ? 'در حال انتقال...' : 'پرداخت از طریق زرین‌پال'}
+                {busyAction === 'payment'
+                  ? 'در حال انتقال...'
+                  : 'پرداخت از طریق زرین‌پال'}
               </button>
             </div>
             <p className="mt-3 text-xs text-gray-500">

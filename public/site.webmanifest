@@ -1,7 +1,7 @@
 {
-  "name": "آکادمی فوتبال AP",
-  "short_name": "AP Football",
-  "description": "آکادمی فوتبال AP - بهترین آموزش فوتبال برای همه سنین",
+  "name": "آکادمی فوتبال افشین پیروانی",
+  "short_name": "افشین پیروانی",
+  "description": "آکادمی فوتبال افشین پیروانی - بهترین آموزش فوتبال برای همه سنین",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

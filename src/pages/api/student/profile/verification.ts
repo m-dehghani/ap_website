@@ -1,4 +1,9 @@
-import { createHash, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
+import {
+  createHash,
+  randomInt,
+  randomUUID,
+  timingSafeEqual,
+} from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
@@ -7,10 +12,18 @@ import { getPrisma } from '@/lib/db';
 import { sendEmail, sendSms } from '@/lib/notifications';
 
 const requestSchema = z.object({
-  action: z.enum(['request-contact', 'verify-contact', 'request-password', 'verify-password']),
+  action: z.enum([
+    'request-contact',
+    'verify-contact',
+    'request-password',
+    'verify-password',
+  ]),
   channel: z.enum(['email', 'phone']),
   value: z.string().optional(),
-  code: z.string().regex(/^\d{6}$/).optional(),
+  code: z
+    .string()
+    .regex(/^\d{6}$/)
+    .optional(),
   password: z.string().min(8).max(128).optional(),
 });
 
@@ -135,11 +148,11 @@ export default async function handler(
       });
 
       try {
-        const message = `کد تأیید آکادمی فوتبال AP: ${code} (اعتبار تا ۱۰ دقیقه)`;
+        const message = `کد تأیید آکادمی فوتبال افشین پیروانی: ${code} (اعتبار تا ۱۰ دقیقه)`;
         if (input.channel === 'email') {
           await sendEmail({
             to: target,
-            subject: 'کد تأیید آکادمی فوتبال AP',
+            subject: 'کد تأیید آکادمی فوتبال افشین پیروانی',
             text: message,
           });
         } else {
@@ -152,7 +165,10 @@ export default async function handler(
         );
         return res
           .status(502)
-          .json({ message: 'ارسال کد تأیید انجام نشد؛ تنظیمات پیام‌رسان را بررسی کنید' });
+          .json({
+            message:
+              'ارسال کد تأیید انجام نشد؛ تنظیمات پیام‌رسان را بررسی کنید',
+          });
       }
 
       return res.status(200).json({
@@ -184,7 +200,10 @@ export default async function handler(
       });
     }
     const expectedHash = Buffer.from(challenge.codeHash, 'hex');
-    const providedHash = Buffer.from(codeDigest(challenge.id, input.code), 'hex');
+    const providedHash = Buffer.from(
+      codeDigest(challenge.id, input.code),
+      'hex',
+    );
     if (
       providedHash.length !== expectedHash.length ||
       !timingSafeEqual(providedHash, expectedHash)
@@ -209,7 +228,12 @@ export default async function handler(
       const conflict = await db.user.findFirst({
         where: {
           ...(input.channel === 'email'
-            ? { email: { equals: challenge.target, mode: 'insensitive' as const } }
+            ? {
+                email: {
+                  equals: challenge.target,
+                  mode: 'insensitive' as const,
+                },
+              }
             : { phone: challenge.target }),
           NOT: { id: userId },
         },
@@ -229,7 +253,9 @@ export default async function handler(
     await db.$transaction(async (tx) => {
       if (purpose === 'PASSWORD_CHANGE') {
         if (!challenge.passwordHash) {
-          throw new Error('Password verification challenge has no password hash');
+          throw new Error(
+            'Password verification challenge has no password hash',
+          );
         }
         await tx.user.update({
           where: { id: userId },

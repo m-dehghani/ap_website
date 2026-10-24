@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import {
-  TrophyIcon,
-  ArrowLeftIcon,
-} from '@heroicons/react/24/outline';
+import { TrophyIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { getIcon } from '@/lib/icons';
 
 interface HeroSlide {
@@ -33,7 +30,11 @@ interface HeroProps {
   statLabels: Record<string, string>;
 }
 
-const PARTICLE_COLORS = ['rgba(14,165,233,0.6)', 'rgba(249,115,22,0.6)', 'rgba(34,197,94,0.6)'];
+const PARTICLE_COLORS = [
+  'rgba(14,165,233,0.6)',
+  'rgba(249,115,22,0.6)',
+  'rgba(34,197,94,0.6)',
+];
 
 function ParticleSystem({
   particleCount = 30,
@@ -46,14 +47,26 @@ function ParticleSystem({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
-  const particlesRef = useRef<Array<{
-    x: number; y: number; vx: number; vy: number;
-    radius: number; color: string; opacity: number;
-  }>>([]);
+  const particlesRef = useRef<
+    Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+      color: string;
+      opacity: number;
+    }>
+  >([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || reducedMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (
+      !canvas ||
+      reducedMotion ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+      return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -79,7 +92,7 @@ function ParticleSystem({
       if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particlesRef.current.forEach(p => {
+      particlesRef.current.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
 
@@ -121,11 +134,14 @@ export default function Hero({ slides, achievements, statLabels }: HeroProps) {
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
-    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const motionPreference = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    );
     const updatePreference = () => setReducedMotion(motionPreference.matches);
     updatePreference();
     motionPreference.addEventListener('change', updatePreference);
-    return () => motionPreference.removeEventListener('change', updatePreference);
+    return () =>
+      motionPreference.removeEventListener('change', updatePreference);
   }, []);
 
   const currentSlideData = slides[currentSlide] ?? slides[0];
@@ -143,7 +159,10 @@ export default function Hero({ slides, achievements, statLabels }: HeroProps) {
   }
 
   return (
-    <section className="relative min-h-[92vh] flex items-center overflow-hidden" aria-labelledby="hero-title">
+    <section
+      className="relative min-h-[92vh] flex items-center overflow-hidden"
+      aria-labelledby="hero-title"
+    >
       <div
         className={`absolute inset-0 bg-linear-to-br ${currentSlideData.bgGradient} transition-all duration-1000`}
       >
@@ -237,7 +256,9 @@ export default function Hero({ slides, achievements, statLabels }: HeroProps) {
                       {statsAnimated ? value : '0'}
                     </div>
                     <div className="text-xs sm:text-sm text-white/75 font-medium">
-                      {currentSlideData.statLabels?.[key] ?? statLabels[key] ?? key}
+                      {currentSlideData.statLabels?.[key] ??
+                        statLabels[key] ??
+                        key}
                     </div>
                   </div>
                 ))}
@@ -255,7 +276,7 @@ export default function Hero({ slides, achievements, statLabels }: HeroProps) {
                   <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-linear-to-br from-white/20 to-white/5 text-center">
                     <span className="text-7xl xl:text-8xl mb-4">⚽</span>
                     <p className="text-2xl font-bold text-white drop-shadow-lg">
-                      آکادمی AP
+                      آکادمی فوتبال افشین پیروانی
                     </p>
                     <p className="text-white/90 mt-1 drop-shadow-lg">
                       تعالی از سال ۱۳۹۳

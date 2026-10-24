@@ -55,7 +55,8 @@ const Footer: React.FC<FooterProps> = ({ site }) => {
               </div>
 
               <p className="text-gray-200 text-lg leading-relaxed max-w-md">
-                {site?.description ?? 'ساخت آینده فوتبال از طریق آموزش حرفه‌ای، مربیگری کارآزموده و امکانات مدرن.'}
+                {site?.description ??
+                  'ساخت آینده فوتبال از طریق آموزش حرفه‌ای، مربیگری کارآزموده و امکانات مدرن.'}
               </p>
 
               {/* Enhanced Contact Info */}
@@ -121,9 +122,7 @@ const Footer: React.FC<FooterProps> = ({ site }) => {
             {/* Enhanced Quick Links */}
             <div className="space-y-6">
               <h4 className="text-xl font-bold text-white flex items-center">
-                <span className="text-white">
-                  لینک‌های سریع
-                </span>
+                <span className="text-white">لینک‌های سریع</span>
               </h4>
               <ul className="space-y-3">
                 {quickLinks.map((link, index) => (
@@ -143,9 +142,7 @@ const Footer: React.FC<FooterProps> = ({ site }) => {
             {/* Enhanced Programs */}
             <div className="space-y-1">
               <h4 className="text-xl font-bold text-white flex items-center">
-                <span className="text-white">
-                  برنامه‌های آموزشی
-                </span>
+                <span className="text-white">برنامه‌های آموزشی</span>
               </h4>
               <ul className="space-y-3">
                 {programs.map((program, index) => (
@@ -195,10 +192,7 @@ const Footer: React.FC<FooterProps> = ({ site }) => {
                 </p>
               </div>
               <div className="flex sm:justify-end">
-                <Link
-                  href="/programs"
-                  className="btn btn-secondary"
-                >
+                <Link href="/programs" className="btn btn-secondary">
                   مشاهده برنامه‌ها و ثبت‌نام
                   <ArrowLeftIcon className="w-4 h-4" aria-hidden="true" />
                 </Link>
@@ -213,7 +207,8 @@ const Footer: React.FC<FooterProps> = ({ site }) => {
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <div className="flex items-center gap-2">
                 <p className="text-gray-400">
-                  © {currentYear} {site?.name ?? 'آکادمی فوتبال AP'}. تمام حقوق محفوظ است.
+                  © {currentYear} {site?.name ?? 'آکادمی فوتبال AP'}. تمام حقوق
+                  محفوظ است.
                 </p>
                 <span className="text-gray-600">•</span>
                 <p className="text-gray-400 flex items-center">

@@ -6,8 +6,8 @@ import { CakeIcon } from '@heroicons/react/24/outline';
 const CookiesPage: React.FC = () => {
   return (
     <Layout
-      title="سیاست کوکی‌ها - آکادمی فوتبال AP"
-      description="سیاست استفاده از کوکی‌ها در وب‌سایت آکادمی فوتبال AP"
+      title="سیاست کوکی‌ها - آکادمی فوتبال افشین پیروانی"
+      description="سیاست استفاده از کوکی‌ها در وب‌سایت آکادمی فوتبال افشین پیروانی. اطلاعاتی درباره انواع کوکی‌ها و نحوه مدیریت آن‌ها."
       canonical="https://ap-football.com/cookies"
       noindex={true}
     >

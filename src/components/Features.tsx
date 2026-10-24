@@ -241,8 +241,14 @@ const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNkYzI2MjYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSI0Ii8+PC9nPjwvZz48L3N2Zz4=')] animate-rotate-slow"></div>
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-300 rounded-full blur-3xl opacity-20 animate-blob" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary-300 rounded-full blur-3xl opacity-20 animate-blob" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-accent-300 rounded-full blur-3xl opacity-15 animate-blob" style={{ animationDelay: '4s' }} />
+        <div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary-300 rounded-full blur-3xl opacity-20 animate-blob"
+          style={{ animationDelay: '2s' }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 w-48 h-48 bg-accent-300 rounded-full blur-3xl opacity-15 animate-blob"
+          style={{ animationDelay: '4s' }}
+        />
       </div>
 
       <div className="container-custom relative z-10">
@@ -258,8 +264,9 @@ const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
             چرا آکادمی AP
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gray-900 text-balance">
-            چرا <span className="gradient-text">آکادمی فوتبال AP</span> را
-            انتخاب کنیم؟
+            چرا{' '}
+            <span className="gradient-text">آکادمی فوتبال افشین پیروانی</span>{' '}
+            را انتخاب کنیم؟
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto text-pretty">
             ما آموزش جامع فوتبال را با مربیان متخصص، امکانات مدرن و محیط حمایتی
@@ -388,18 +395,38 @@ const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
                   تجربه‌ای متفاوت در آموزش فوتبال
                 </h3>
                 <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                  آکادمی فوتبال AP روش‌های علمی تمرین را با رویکردهای نوین ترکیب
-                  می‌کند تا بهترین آموزش فوتبال را ارائه دهد — از مهارت‌های پایه
-                  تا آمادگی حرفه‌ای.
+                  آکادمی فوتبال افشین پیروانی روش‌های علمی تمرین را با رویکردهای
+                  نوین ترکیب می‌کند تا بهترین آموزش فوتبال را ارائه دهد — از
+                  مهارت‌های پایه تا آمادگی حرفه‌ای.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {[
-                  { icon: 'RocketLaunchIcon', title: 'آموزش هدفمند', description: 'برنامه‌های ساختاریافته با اهداف مشخص و پیشرفت قابل اندازه‌گیری.' },
-                  { icon: 'HeartIcon', title: 'توجه فردی', description: 'مربیگری شخصی‌سازی‌شده تا هر بازیکن پشتیبانی اختصاصی دریافت کند.' },
-                  { icon: 'CogIcon', title: 'روحیه تیمی', description: 'تقویت همکاری و مهارت‌های کار گروهی در زمین و خارج از آن.' },
-                  { icon: 'SparklesIcon', title: 'استاندارد بالا', description: 'استانداردهای آموزشی بین‌المللی برای آمادگی رقابتی.' },
+                  {
+                    icon: 'RocketLaunchIcon',
+                    title: 'آموزش هدفمند',
+                    description:
+                      'برنامه‌های ساختاریافته با اهداف مشخص و پیشرفت قابل اندازه‌گیری.',
+                  },
+                  {
+                    icon: 'HeartIcon',
+                    title: 'توجه فردی',
+                    description:
+                      'مربیگری شخصی‌سازی‌شده تا هر بازیکن پشتیبانی اختصاصی دریافت کند.',
+                  },
+                  {
+                    icon: 'CogIcon',
+                    title: 'روحیه تیمی',
+                    description:
+                      'تقویت همکاری و مهارت‌های کار گروهی در زمین و خارج از آن.',
+                  },
+                  {
+                    icon: 'SparklesIcon',
+                    title: 'استاندارد بالا',
+                    description:
+                      'استانداردهای آموزشی بین‌المللی برای آمادگی رقابتی.',
+                  },
                 ].map((feature, index) => (
                   <motion.div
                     key={index}
@@ -431,7 +458,7 @@ const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
                   whileTap={{ scale: 0.95 }}
                   className="btn-primary inline-flex items-center"
                 >
-                  بیشتر درباره آکادمی فوتبال AP بدانید
+                  بیشتر درباره آکادمی فوتبال افشین پیروانی بدانید
                   <SparklesIcon className="w-5 h-5 ml-2" />
                 </motion.a>
               </div>

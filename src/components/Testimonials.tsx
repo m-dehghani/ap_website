@@ -10,7 +10,10 @@ interface TestimonialsProps {
   stats: AnimatedStatisticViewModel[];
 }
 
-const TestimonialsComponent: React.FC<TestimonialsProps> = ({ testimonials, stats }) => {
+const TestimonialsComponent: React.FC<TestimonialsProps> = ({
+  testimonials,
+  stats,
+}) => {
   return (
     <section className="section-padding bg-gray-50">
       <div className="container-custom">
@@ -60,7 +63,8 @@ const TestimonialsComponent: React.FC<TestimonialsProps> = ({ testimonials, stat
               </p>
 
               <div className="flex items-center">
-                {testimonial.image && !testimonial.image.startsWith('/api/placeholder/') ? (
+                {testimonial.image &&
+                !testimonial.image.startsWith('/api/placeholder/') ? (
                   <img
                     src={testimonial.image}
                     alt=""
@@ -91,9 +95,7 @@ const TestimonialsComponent: React.FC<TestimonialsProps> = ({ testimonials, stat
               <h3 className="text-3xl font-bold text-gray-900 mb-2">
                 آمار و ارقام
               </h3>
-              <p className="text-gray-600">
-                نتایج ملموس آموزش‌های ما
-              </p>
+              <p className="text-gray-600">نتایج ملموس آموزش‌های ما</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -110,7 +112,9 @@ const TestimonialsComponent: React.FC<TestimonialsProps> = ({ testimonials, stat
                     {stat.number}
                   </div>
                   <div className="text-gray-900 font-medium">{stat.label}</div>
-                  <div className="text-sm text-gray-500">{stat.description}</div>
+                  <div className="text-sm text-gray-500">
+                    {stat.description}
+                  </div>
                 </motion.div>
               ))}
             </div>

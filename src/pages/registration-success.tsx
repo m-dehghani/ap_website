@@ -5,8 +5,8 @@ import { CheckCircleIcon } from '@heroicons/react/24/outline';
 
 const RegistrationSuccessPage: React.FC = () => (
   <Layout
-    title="ثبت‌نام موفق - آکادمی فوتبال AP"
-    description="ثبت‌نام شما در آکادمی فوتبال AP انجام شد."
+    title="ثبت‌نام موفق - آکادمی فوتبال افشین پیروانی"
+    description="ثبت‌نام شما در آکادمی فوتبال افشین پیروانی انجام شد."
     noindex
   >
     <section className="mx-auto my-12 max-w-3xl overflow-hidden rounded-lg bg-white shadow-lg">
@@ -16,7 +16,7 @@ const RegistrationSuccessPage: React.FC = () => (
           ثبت‌نام با موفقیت انجام شد
         </h1>
         <p className="text-lg text-green-100">
-          به آکادمی فوتبال AP خوش آمدید.
+          به آکادمی فوتبال افشین پیروانی خوش آمدید.
         </p>
       </div>
 

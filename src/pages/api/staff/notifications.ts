@@ -80,10 +80,14 @@ export default async function handler(
       (input.audience === 'program' && !input.programId) ||
       (input.audience === 'marketing' && staff.role !== 'ADMIN') ||
       (input.audience === 'marketing' && input.purpose !== 'marketing') ||
-      (input.purpose === 'marketing' && input.audience !== 'marketing' && input.audience !== 'program') ||
+      (input.purpose === 'marketing' &&
+        input.audience !== 'marketing' &&
+        input.audience !== 'program') ||
       (['email', 'both'].includes(input.channel) && !input.subject)
     ) {
-      return res.status(400).json({ message: 'مخاطب یا اطلاعات پیام معتبر نیست' });
+      return res
+        .status(400)
+        .json({ message: 'مخاطب یا اطلاعات پیام معتبر نیست' });
     }
 
     const coachId = staff.role === 'COACH' ? staff.id : undefined;
@@ -164,16 +168,22 @@ export default async function handler(
       (input.channel === 'email' || input.channel === 'both') &&
       (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM)
     ) {
-      return res.status(503).json({ message: 'ارسال ایمیل در سامانه پیکربندی نشده است' });
+      return res
+        .status(503)
+        .json({ message: 'ارسال ایمیل در سامانه پیکربندی نشده است' });
     }
     if (
       (input.channel === 'sms' || input.channel === 'both') &&
       !process.env.KAVENEGAR_API_KEY
     ) {
-      return res.status(503).json({ message: 'ارسال پیامک در سامانه پیکربندی نشده است' });
+      return res
+        .status(503)
+        .json({ message: 'ارسال پیامک در سامانه پیکربندی نشده است' });
     }
     if (recipients.length === 0) {
-      return res.status(400).json({ message: 'دانش‌آموزی در این گروه برای ارسال پیدا نشد' });
+      return res
+        .status(400)
+        .json({ message: 'دانش‌آموزی در این گروه برای ارسال پیدا نشد' });
     }
 
     const deliveries = recipients.flatMap((recipient) => [
@@ -201,7 +211,7 @@ export default async function handler(
             if (delivery.channel === 'email' && delivery.recipient.email) {
               await sendEmail({
                 to: delivery.recipient.email,
-                subject: input.subject ?? 'پیام آکادمی فوتبال AP',
+                subject: input.subject ?? 'پیام آکادمی فوتبال افشین پیروانی',
                 text: input.message,
               });
             } else if (delivery.channel === 'sms' && delivery.recipient.phone) {

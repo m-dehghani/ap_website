@@ -11,42 +11,48 @@ import { calculateAge, parsePersianBirthDate } from '@/lib/age';
 import { toPersianDigits } from '@/lib/format';
 import PersianDatePicker from '@/components/PersianDatePicker';
 
-const registrationSchema = z.object({
-  firstName: z.string().min(2, 'نام باید حداقل ۲ کاراکتر باشد'),
-  lastName: z.string().min(2, 'نام خانوادگی باید حداقل ۲ کاراکتر باشد'),
-  email: z.union([z.string().email('ایمیل نامعتبر است'), z.literal('')]).optional(),
-  phone: z
-    .union([
-      z.string().regex(/^\+?[\d۰-۹٠-٩\s().-]{7,20}$/, 'شماره تلفن نامعتبر است'),
-      z.literal(''),
-    ])
-    .optional(),
-  password: z.string().min(6, 'رمز عبور باید حداقل ۶ کاراکتر باشد'),
-  dateOfBirth: z
-    .string()
-    .min(1, 'تاریخ تولد الزامی است')
-    .refine((value) => parsePersianBirthDate(value) !== null, {
-      message: 'تاریخ تولد را به‌صورت شمسی وارد کنید',
+const registrationSchema = z
+  .object({
+    firstName: z.string().min(2, 'نام باید حداقل ۲ کاراکتر باشد'),
+    lastName: z.string().min(2, 'نام خانوادگی باید حداقل ۲ کاراکتر باشد'),
+    email: z
+      .union([z.string().email('ایمیل نامعتبر است'), z.literal('')])
+      .optional(),
+    phone: z
+      .union([
+        z
+          .string()
+          .regex(/^\+?[\d۰-۹٠-٩\s().-]{7,20}$/, 'شماره تلفن نامعتبر است'),
+        z.literal(''),
+      ])
+      .optional(),
+    password: z.string().min(6, 'رمز عبور باید حداقل ۶ کاراکتر باشد'),
+    dateOfBirth: z
+      .string()
+      .min(1, 'تاریخ تولد الزامی است')
+      .refine((value) => parsePersianBirthDate(value) !== null, {
+        message: 'تاریخ تولد را به‌صورت شمسی وارد کنید',
+      }),
+    program: z.string().min(1, 'لطفاً برنامه را انتخاب کنید'),
+    experience: z.enum(['beginner', 'intermediate', 'advanced']),
+    parentName: z.string().optional(),
+    parentEmail: z
+      .string()
+      .refine((val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+        message: 'ایمیل والدین نامعتبر است',
+      })
+      .optional(),
+    medicalConditions: z.string().optional(),
+    emergencyContact: z.string().min(10, 'تماس اضطراری الزامی است'),
+    emergencyContactName: z.string().min(2, 'نام تماس اضطراری الزامی است'),
+    terms: z.boolean().refine((val) => val === true, {
+      message: 'شما باید با شرایط و قوانین موافقت کنید',
     }),
-  program: z.string().min(1, 'لطفاً برنامه را انتخاب کنید'),
-  experience: z.enum(['beginner', 'intermediate', 'advanced']),
-  parentName: z.string().optional(),
-  parentEmail: z
-    .string()
-    .refine((val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
-      message: 'ایمیل والدین نامعتبر است',
-    })
-    .optional(),
-  medicalConditions: z.string().optional(),
-  emergencyContact: z.string().min(10, 'تماس اضطراری الزامی است'),
-  emergencyContactName: z.string().min(2, 'نام تماس اضطراری الزامی است'),
-  terms: z.boolean().refine((val) => val === true, {
-    message: 'شما باید با شرایط و قوانین موافقت کنید',
-  }),
-}).refine((data) => Boolean(data.email?.trim() || data.phone?.trim()), {
-  message: 'وارد کردن ایمیل یا شماره تلفن الزامی است',
-  path: ['email'],
-});
+  })
+  .refine((data) => Boolean(data.email?.trim() || data.phone?.trim()), {
+    message: 'وارد کردن ایمیل یا شماره تلفن الزامی است',
+    path: ['email'],
+  });
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
 
@@ -174,7 +180,7 @@ const RegisterPage: React.FC = () => {
 
   return (
     <Layout
-      title="ثبت نام - آکادمی فوتبال AP"
+      title="ثبت نام - آکادمی فوتبال افشین پیروانی"
       description="Register for football training programs at AP Football Academy. Choose from various programs for ages 8-30. Secure online registration with flexible payment options."
       canonical="https://ap-football.com/register"
     >
@@ -237,7 +243,10 @@ const RegisterPage: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <div>
-                      <label htmlFor="account-email" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="account-email"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         آدرس ایمیل
                       </label>
                       <input
@@ -257,7 +266,10 @@ const RegisterPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="account-phone" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="account-phone"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         شماره تلفن
                       </label>
                       <input
@@ -275,12 +287,16 @@ const RegisterPage: React.FC = () => {
                       )}
                     </div>
                     <p className="text-sm text-gray-500 md:col-span-2">
-                      برای ساخت حساب، وارد کردن ایمیل یا شماره تلفن الزامی است؛ می‌توانید هر دو را وارد کنید.
+                      برای ساخت حساب، وارد کردن ایمیل یا شماره تلفن الزامی است؛
+                      می‌توانید هر دو را وارد کنید.
                     </p>
                   </div>
 
                   <div className="mt-6">
-                    <label htmlFor="account-password" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="account-password"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       رمز عبور *
                     </label>
                     <input
@@ -301,7 +317,10 @@ const RegisterPage: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <div>
-                      <label htmlFor="date-of-birth" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="date-of-birth"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         تاریخ تولد *
                       </label>
                       <PersianDatePicker
@@ -323,11 +342,17 @@ const RegisterPage: React.FC = () => {
                         }
                         className="w-full rounded-lg border border-gray-300 py-3 pl-11 pr-4 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
                       />
-                      <p id="birth-date-help" className="mt-1 text-sm text-gray-500">
+                      <p
+                        id="birth-date-help"
+                        className="mt-1 text-sm text-gray-500"
+                      >
                         تاریخ را با تقویم شمسی و به‌شکل سال/ماه/روز وارد کنید.
                       </p>
                       {errors.dateOfBirth && (
-                        <p id="birth-date-error" className="mt-1 text-sm text-red-600">
+                        <p
+                          id="birth-date-error"
+                          className="mt-1 text-sm text-red-600"
+                        >
                           {errors.dateOfBirth.message}
                         </p>
                       )}
@@ -363,7 +388,8 @@ const RegisterPage: React.FC = () => {
                       </label>
                       {age === null ? (
                         <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
-                          برای نمایش برنامه‌های متناسب، ابتدا تاریخ تولد شمسی را وارد کنید.
+                          برای نمایش برنامه‌های متناسب، ابتدا تاریخ تولد شمسی را
+                          وارد کنید.
                         </div>
                       ) : isLoading ? (
                         <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
@@ -377,9 +403,8 @@ const RegisterPage: React.FC = () => {
                           <option value="">برنامه را انتخاب کنید</option>
                           {filteredPrograms.map((program) => (
                             <option key={program.id} value={program.id}>
-                              {program.name} -{' '}
-                              {program.price.toLocaleString()} تومان (
-                              {program.duration} ماه)
+                              {program.name} - {program.price.toLocaleString()}{' '}
+                              تومان ({program.duration} ماه)
                             </option>
                           ))}
                         </select>
@@ -532,7 +557,10 @@ const RegisterPage: React.FC = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       placeholder="لطفاً هر گونه بیماری، آلرژی یا نیاز خاصی که مربیان باید بدانند را بنویسید..."
                     />
-                    <p className="mt-1 text-sm text-gray-600">این اطلاعات محرمانه بوده و فقط برای اهداف ایمنی استفاده می‌شود.</p>
+                    <p className="mt-1 text-sm text-gray-600">
+                      این اطلاعات محرمانه بوده و فقط برای اهداف ایمنی استفاده
+                      می‌شود.
+                    </p>
                   </div>
                 </div>
 
@@ -549,19 +577,19 @@ const RegisterPage: React.FC = () => {
                       />
                       <label className="mr-3 block text-sm text-gray-900">
                         با{' '}
-                                              <Link
+                        <Link
                           href="/terms"
                           className="text-primary-600 hover:text-primary-500 underline"
                         >
                           شرایط و قوانین
-                                              </Link>{' '}
+                        </Link>{' '}
                         و{' '}
-                                              <Link
+                        <Link
                           href="/privacy"
                           className="text-primary-600 hover:text-primary-500 underline"
                         >
                           حریم خصوصی
-                                              </Link>{' '}
+                        </Link>{' '}
                         موافقم. می‌دانم که هزینه ثبت نام قابل استرداد نیست.
                       </label>
                     </div>

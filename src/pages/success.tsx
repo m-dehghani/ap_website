@@ -10,7 +10,12 @@ import {
   getMilestones,
 } from '@/services/content';
 import { withSite, SiteProps } from '@/lib/page-props';
-import { SuccessAchievementViewModel, SuccessTestimonialViewModel, AnimatedStatisticViewModel, SuccessMilestoneViewModel } from '@/types/viewModels/content';
+import {
+  SuccessAchievementViewModel,
+  SuccessTestimonialViewModel,
+  AnimatedStatisticViewModel,
+  SuccessMilestoneViewModel,
+} from '@/types/viewModels/content';
 
 interface SuccessPageProps extends SiteProps {
   stories: Awaited<ReturnType<typeof getSuccessStories>>;
@@ -25,7 +30,7 @@ const SuccessPage: React.FC<SuccessPageProps> = ({
   statistics,
   milestones,
 }) => {
-  const successStories: SuccessAchievementViewModel[] = stories.map(s => ({
+  const successStories: SuccessAchievementViewModel[] = stories.map((s) => ({
     id: s.id,
     playerName: s.playerName,
     age: s.age,
@@ -38,30 +43,36 @@ const SuccessPage: React.FC<SuccessPageProps> = ({
     coach: s.coachName ?? '',
   }));
 
-  const successTestimonials: SuccessTestimonialViewModel[] = testimonials.map(t => ({
-    id: t.id,
-    name: t.name,
-    role: t.role,
-    program: t.programName ?? '',
-    rating: t.rating,
-    text: t.content,
-    date: t.date ?? '',
-    improvement: t.improvement ?? '',
-  }));
+  const successTestimonials: SuccessTestimonialViewModel[] = testimonials.map(
+    (t) => ({
+      id: t.id,
+      name: t.name,
+      role: t.role,
+      program: t.programName ?? '',
+      rating: t.rating,
+      text: t.content,
+      date: t.date ?? '',
+      improvement: t.improvement ?? '',
+    }),
+  );
 
-  const stats: AnimatedStatisticViewModel[] = Object.values(statistics).map(s => ({
-    number: s.value,
-    label: s.label,
-    description: s.description ?? '',
-    icon: 'TrophyIcon',
-    color: 'text-primary-600',
-  }));
+  const stats: AnimatedStatisticViewModel[] = Object.values(statistics).map(
+    (s) => ({
+      number: s.value,
+      label: s.label,
+      description: s.description ?? '',
+      icon: 'TrophyIcon',
+      color: 'text-primary-600',
+    }),
+  );
 
-  const successMilestones: SuccessMilestoneViewModel[] = milestones.map(m => ({
-    year: String(m.year),
-    event: m.title,
-    description: m.description,
-  }));
+  const successMilestones: SuccessMilestoneViewModel[] = milestones.map(
+    (m) => ({
+      year: String(m.year),
+      event: m.title,
+      description: m.description,
+    }),
+  );
 
   return (
     <Layout
@@ -84,7 +95,9 @@ const SuccessPage: React.FC<SuccessPageProps> = ({
   );
 };
 
-export const getServerSideProps: GetServerSideProps<SuccessPageProps> = async () => {
+export const getServerSideProps: GetServerSideProps<
+  SuccessPageProps
+> = async () => {
   const [stories, testimonials, statistics, milestones] = await Promise.all([
     getSuccessStories(),
     getTestimonials('SUCCESS'),
