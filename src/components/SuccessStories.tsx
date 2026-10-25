@@ -240,7 +240,7 @@ function StatisticCard({
   const bgColors = [
     'bg-yellow-100',
     'bg-green-100',
-    'bg-blue-100',
+    'bg-primary-100',
     'bg-purple-100',
   ];
 

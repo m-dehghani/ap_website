@@ -247,7 +247,7 @@ export default function CoachSpotlight({ coaches = [] }: CoachSpotlightProps) {
                         href={`https://twitter.com/${coach.twitter.replace('@', '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-linear-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition-shadow flex items-center gap-2"
+                        className="bg-linear-to-r from-primary-500 to-primary-700 text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition-shadow flex items-center gap-2"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >

@@ -137,12 +137,12 @@ export default function FootballNewsDashboard() {
         
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-600 text-sm font-medium mb-4">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-4">
             <GlobeAltIcon className="w-4 h-4 ml-2" />
             دشبورد اخبار فوتبال
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            اخبار <span className="text-blue-600">فوتبال ایران</span>
+            اخبار <span className="text-primary-600">فوتبال ایران</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             آخرین اخبار، انتقالات و تحلیل‌های فوتبال از معتبرترین منابع کشور
@@ -156,9 +156,9 @@ export default function FootballNewsDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">کل اخبار</p>
-                  <p className="text-3xl font-bold text-blue-600">{stats.total_articles}</p>
+                  <p className="text-3xl font-bold text-primary-600">{stats.total_articles}</p>
                 </div>
-                <NewspaperIcon className="w-12 h-12 text-blue-500" />
+                <NewspaperIcon className="w-12 h-12 text-primary-500" />
               </div>
             </div>
             
@@ -207,7 +207,7 @@ export default function FootballNewsDashboard() {
                   placeholder="جستجو در اخبار..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
             </form>
@@ -217,7 +217,7 @@ export default function FootballNewsDashboard() {
               <select
                 value={filters.category}
                 onChange={(e) => setFilters({...filters, category: e.target.value})}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">همه دسته‌ها</option>
                 <option value="transfers">انتقالات</option>
@@ -229,7 +229,7 @@ export default function FootballNewsDashboard() {
               <select
                 value={filters.source}
                 onChange={(e) => setFilters({...filters, source: e.target.value})}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">همه منابع</option>
                 <option value="varzesh3">ورزش سه</option>
@@ -240,7 +240,7 @@ export default function FootballNewsDashboard() {
               <select
                 value={filters.sentiment}
                 onChange={(e) => setFilters({...filters, sentiment: e.target.value})}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">همه احساسات</option>
                 <option value="positive">مثبت</option>
@@ -260,7 +260,7 @@ export default function FootballNewsDashboard() {
               <button
                 onClick={() => setRefreshTrigger(previous => previous + 1)}
                 disabled={loading}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
               >
                 {loading ? 'در حال بارگذاری...' : 'بروزرسانی'}
               </button>
@@ -269,7 +269,7 @@ export default function FootballNewsDashboard() {
             {/* Loading State */}
             {loading && (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
                 <p className="mt-4 text-gray-600">در حال دریافت اخبار...</p>
               </div>
             )}
@@ -311,7 +311,7 @@ export default function FootballNewsDashboard() {
                         </div>
                       </div>
 
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-blue-600 transition-colors">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-primary-600 transition-colors">
                         <a href={item.url} target="_blank" rel="noopener noreferrer">
                           {item.title}
                         </a>
@@ -322,7 +322,7 @@ export default function FootballNewsDashboard() {
                       {/* Tags */}
                       <div className="flex flex-wrap gap-2 mb-4">
                         {item.tags.slice(0, 4).map((tag, index) => (
-                          <span key={index} className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
+                          <span key={index} className="bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm">
                             {tag}
                           </span>
                         ))}
@@ -367,7 +367,7 @@ export default function FootballNewsDashboard() {
                           href={item.url} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
+                          className="flex items-center text-primary-600 hover:text-primary-800 font-medium"
                         >
                           مشاهده منبع
                           <ArrowRightIcon className="w-4 h-4 mr-1" />
@@ -406,14 +406,14 @@ export default function FootballNewsDashboard() {
             {/* Transfer News */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <UserGroupIcon className="w-5 h-5 text-blue-500 mr-2" />
+                <UserGroupIcon className="w-5 h-5 text-primary-500 mr-2" />
                 اخبار انتقالات
               </h3>
               <div className="space-y-3">
                 {transferNews.map((item) => (
-                  <div key={item.id} className="border-l-4 border-blue-500 pl-4">
+                  <div key={item.id} className="border-l-4 border-primary-500 pl-4">
                     <h4 className="font-medium text-gray-900 text-sm line-clamp-2">
-                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary-600">
                         {item.title}
                       </a>
                     </h4>

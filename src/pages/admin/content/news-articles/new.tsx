@@ -21,6 +21,7 @@ interface FormData {
   type: string;
   author: string;
   image: string;
+  videoUrl: string;
   tags: string;
   readTimeMinutes: number;
   likes: number;
@@ -43,6 +44,7 @@ export default function NewsArticleNewPage() {
     type: 'NEWS',
     author: '',
     image: '',
+    videoUrl: '',
     tags: '',
     readTimeMinutes: 1,
     likes: 0,
@@ -217,6 +219,20 @@ export default function NewsArticleNewPage() {
                 value={formData.image}
                 onChange={handleChange}
                 placeholder="https://example.com/image.jpg"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                آدرس ویدئو (اختیاری)
+              </label>
+              <Input
+                id="videoUrl"
+                name="videoUrl"
+                type="url"
+                value={formData.videoUrl}
+                onChange={handleChange}
+                placeholder="https://example.com/video.mp4"
               />
             </div>
 

@@ -55,9 +55,9 @@ function ContentDashboard() {
             ))}
           </div>
 
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-blue-900 mb-2">نکات مهم</h3>
-            <ul className="text-blue-800 space-y-1 text-sm">
+          <div className="mt-8 bg-primary-50 border border-primary-200 rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-primary-900 mb-2">نکات مهم</h3>
+            <ul className="text-primary-800 space-y-1 text-sm">
               <li>• تمام تغییرات بلافاصله در سایت اعمال می‌شوند</li>
               <li>• ترتیب نمایش با فیلد «ترتیب نمایش» (displayOrder) کنترل می‌شود</li>
               <li>• برای مخفی کردن آیتم‌ها، تیک «فعال» را بردارید</li>

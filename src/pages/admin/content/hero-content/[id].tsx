@@ -276,7 +276,7 @@ export default function HeroContentEditPage() {
                 name="bgGradient"
                 value={formData.bgGradient}
                 onChange={handleChange}
-                placeholder="from-navy-950 via-blue-900 to-blue-700"
+                placeholder="from-navy-950 via-primary-900 to-primary-700"
               />
             </div>
 

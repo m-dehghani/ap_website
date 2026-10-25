@@ -42,6 +42,13 @@ const nextConfig = {
   // Performance optimization
   compress: true,
   poweredByHeader: false,
+  webpack(config) {
+    config.resolve.extensionAlias = {
+      ...config.resolve.extensionAlias,
+      '.js': ['.ts', '.tsx', '.js'],
+    };
+    return config;
+  },
   // Skip static generation for pages that need database
   output: 'standalone',
 };

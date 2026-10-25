@@ -47,7 +47,7 @@ export default function MilestonesPage() {
         fetchFn={() => fetchJson<Milestone[]>('/api/admin/content/milestones')}
         deleteFn={(id) => deleteResource(`/api/admin/content/milestones/${id}`)}
         editHref={(item) => `/admin/content/milestones/${item.id}`}
-        accent="indigo"
+        accent="primary"
         confirmDeleteMessage="آیا از حذف این رویداد مطمئن هستید؟"
         emptyMessage="هیچ رویدادی ثبت نشده"
       />

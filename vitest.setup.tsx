@@ -30,9 +30,12 @@ vi.mock('next-seo', () => ({
 vi.mock('@heroicons/react/24/outline', () => {
   const icons = [
     'StarIcon', 'TrophyIcon', 'AcademicCapIcon', 'UserGroupIcon',
-    'ChevronLeftIcon', 'ChevronRightIcon', 'ArrowLeftIcon', 'PlayIcon',
-    'UsersIcon', 'PlayIcon', 'TrophyIcon', 'StarIcon', 'CalendarDaysIcon',
-    'CheckCircleIcon'
+    'ChevronLeftIcon', 'ChevronRightIcon', 'ArrowLeftIcon', 'ArrowRightIcon',
+    'PlayIcon', 'PauseIcon', 'CameraIcon', 'UsersIcon', 'CalendarDaysIcon',
+    'CheckCircleIcon', 'HeartIcon', 'ClockIcon', 'ShieldCheckIcon',
+    'LightBulbIcon', 'SparklesIcon', 'RocketLaunchIcon', 'CogIcon',
+    'ArrowTrendingUpIcon', 'ChatBubbleLeftRightIcon', 'PhoneIcon',
+    'EnvelopeIcon', 'MapPinIcon',
   ];
   const mockComponents: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {};
   icons.forEach(name => {

@@ -60,7 +60,7 @@ export default function AboutContentPage() {
         fetchFn={() => fetchJson<AboutContent[]>('/api/admin/content/about-content')}
         deleteFn={(id) => deleteResource(`/api/admin/content/about-content/${id}`)}
         editHref={(item) => `/admin/content/about-content/${item.section}`}
-        accent="indigo"
+        accent="primary"
         confirmDeleteMessage="آیا از حذف این بخش مطمئن هستید؟"
         emptyMessage="هیچ بخش تعریف نشده"
       />

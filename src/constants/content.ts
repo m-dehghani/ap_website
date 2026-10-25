@@ -14,7 +14,7 @@ export const HERO_SLIDES = [
       'اشتیاق خود را به تعالی تبدیل کنید — آموزش حرفه‌ای، مربیان کارآزموده و امکانات درجه یک برای بالا بردن سطح بازی شما.',
     cta: { label: 'شروع ثبت نام', href: '/register' },
     ctaSecondary: { label: 'داستان ما', href: '/about' },
-    bgGradient: 'from-navy-950 via-blue-900 to-blue-700',
+    bgGradient: 'from-navy-950 via-primary-900 to-primary-700',
     stats: { players: '۵۰۰+', championships: '۲۵+', experience: '۱۰+' },
   },
   {
@@ -296,7 +296,7 @@ export const SUCCESS_STATISTICS = [
     label: 'تیم ملی',
     description: 'بازیکن به تیم‌های ملی دعوت شدند',
     icon: 'StarIcon',
-    color: 'text-blue-600',
+    color: 'text-primary-600',
   },
   {
     number: '۲۵+',

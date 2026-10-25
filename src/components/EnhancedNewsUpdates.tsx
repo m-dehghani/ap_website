@@ -248,7 +248,7 @@ export default function EnhancedNewsUpdates() {
         return 'bg-purple-500';
       }
       case 'external': {
-        return 'bg-blue-500';
+        return 'bg-primary-500';
       }
       case 'academy': {
         return 'bg-green-500';
@@ -320,7 +320,7 @@ export default function EnhancedNewsUpdates() {
           <div className="mb-12 bg-white rounded-xl p-6 shadow-lg">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">
+                <div className="text-3xl font-bold text-primary-600 mb-2">
                   {crawlerStats.total_articles}
                 </div>
                 <div className="text-sm text-gray-600">کل اخبار</div>
@@ -478,7 +478,7 @@ export default function EnhancedNewsUpdates() {
                           .map((player, idx) => (
                             <span
                               key={idx}
-                              className="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs"
+                              className="bg-primary-100 text-primary-700 px-2 py-1 rounded-full text-xs"
                             >
                               👤 {player}
                             </span>

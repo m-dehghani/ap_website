@@ -16,6 +16,7 @@ interface NewsArticle {
   type: string;
   author: string;
   image: string | null;
+  videoUrl: string | null;
   tags: string[];
   readTimeMinutes: number;
   likes: number;
@@ -38,6 +39,7 @@ interface FormData {
   type: string;
   author: string;
   image: string;
+  videoUrl: string;
   tags: string;
   readTimeMinutes: number;
   likes: number;
@@ -63,6 +65,7 @@ export default function NewsArticleEditPage() {
     type: 'NEWS',
     author: '',
     image: '',
+    videoUrl: '',
     tags: '',
     readTimeMinutes: 1,
     likes: 0,
@@ -93,6 +96,7 @@ export default function NewsArticleEditPage() {
           type: article.type,
           author: article.author,
           image: article.image ?? '',
+          videoUrl: article.videoUrl ?? '',
           tags: article.tags.join(', '),
           readTimeMinutes: article.readTimeMinutes,
           likes: article.likes,
@@ -287,6 +291,20 @@ export default function NewsArticleEditPage() {
                 value={formData.image}
                 onChange={handleChange}
                 placeholder="https://example.com/image.jpg"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                آدرس ویدئو (اختیاری)
+              </label>
+              <Input
+                id="videoUrl"
+                name="videoUrl"
+                type="url"
+                value={formData.videoUrl}
+                onChange={handleChange}
+                placeholder="https://example.com/video.mp4"
               />
             </div>
 

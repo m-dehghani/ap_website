@@ -1,10 +1,15 @@
 import { Html, Head, Main, NextScript } from 'next/document';
+import Script from 'next/script';
 
 export default function Document() {
   return (
     <Html lang="fa-IR" dir="rtl">
       <Head>
-        <meta name="theme-color" content="#0284c7" />
+        <Script id="theme-preference-init" strategy="beforeInteractive">
+          {`(function(){var preference=window.localStorage.getItem('ap-theme-preference');var dark=preference==='dark'||(preference!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';})();`}
+        </Script>
+        <meta name="theme-color" content="#b91c1c" />
+        <meta name="color-scheme" content="light dark" />
         <meta
           name="description"
           content="آکادمی فوتبال افشین پیروانی - بهترین آموزش فوتبال برای همه سنین"

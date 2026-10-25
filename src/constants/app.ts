@@ -72,10 +72,10 @@ export const UI_CONSTANTS = {
     xl: '1280px',
   },
   colors: {
-    primary: '#3B82F6',
-    secondary: '#10B981',
-    accent: '#F59E0B',
-    navy: '#1E3A5F',
+    primary: '#DC2626',
+    secondary: '#EA580C',
+    accent: '#16A34A',
+    navy: '#3B252B',
   },
 } as const;
 

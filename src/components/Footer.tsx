@@ -39,7 +39,7 @@ const Footer: React.FC<FooterProps> = ({ site }) => {
         <div className="container-custom py-16 lg:py-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {/* Enhanced Company Info */}
-            <div className="lg:col-span-2 space-y-6 bg-blue-950/10 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">
+            <div className="lg:col-span-2 space-y-6 bg-red-950/10 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">
               <div className="flex items-center space-x-3">
                 <div className="w-14 h-14 bg-linear-to-br from-primary-600 to-primary-700 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-elegant-lg">
                   ⚽

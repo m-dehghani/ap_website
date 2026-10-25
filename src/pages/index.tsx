@@ -22,11 +22,12 @@ import {
   getSuccessStories,
   getMilestones,
   getNewsCategories,
-  getFeaturedNewsArticles,
+  getNewsArticles,
   getCTAContent,
 } from '@/services/content';
 import { HeroContentViewModel, HeroAchievementViewModel, FeaturesContentViewModel, FeatureStatItemViewModel, StatisticViewModel, CTAContentViewModel } from '@/types/viewModels/content';
 import { withSite, SiteProps } from '@/lib/page-props';
+import { normalizeClubColorClasses } from '@/lib/brand-colors';
 import { SuccessAchievementViewModel, SuccessTestimonialViewModel, AnimatedStatisticViewModel, SuccessMilestoneViewModel } from '@/types/viewModels/content';
 
 interface HomePageProps extends SiteProps {
@@ -39,7 +40,7 @@ interface HomePageProps extends SiteProps {
   testimonials: Awaited<ReturnType<typeof getTestimonials>>;
   successStories: Awaited<ReturnType<typeof getSuccessStories>>;
   milestones: Awaited<ReturnType<typeof getMilestones>>;
-  featuredNews: Awaited<ReturnType<typeof getFeaturedNewsArticles>>;
+  recentNews: Awaited<ReturnType<typeof getNewsArticles>>;
   newsCategories: Awaited<ReturnType<typeof getNewsCategories>>;
   ctaContent: CTAContentViewModel | null;
 }
@@ -54,7 +55,7 @@ const HomePage: React.FC<HomePageProps> = ({
   testimonials,
   successStories,
   milestones,
-  featuredNews,
+  recentNews,
   newsCategories,
   ctaContent,
   site,
@@ -66,7 +67,7 @@ const HomePage: React.FC<HomePageProps> = ({
     description: content.description,
     cta: { label: content.ctaLabel, href: content.ctaHref },
     ctaSecondary: { label: content.ctaSecondaryLabel, href: content.ctaSecondaryHref },
-    bgGradient: content.bgGradient,
+    bgGradient: normalizeClubColorClasses(content.bgGradient),
     stats: content.stats,
     statLabels: content.statLabels,
   }));
@@ -75,8 +76,8 @@ const HomePage: React.FC<HomePageProps> = ({
     icon: a.icon,
     number: a.number,
     label: a.label,
-    color: a.color,
-    bg: a.bg,
+    color: normalizeClubColorClasses(a.color),
+    bg: normalizeClubColorClasses(a.bg),
     position: a.position,
   }));
 
@@ -87,9 +88,9 @@ const HomePage: React.FC<HomePageProps> = ({
     icon: f.icon,
     title: f.title,
     description: f.description,
-    color: f.color,
-    bgColor: f.bgColor,
-    iconColor: f.iconColor,
+    color: normalizeClubColorClasses(f.color),
+    bgColor: normalizeClubColorClasses(f.bgColor),
+    iconColor: normalizeClubColorClasses(f.iconColor),
     stats: f.stats,
   }));
 
@@ -193,12 +194,17 @@ const HomePage: React.FC<HomePageProps> = ({
       />
 
       <div>
-        <Hero slides={slides} achievements={achievements} statLabels={statLabels} />
+        <Hero
+          slides={slides}
+          achievements={achievements}
+          statLabels={statLabels}
+          recentNews={recentNews.slice(0, 3)}
+        />
         <ShopSpotlight />
+        <NewsUpdates categories={newsCategories} articles={recentNews} />
         <Features features={features} stats={featureStatsData} />
         <CoachSpotlight coaches={coaches} />
         <SuccessStories stories={stories} testimonials={successTestimonials} statistics={stats} milestones={successMilestones} />
-        <NewsUpdates categories={newsCategories} articles={featuredNews} />
         <Testimonials testimonials={testimonials} stats={stats} />
         <CTA content={ctaData} />
       </div>
@@ -217,7 +223,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async () =>
     testimonials,
     successStories,
     milestones,
-    featuredNews,
+    recentNews,
     newsCategories,
     ctaContent,
   ] = await Promise.all([
@@ -230,7 +236,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async () =>
     getTestimonials('GENERAL'),
     getSuccessStories(),
     getMilestones(),
-    getFeaturedNewsArticles(6),
+    getNewsArticles(6),
     getNewsCategories(),
     getCTAContent(),
   ]);
@@ -246,7 +252,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async () =>
       testimonials,
       successStories,
       milestones,
-      featuredNews,
+      recentNews,
       newsCategories,
       ctaContent,
     }),

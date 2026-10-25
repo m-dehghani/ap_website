@@ -65,7 +65,7 @@ const SessionsPage: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, string> = {
-      SCHEDULED: 'bg-blue-100 text-blue-700',
+      SCHEDULED: 'bg-primary-100 text-primary-700',
       ONGOING: 'bg-purple-100 text-purple-700',
       COMPLETED: 'bg-emerald-100 text-emerald-700',
       CANCELLED: 'bg-red-100 text-red-700',
@@ -300,7 +300,7 @@ const SessionsPage: React.FC = () => {
                                 : a.status === 'LATE'
                                   ? 'bg-amber-500'
                                   : a.status === 'EXCUSED'
-                                    ? 'bg-blue-500'
+                                    ? 'bg-primary-500'
                                     : 'bg-red-500'
                             }`}
                             title={`${a.user.firstName} ${a.user.lastName}: ${a.status}`}

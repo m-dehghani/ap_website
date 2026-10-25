@@ -138,7 +138,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin }) => {
               </div>
             </Link>
             <Link href="/admin/content" className="block">
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-l-4 border-indigo-500">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-l-4 border-primary-500">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">
@@ -148,9 +148,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin }) => {
                       مدیریت هیرو، ویژگی‌ها، داستان‌ها، اخبار و...
                     </p>
                   </div>
-                  <div className="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center">
+                  <div className="w-16 h-16 bg-primary-100 rounded-xl flex items-center justify-center">
                     <svg
-                      className="w-8 h-8 text-indigo-600"
+                      className="w-8 h-8 text-primary-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

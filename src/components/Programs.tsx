@@ -24,6 +24,7 @@ import {
 import { ProgramViewModel } from '@/types/viewModels/program';
 import { Schedule } from '@/types/domain/program';
 import { formatToman, toPersianDigits } from '@/lib/format';
+import { normalizeClubColorClasses } from '@/lib/brand-colors';
 
 type ViewMode = 'detail' | 'compare';
 
@@ -526,7 +527,7 @@ export default function Programs({ programs }: { programs: ProgramViewModel[] })
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                  className={`card-glass p-8 rounded-4xl bg-linear-to-br ${currentProgram.color} text-white relative overflow-hidden`}
+                  className={`card-glass p-8 rounded-4xl bg-linear-to-br ${normalizeClubColorClasses(currentProgram.color)} text-white relative overflow-hidden`}
                 >
                   {currentProgram.popular && (
                     <motion.div
