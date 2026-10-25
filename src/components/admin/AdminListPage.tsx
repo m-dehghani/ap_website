@@ -13,7 +13,6 @@ type AccentColor =
   | 'amber'
   | 'purple'
   | 'red'
-  | 'indigo'
   | 'teal'
   | 'orange'
   | 'cyan'
@@ -27,7 +26,6 @@ function getAccentClasses(accent: AccentColor, variant: 'bg' | 'hover' = 'bg'): 
     amber: { bg: 'bg-amber-600 hover:bg-amber-700', hover: 'hover:text-amber-600 hover:bg-amber-50' },
     purple: { bg: 'bg-purple-600 hover:bg-purple-700', hover: 'hover:text-purple-600 hover:bg-purple-50' },
     red: { bg: 'bg-red-600 hover:bg-red-700', hover: 'hover:text-red-600 hover:bg-red-50' },
-    indigo: { bg: 'bg-indigo-600 hover:bg-indigo-700', hover: 'hover:text-indigo-600 hover:bg-indigo-50' },
     teal: { bg: 'bg-teal-600 hover:bg-teal-700', hover: 'hover:text-teal-600 hover:bg-teal-50' },
     orange: { bg: 'bg-orange-600 hover:bg-orange-700', hover: 'hover:text-orange-600 hover:bg-orange-50' },
     cyan: { bg: 'bg-cyan-600 hover:bg-cyan-700', hover: 'hover:text-cyan-600 hover:bg-cyan-50' },

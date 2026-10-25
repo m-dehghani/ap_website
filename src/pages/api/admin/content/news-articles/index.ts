@@ -36,6 +36,7 @@ export default async function handler(
         type,
         author,
         image,
+        videoUrl,
         tags,
         readTimeMinutes,
         likes,
@@ -58,6 +59,10 @@ export default async function handler(
           type: type ?? 'NEWS',
           author,
           image,
+          videoUrl:
+            typeof videoUrl === 'string' && videoUrl.trim()
+              ? videoUrl.trim()
+              : null,
           tags: tags ?? [],
           readTimeMinutes: readTimeMinutes ?? 1,
           likes: likes ?? 0,

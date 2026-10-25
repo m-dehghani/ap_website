@@ -120,6 +120,7 @@ export interface NewsArticleViewModel {
   type: string;
   author: string;
   image: string | null;
+  videoUrl: string | null;
   tags: string[];
   readTimeMinutes: number;
   likes: number;
@@ -217,7 +218,7 @@ export interface AboutContentViewModel {
 export interface NewsCardViewModel
   extends Omit<
     NewsArticleViewModel,
-    'id' | 'image' | 'readTimeMinutes' | 'publishedAt'
+    'id' | 'image' | 'readTimeMinutes' | 'publishedAt' | 'videoUrl'
   > {
   id: string | number;
   date: string;
@@ -350,6 +351,7 @@ export function toNewsArticleViewModel(article: Record<string, any>): NewsArticl
     type: article.type,
     author: article.author,
     image: article.image,
+    videoUrl: article.videoUrl ?? null,
     tags: article.tags || [],
     readTimeMinutes: article.readTimeMinutes,
     likes: article.likes,

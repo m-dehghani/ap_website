@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "./node_modules/@prisma/client"
+  provider = "prisma-client"
+  output   = "./generated"
 }
 
 datasource db {
@@ -405,6 +405,7 @@ model NewsArticle {
   type            String   @default("NEWS") // NEWS, VIDEO, GALLERY
   author          String
   image           String?
+  videoUrl        String?  @map("video_url")
   tags            String[] @default([])
   readTimeMinutes Int      @default(1)
   likes           Int      @default(0)

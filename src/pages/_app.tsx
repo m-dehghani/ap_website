@@ -5,9 +5,12 @@ import { MotionConfig } from 'framer-motion';
 import SEO from '../next-seo.config';
 import { SiteProvider } from '@/lib/site-context';
 import { AuthProvider } from '@/hooks/useAuth';
+import { useThemePreference } from '@/hooks/useThemePreference';
 import '@/styles/globals.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
+  useThemePreference();
+
   return (
     <SiteProvider value={pageProps.site ?? null}>
       <AuthProvider>

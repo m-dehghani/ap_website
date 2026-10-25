@@ -20,7 +20,7 @@ const StudentDetailPage: React.FC = () => {
       PENDING: 'bg-amber-100 text-amber-700',
       APPROVED: 'bg-emerald-100 text-emerald-700',
       CANCELLED: 'bg-red-100 text-red-700',
-      COMPLETED: 'bg-blue-100 text-blue-700',
+      COMPLETED: 'bg-emerald-100 text-emerald-700',
     };
     const labels: Record<string, string> = {
       PENDING: 'در انتظار',

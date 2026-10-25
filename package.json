@@ -34,6 +34,8 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:turbopack": "next dev --turbopack",
+    "postinstall": "prisma generate",
+    "prebuild": "prisma generate",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",

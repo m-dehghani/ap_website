@@ -33,7 +33,7 @@ export default function HeroContentNewPage() {
     ctaHref: '/register',
     ctaSecondaryLabel: 'داستان ما',
     ctaSecondaryHref: '/about',
-    bgGradient: 'from-navy-950 via-blue-900 to-blue-700',
+    bgGradient: 'from-navy-950 via-primary-900 to-primary-700',
     stats: JSON.stringify({ players: '۵۰۰+', championships: '۲۵+', experience: '۱۰+' }, null, 2),
     statLabels: JSON.stringify({ players: 'بازیکن آموزش‌دیده', championships: 'قهرمانی', experience: 'سال تجربه' }, null, 2),
     isActive: true,
@@ -200,7 +200,7 @@ export default function HeroContentNewPage() {
                 name="bgGradient"
                 value={formData.bgGradient}
                 onChange={handleChange}
-                placeholder="from-navy-950 via-blue-900 to-blue-700"
+                placeholder="from-navy-950 via-primary-900 to-primary-700"
               />
             </div>
 

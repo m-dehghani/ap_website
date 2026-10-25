@@ -921,7 +921,7 @@ async function seedCoachesAndPrograms(demoPassword: string) {
         'ارائه تجهیزات کامل',
         'محیط یادگیری شاد',
       ],
-      color: 'from-blue-500 to-blue-600',
+      color: 'from-primary-500 to-primary-700',
       icon: '⚽',
       popular: false,
       rating: 4.8,
@@ -1649,6 +1649,8 @@ async function seedNews() {
         category: 'matches',
         type: 'NEWS',
         author: 'مدیر آکادمی',
+        image:
+          'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80',
         tags: ['قهرمانی', 'نوجوانان', 'مسابقات'],
         readTimeMinutes: 3,
         likes: 156,
@@ -1665,6 +1667,8 @@ async function seedNews() {
         category: 'events',
         type: 'NEWS',
         author: 'تیم اجرایی',
+        image:
+          'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80',
         tags: ['کمپ تابستانی', 'کودکان', 'تفریح'],
         readTimeMinutes: 2,
         likes: 89,
@@ -1681,6 +1685,10 @@ async function seedNews() {
         category: 'training',
         type: 'VIDEO',
         author: 'حسن میرزایی',
+        image:
+          'https://images.unsplash.com/photo-1518604666860-9ed391f76460?auto=format&fit=crop&w=1200&q=80',
+        videoUrl:
+          'https://videos.pexels.com/video-files/3195394/3195394-hd_1920_1080_25fps.mp4',
         tags: ['آمادگی جسمانی', 'تمرین', 'ویدئو'],
         readTimeMinutes: 5,
         likes: 234,
@@ -1697,6 +1705,8 @@ async function seedNews() {
         category: 'achievements',
         type: 'NEWS',
         author: 'خبرنگار ورزشی',
+        image:
+          'https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=80',
         tags: ['انتقال', 'لیگ برتر', 'موفقیت'],
         readTimeMinutes: 4,
         likes: 312,
@@ -1712,6 +1722,8 @@ async function seedNews() {
         category: 'events',
         type: 'GALLERY',
         author: 'عکاس آکادمی',
+        image:
+          'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=1200&q=80',
         tags: ['جشن', 'تصاویر', 'قهرمانی'],
         readTimeMinutes: 1,
         likes: 198,
@@ -1720,14 +1732,18 @@ async function seedNews() {
         publishedAt: new Date('2023-10-25'),
       },
       {
-        title: 'معرفی مربی جدید: احمد صالحی',
+        title: 'ویدئو: معرفی مربی جدید احمد صالحی',
         excerpt:
-          'احمد صالحی، مربی سابق تیم ملی جوانان، به تیم مربیگری افشین پیروانی پیوست',
+          'با احمد صالحی، مربی سابق تیم ملی جوانان و عضو تازه تیم مربیگری آکادمی آشنا شوید',
         content:
-          'احمد صالحی با 20 سال تجربه مربیگری در تیم‌های مختلف، مسئولیت آموزش برنامه بزرگسالان را بر عهده خواهد داشت.',
+          'در این ویدئو، احمد صالحی از تجربه 20 ساله مربیگری و برنامه‌های خود برای آموزش بازیکنان آکادمی می‌گوید.',
         category: 'training',
-        type: 'NEWS',
+        type: 'VIDEO',
         author: 'مدیر آکادمی',
+        image:
+          'https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=1200&q=80',
+        videoUrl:
+          'https://videos.pexels.com/video-files/3196292/3196292-hd_1920_1080_25fps.mp4',
         tags: ['مربی جدید', 'تیم ملی', 'بزرگسالان'],
         readTimeMinutes: 3,
         likes: 145,
@@ -1760,11 +1776,12 @@ async function main() {
   await seedProvinces();
   await seedShop();
   const catalog = await seedCoachesAndPrograms(demoPassword);
-  await seedDemoUsers(
+  const demoUsers = await seedDemoUsers(
     catalog.programs.kids.id,
     catalog.programs.kids.price,
     demoPassword,
   );
+  await seedShopReviews(demoUsers.student.id, demoUsers.password);
   await seedStories(catalog);
   await seedNews();
 

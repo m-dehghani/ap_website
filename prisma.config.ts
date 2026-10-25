@@ -10,8 +10,4 @@ export default defineConfig({
   datasource: {
     url: env('DATABASE_URL'),
   },
-  generator: {
-    provider: 'prisma-client-js',
-    output: '../node_modules/@prisma/client',
-  },
 });

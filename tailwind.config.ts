@@ -24,6 +24,7 @@ export default {
           700: '#b91c1c',
           800: '#991b1b',
           900: '#7f1d1d',
+          950: '#450a0a',
         },
         // Secondary - Energetic Orange (energy, passion, action)
         secondary: {
@@ -51,18 +52,19 @@ export default {
           800: '#166534',
           900: '#14532d',
         },
-        // Navy - Deep Authority Blue (leadership, elite, premium)
+        // Warm charcoal-red keeps neutral surfaces aligned with the club brand.
         navy: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b', // Main navy
-          900: '#0f172a',
+          50: '#faf6f6',
+          100: '#f3e9eb',
+          200: '#e5d3d7',
+          300: '#c9aeb4',
+          400: '#a9868f',
+          500: '#89646d',
+          600: '#704c56',
+          700: '#573941',
+          800: '#3b252b',
+          900: '#241519',
+          950: '#160f12',
         },
         // Gold - Premium highlights (excellence, achievement, premium)
         gold: {
@@ -100,7 +102,7 @@ export default {
           'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
         'gradient-accent': 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
         'gradient-hero':
-          'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #dc2626 100%)',
+          'linear-gradient(135deg, #241519 0%, #3b252b 50%, #dc2626 100%)',
         'gradient-mesh':
           'radial-gradient(circle at 20% 50%, rgba(220, 38, 38, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(234, 88, 12, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(22, 163, 74, 0.3) 0%, transparent 50%)',
       },

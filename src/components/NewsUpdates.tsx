@@ -83,7 +83,7 @@ const getTypeColor = (type: string) => {
       return 'bg-purple-600';
     }
     default: {
-      return 'bg-blue-600';
+      return 'bg-primary-600';
     }
   }
 };
@@ -97,7 +97,7 @@ const getTypeBgColor = (type: string) => {
       return 'from-purple-500 to-purple-600';
     }
     default: {
-      return 'from-blue-500 to-blue-600';
+      return 'from-primary-500 to-primary-600';
     }
   }
 };
@@ -120,13 +120,25 @@ function FeaturedNewsCard({
         <div
           className={`h-64 bg-linear-to-r ${getTypeBgColor(article.type)} flex items-center justify-center relative overflow-hidden`}
         >
-          {hasArticleImage(article.image) && (
+          {article.videoUrl ? (
+            <video
+              controls
+              playsInline
+              preload="none"
+              poster={article.image ?? undefined}
+              aria-label={article.title}
+              className="absolute inset-0 h-full w-full object-cover"
+            >
+              <source src={article.videoUrl} />
+              مرورگر شما از پخش ویدئو پشتیبانی نمی‌کند.
+            </video>
+          ) : hasArticleImage(article.image) ? (
             <img
               src={article.image}
               alt={article.title}
               className="absolute inset-0 w-full h-full object-cover opacity-80"
             />
-          )}
+          ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="relative z-10 flex items-center justify-center">
             <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
@@ -215,13 +227,25 @@ function NewsCard({
         <div
           className={`h-48 bg-linear-to-br ${getTypeBgColor(article.type)} flex items-center justify-center relative overflow-hidden`}
         >
-          {hasArticleImage(article.image) && (
+          {article.videoUrl ? (
+            <video
+              controls
+              playsInline
+              preload="none"
+              poster={article.image ?? undefined}
+              aria-label={article.title}
+              className="absolute inset-0 h-full w-full object-cover"
+            >
+              <source src={article.videoUrl} />
+              مرورگر شما از پخش ویدئو پشتیبانی نمی‌کند.
+            </video>
+          ) : hasArticleImage(article.image) ? (
             <img
               src={article.image}
               alt={article.title}
               className="absolute inset-0 w-full h-full object-cover opacity-80"
             />
-          )}
+          ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="relative z-10 flex items-center justify-center">
             <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">

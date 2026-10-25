@@ -215,7 +215,7 @@ function TestimonialCard({
         <span className="text-emerald-300 text-4xl absolute -top-2 -right-2">
           &ldquo;
         </span>
-        <span className="relative z-10">"{testimonial.text}"</span>
+        <span className="relative z-10">&ldquo;{testimonial.text}&rdquo;</span>
       </blockquote>
 
       <div className="flex items-center justify-between text-sm pt-4 border-t border-gray-100">
@@ -240,7 +240,7 @@ function StatisticCard({
   const bgColors = [
     'bg-yellow-100',
     'bg-green-100',
-    'bg-blue-100',
+    'bg-primary-100',
     'bg-purple-100',
   ];
 
