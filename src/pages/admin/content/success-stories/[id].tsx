@@ -77,13 +77,7 @@ export default function SuccessStoryEditPage() {
     displayOrder: 0,
   });
 
-  useEffect(() => {
-    if (id && typeof id === 'string') {
-      fetchData();
-    }
-  }, [id]);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const [story, p, c] = await Promise.all([
         fetchJson<SuccessStory>(`/api/admin/content/success-stories/${id}`),
@@ -115,7 +109,13 @@ export default function SuccessStoryEditPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id && typeof id === 'string') {
+      void Promise.resolve().then(fetchData);
+    }
+  }, [fetchData, id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

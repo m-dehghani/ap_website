@@ -63,14 +63,7 @@ export default function TestimonialEditPage() {
     displayOrder: 0,
   });
 
-  useEffect(() => {
-    if (id && typeof id === 'string') {
-      fetchData();
-      fetchPrograms();
-    }
-  }, [id]);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const data = await fetchJson<Testimonial>(`/api/admin/content/testimonials/${id}`);
       if (data) {
@@ -93,16 +86,23 @@ export default function TestimonialEditPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const fetchPrograms = async () => {
+  const fetchPrograms = React.useCallback(async () => {
     try {
       const data = await fetchJson<Program[]>('/api/admin/programs');
       setPrograms(data);
     } catch {
       // ignore
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (id && typeof id === 'string') {
+      void Promise.resolve().then(fetchData);
+      void Promise.resolve().then(fetchPrograms);
+    }
+  }, [fetchData, fetchPrograms, id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

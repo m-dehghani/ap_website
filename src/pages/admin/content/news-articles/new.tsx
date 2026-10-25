@@ -54,18 +54,18 @@ export default function NewsArticleNewPage() {
     publishedAt: new Date().toISOString().slice(0, 16),
   });
 
-  React.useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
+  const fetchCategories = React.useCallback(async () => {
     try {
       const data = await fetchJson<NewsCategory[]>('/api/admin/content/news-categories');
       setCategories(data);
     } catch {
       // ignore
     }
-  };
+  }, []);
+
+  React.useEffect(() => {
+    void Promise.resolve().then(fetchCategories);
+  }, [fetchCategories]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

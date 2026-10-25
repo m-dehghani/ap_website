@@ -80,8 +80,6 @@ export default function ShopCartPage() {
   // Load cities when province changes
   useEffect(() => {
     if (!values.province) {
-      setCities([]);
-      setValues((prev) => ({ ...prev, city: '' }));
       return;
     }
     void fetch(`/api/admin/content/cities?province=${encodeURIComponent(values.province)}`)
@@ -131,6 +129,7 @@ export default function ShopCartPage() {
   const handleProvinceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const provinceName = event.target.value;
     setValues((prev) => ({ ...prev, province: provinceName, city: '' }));
+    if (!provinceName) setCities([]);
   };
 
   const handleCityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {

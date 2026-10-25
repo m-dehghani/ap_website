@@ -35,13 +35,7 @@ export default function OpeningHourEditPage() {
     displayOrder: 0,
   });
 
-  useEffect(() => {
-    if (id && typeof id === 'string') {
-      fetchData();
-    }
-  }, [id]);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const data = await fetchJson<OpeningHour>(`/api/admin/content/opening-hours/${id}`);
       if (data) {
@@ -57,7 +51,13 @@ export default function OpeningHourEditPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id && typeof id === 'string') {
+      void Promise.resolve().then(fetchData);
+    }
+  }, [fetchData, id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

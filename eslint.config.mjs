@@ -12,7 +12,16 @@ const eslintConfig = [
         }
     },
     {
+        files: ["**/*.cjs"],
+        rules: {
+            "@typescript-eslint/no-require-imports": "off"
+        }
+    },
+    {
         ignores: [
+            ".prisma/**/*",
+            "prisma/.prisma/**/*",
+            "prisma/generated/**/*",
             "dist/**/*",
             "node_modules/**/*",
             ".next/**/*"

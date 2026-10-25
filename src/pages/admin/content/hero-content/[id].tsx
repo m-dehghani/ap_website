@@ -59,13 +59,7 @@ export default function HeroContentEditPage() {
     displayOrder: 0,
   });
 
-  useEffect(() => {
-    if (id && typeof id === 'string') {
-      fetchData();
-    }
-  }, [id]);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const data = await fetchJson<HeroContent>(`/api/admin/content/hero-content/${id}`);
       if (data) {
@@ -89,7 +83,13 @@ export default function HeroContentEditPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id && typeof id === 'string') {
+      void Promise.resolve().then(fetchData);
+    }
+  }, [fetchData, id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

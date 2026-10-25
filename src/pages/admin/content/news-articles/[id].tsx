@@ -75,13 +75,7 @@ export default function NewsArticleEditPage() {
     publishedAt: '',
   });
 
-  useEffect(() => {
-    if (id && typeof id === 'string') {
-      fetchData();
-    }
-  }, [id]);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const [article, cats] = await Promise.all([
         fetchJson<NewsArticle>(`/api/admin/content/news-articles/${id}`),
@@ -112,7 +106,13 @@ export default function NewsArticleEditPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id && typeof id === 'string') {
+      void Promise.resolve().then(fetchData);
+    }
+  }, [fetchData, id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

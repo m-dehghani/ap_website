@@ -45,18 +45,18 @@ export default function TestimonialNewPage() {
     displayOrder: 0,
   });
 
-  React.useEffect(() => {
-    fetchPrograms();
-  }, []);
-
-  const fetchPrograms = async () => {
+  const fetchPrograms = React.useCallback(async () => {
     try {
       const data = await fetchJson<Program[]>('/api/admin/programs');
       setPrograms(data);
     } catch {
       // ignore
     }
-  };
+  }, []);
+
+  React.useEffect(() => {
+    void Promise.resolve().then(fetchPrograms);
+  }, [fetchPrograms]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

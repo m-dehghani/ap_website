@@ -57,11 +57,7 @@ export default function SuccessStoryNewPage() {
     displayOrder: 0,
   });
 
-  React.useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const [p, c] = await Promise.all([
         fetchJson<Program[]>('/api/admin/programs'),
@@ -72,7 +68,11 @@ export default function SuccessStoryNewPage() {
     } catch {
       // ignore
     }
-  };
+  }, []);
+
+  React.useEffect(() => {
+    void Promise.resolve().then(fetchData);
+  }, [fetchData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

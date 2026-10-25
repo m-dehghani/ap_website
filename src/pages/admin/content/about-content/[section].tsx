@@ -39,13 +39,7 @@ export default function AboutContentEditPage() {
     displayOrder: 0,
   });
 
-  useEffect(() => {
-    if (section && typeof section === 'string') {
-      fetchData();
-    }
-  }, [section]);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const data = await fetchJson<AboutContent>(`/api/admin/content/about-content/${section}`);
       if (data) {
@@ -62,7 +56,13 @@ export default function AboutContentEditPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [section]);
+
+  useEffect(() => {
+    if (section && typeof section === 'string') {
+      void Promise.resolve().then(fetchData);
+    }
+  }, [fetchData, section]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

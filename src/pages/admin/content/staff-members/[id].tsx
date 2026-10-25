@@ -41,13 +41,7 @@ export default function StaffMemberEditPage() {
     displayOrder: 0,
   });
 
-  useEffect(() => {
-    if (id && typeof id === 'string') {
-      fetchData();
-    }
-  }, [id]);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const data = await fetchJson<StaffMember>(`/api/admin/content/staff-members/${id}`);
       if (data) {
@@ -65,7 +59,13 @@ export default function StaffMemberEditPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id && typeof id === 'string') {
+      void Promise.resolve().then(fetchData);
+    }
+  }, [fetchData, id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
