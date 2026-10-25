@@ -2,6 +2,7 @@ import type { AppProps } from 'next/app';
 import { Toaster } from 'react-hot-toast';
 import { DefaultSeo } from 'next-seo';
 import { MotionConfig } from 'framer-motion';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import SEO from '../next-seo.config';
 import { SiteProvider } from '@/lib/site-context';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -17,6 +18,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <MotionConfig reducedMotion="user">
           <DefaultSeo {...SEO} />
           <Component {...pageProps} />
+          <SpeedInsights />
           <Toaster
           position="top-right"
           toastOptions={{
