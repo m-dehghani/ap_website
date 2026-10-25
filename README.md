@@ -21,6 +21,13 @@ It clears and replaces the seed-managed tables, so do not run it against a
 database whose data you want to preserve. Production seeding is blocked unless
 `ALLOW_DEMO_SEED_USERS=true` is explicitly set.
 
+## Production deployments
+
+Before promoting an application deployment that uses new Prisma models, run
+`npx prisma migrate deploy` in a trusted deployment environment configured with
+the production `DATABASE_URL`. This applies pending migrations without
+deleting existing data.
+
 ## Checks
 
 - `npm run lint`
