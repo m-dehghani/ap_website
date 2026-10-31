@@ -108,6 +108,7 @@ const orderStatusLabels: Record<string, string> = {
   CANCELLED: 'لغوشده',
   PAYMENT_FAILED: 'پرداخت ناموفق',
   REFUND_REQUIRED: 'نیازمند پیگیری بازپرداخت',
+  REFUNDED: 'بازپرداخت‌شده',
 };
 
 function toDateInput(value: string | null | undefined) {
