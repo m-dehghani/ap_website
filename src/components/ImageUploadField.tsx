@@ -34,12 +34,14 @@ export default function ImageUploadField({
   const id = useId();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const currentImages = Array.isArray(value) ? value : value ? [value] : [];
 
   const uploadImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.currentTarget.files ?? []);
     event.currentTarget.value = '';
     if (!files.length) return;
+    setSuccess(false);
 
     if (!multiple && files.length !== 1) {
       setError('هر بار فقط یک تصویر انتخاب کنید');
@@ -80,7 +82,9 @@ export default function ImageUploadField({
         uploaded.push(result.url);
         onChange(multiple ? [...currentImages, ...uploaded] : uploaded[0]);
       }
+      setSuccess(true);
     } catch (uploadError) {
+      setSuccess(false);
       setError(
         uploadError instanceof Error
           ? uploadError.message
@@ -92,6 +96,7 @@ export default function ImageUploadField({
   };
 
   const removeImage = (image: string) => {
+    setSuccess(false);
     onChange(
       multiple
         ? currentImages.filter((current) => current !== image)
@@ -128,9 +133,20 @@ export default function ImageUploadField({
       <p
         id={`${id}-status`}
         role={error ? 'alert' : 'status'}
-        className={error ? 'text-sm text-red-700' : 'sr-only'}
+        className={
+          error
+            ? 'text-sm text-red-700'
+            : success
+              ? 'text-sm text-green-700'
+              : 'sr-only'
+        }
       >
-        {error || 'تصویر انتخاب نشده است'}
+        {error ||
+          (success
+            ? 'تصویر با موفقیت بارگذاری شد'
+            : currentImages.length
+              ? 'تصویر فعلی انتخاب شده است'
+              : 'تصویری انتخاب نشده است')}
       </p>
       {currentImages.length > 0 && (
         <ul className="flex flex-wrap gap-3">

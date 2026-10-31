@@ -47,6 +47,10 @@ describe('ImageUploadField', () => {
       expect(onChange).toHaveBeenCalledWith(
         '/api/uploads/550e8400-e29b-41d4-a716-446655440000',
       );
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'تصویر با موفقیت بارگذاری شد',
+      );
+      expect(screen.getByRole('status')).toHaveClass('text-sm text-green-700');
     });
   });
 
