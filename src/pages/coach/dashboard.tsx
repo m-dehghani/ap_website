@@ -5,11 +5,19 @@ import Layout from '@/components/Layout';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import AttendanceRoster from '@/components/AttendanceRoster';
+import CoachEvaluationsPanel from '@/components/CoachEvaluationsPanel';
 import { attendanceEligibleRegistrationStatuses } from '@/lib/attendance';
 
 interface CoachDashboardProps {
   coach: any;
 }
+
+type CoachProgramRoster = {
+  registrations?: {
+    userId: string;
+    user: { firstName: string; lastName: string };
+  }[];
+};
 
 const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
   const router = useRouter();
@@ -36,6 +44,23 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
 
   const programs = coach.programs || [];
   const sessions = coach.sessions || [];
+  const evaluationStudents = Array.from(
+    new Map<
+      string,
+      { id: string; firstName: string; lastName: string }
+    >(
+      programs.flatMap((program: CoachProgramRoster) =>
+        (program.registrations ?? []).map((registration) => [
+          registration.userId,
+          {
+            id: registration.userId,
+            firstName: registration.user.firstName,
+            lastName: registration.user.lastName,
+          },
+        ]),
+      ),
+    ).values(),
+  );
 
   return (
     <Layout
@@ -378,6 +403,10 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
             </div>
           </div>
         </div>
+        <CoachEvaluationsPanel
+          students={evaluationStudents}
+          evaluations={coach.evaluations ?? []}
+        />
       </div>
     </Layout>
   );
@@ -425,6 +454,27 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           price: true,
           maxStudents: true,
           isActive: true,
+          registrations: {
+            select: {
+              userId: true,
+              user: { select: { firstName: true, lastName: true } },
+            },
+          },
+        },
+      },
+      evaluations: {
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+        select: {
+          id: true,
+          technical: true,
+          physical: true,
+          mental: true,
+          teamwork: true,
+          overall: true,
+          notes: true,
+          createdAt: true,
+          user: { select: { firstName: true, lastName: true } },
         },
       },
       sessions: {
@@ -475,6 +525,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     props: {
       coach: {
         ...coach,
+        evaluations: (coach.evaluations ?? []).map((evaluation) => ({
+          ...evaluation,
+          createdAt: evaluation.createdAt.toISOString(),
+        })),
         sessions: coach.sessions.map((session) => ({
           ...session,
           date: session.date.toISOString(),

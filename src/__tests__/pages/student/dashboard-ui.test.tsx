@@ -41,6 +41,19 @@ describe('student attendance history UI', () => {
               },
             },
           ],
+          evaluations: [
+            {
+              id: 'evaluation-1',
+              technical: 8,
+              physical: 7,
+              mental: 9,
+              teamwork: 8,
+              overall: 8,
+              notes: 'پیشرفت خوب',
+              createdAt: '2026-10-25T10:00:00.000Z',
+              coach: { firstName: 'مهدی', lastName: 'کریمی' },
+            },
+          ],
         }}
         programs={[]}
       />,
@@ -51,5 +64,13 @@ describe('student attendance history UI', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('تمرین پایه')).toBeInTheDocument();
     expect(screen.getByText('با تأخیر')).toBeInTheDocument();
+    const evaluationsHeading = screen.getByRole('heading', {
+      name: 'ارزیابی‌های من',
+    });
+    expect(evaluationsHeading).toBeInTheDocument();
+    expect(screen.getByText('پیشرفت خوب')).toBeInTheDocument();
+    expect(
+      evaluationsHeading.closest('section')?.querySelector('form'),
+    ).toBeNull();
   });
 });

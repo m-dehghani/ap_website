@@ -42,6 +42,19 @@ describe('coach dashboard getServerSideProps', () => {
       studentsCount: 12,
       rating: 4.5,
       programs: [],
+      evaluations: [
+        {
+          id: 'evaluation-1',
+          technical: 8,
+          physical: 7,
+          mental: 9,
+          teamwork: 8,
+          overall: 8,
+          notes: null,
+          createdAt: new Date('2026-10-25T10:00:00.000Z'),
+          user: { firstName: 'علی', lastName: 'رضایی' },
+        },
+      ],
       sessions: [
         {
           id: 'session-1',
@@ -68,6 +81,9 @@ describe('coach dashboard getServerSideProps', () => {
     expect(result.props.coach.sessions[0].date).toBe(
       '2026-10-31T10:00:00.000Z',
     );
+    expect(result.props.coach.evaluations[0].createdAt).toBe(
+      '2026-10-25T10:00:00.000Z',
+    );
     expect(
       JSON.stringify(result.props),
     ).not.toContain('coach-password');
@@ -81,5 +97,9 @@ describe('coach dashboard getServerSideProps', () => {
     const [query] = mockPrisma.coach.findUnique.mock.calls[0];
     expect(query.select).not.toHaveProperty('password');
     expect(query.select).not.toHaveProperty('passwordHash');
+    expect(query.select.evaluations.select).toMatchObject({
+      technical: true,
+      user: { select: { firstName: true, lastName: true } },
+    });
   });
 });

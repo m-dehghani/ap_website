@@ -22,6 +22,19 @@ const attendanceHistory = [
     },
   },
 ];
+const evaluationHistory = [
+  {
+    id: 'evaluation-1',
+    technical: 8,
+    physical: 7,
+    mental: 9,
+    teamwork: 8,
+    overall: 8,
+    notes: 'پیشرفت خوب',
+    createdAt: new Date('2026-10-25T10:00:00.000Z'),
+    coach: { firstName: 'مهدی', lastName: 'کریمی' },
+  },
+];
 
 describe('student dashboard attendance history', () => {
   const prisma = {
@@ -48,6 +61,7 @@ describe('student dashboard attendance history', () => {
       role: 'STUDENT',
       registrations: [],
       attendance: attendanceHistory,
+      evaluations: evaluationHistory,
     });
     prisma.program.findMany.mockResolvedValue([]);
   });
@@ -80,5 +94,34 @@ describe('student dashboard attendance history', () => {
       }),
     ]);
     expect(JSON.stringify(result.props)).not.toContain('password');
+  });
+
+  it('loads and serializes evaluations for only the authenticated student', async () => {
+    const result = await getServerSideProps({
+      req: { cookies: { auth_token: 'signed-token' } },
+    } as never);
+
+    if (!('props' in result)) throw new Error('Expected student dashboard props');
+    expect(prisma.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'student-1' },
+        select: expect.objectContaining({
+          evaluations: expect.objectContaining({
+            select: expect.objectContaining({
+              id: true,
+              technical: true,
+              coach: expect.any(Object),
+            }),
+          }),
+        }),
+      }),
+    );
+    expect(result.props.student.evaluations).toEqual([
+      expect.objectContaining({
+        id: 'evaluation-1',
+        createdAt: '2026-10-25T10:00:00.000Z',
+        coach: { firstName: 'مهدی', lastName: 'کریمی' },
+      }),
+    ]);
   });
 });
