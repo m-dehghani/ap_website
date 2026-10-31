@@ -1,12 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap');
 @import 'tailwindcss';
 @config '../../tailwind.config.ts';
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 /* Program card gradients come from the database (programs.color), so they are
    not visible to Tailwind's source scan. Keep this palette in sync with them. */
 @source inline("{from,to}-{emerald,purple,accent,primary,secondary,navy,gold}-{500,600,700,800,900,950}");
 
 :root {
   color-scheme: light dark;
+  --page-background: #f8fafc;
+  --surface-background: #ffffff;
+  --surface-muted: #f1f5f9;
+  --surface-raised: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border-subtle: #cbd5e1;
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #b91c1c;
+
   /* Color System */
   --primary-color: #dc2626;
   --secondary-color: #ea580c;
@@ -100,10 +111,9 @@ body {
   font-family: 'Vazirmatn', system-ui, sans-serif;
   line-height: 1.7;
   color: #334155;
-  background-color: #f8fafc;
+  background-color: var(--page-background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
   text-rendering: optimizeLegibility;
 }
 
@@ -125,11 +135,11 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: linear-gradient(135deg, #dc2626, var(--scrollbar-thumb));
   border-radius: 4px;
 }
 
@@ -138,7 +148,7 @@ body {
 }
 
 ::-webkit-scrollbar-corner {
-  background: #f1f5f9;
+  background: var(--scrollbar-track);
 }
 
 /* Selection */
@@ -212,7 +222,7 @@ body {
     font-family: 'Vazirmatn', system-ui, sans-serif;
     font-weight: 700;
     line-height: 1.25;
-    color: #0f172a;
+    color: var(--text-primary);
   }
 
   h1 {
@@ -729,11 +739,17 @@ body {
   --text-primary: #fff1f3;
   --text-secondary: #d8c5cb;
   --border-subtle: #493239;
+  --scrollbar-track: #24191d;
+  --scrollbar-thumb: #fca5a5;
 }
 
 :root[data-theme='dark'] body {
   color: var(--text-primary);
   background-color: var(--page-background);
+}
+
+:root {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 :root[data-theme='dark'] h1:not(.text-white),
@@ -1010,6 +1026,13 @@ body {
 
 :root[data-theme='dark'] .dark-theme-control [aria-pressed='false']:hover {
   background-color: var(--surface-raised);
+}
+
+@media (max-width: 767px) {
+  .home-page .home-hero-title {
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
+    overflow-wrap: anywhere;
+  }
 }
 
 /* Utility Classes */

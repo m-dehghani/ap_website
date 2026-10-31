@@ -214,7 +214,7 @@ export default function Hero({
 
   return (
     <section
-      className="relative min-h-[92vh] flex items-center overflow-hidden"
+      className="home-hero relative flex min-h-[70svh] items-center overflow-hidden md:min-h-[92vh]"
       aria-label="اسلایدهای آکادمی و تازه‌ترین خبرها"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -244,7 +244,7 @@ export default function Hero({
       <div className="relative z-10 w-full">
         <div className="container-custom">
           {currentSlideData && (
-          <div className="grid lg:grid-cols-2 gap-10 xl:gap-16 items-center min-h-[80vh] py-16 md:py-20">
+          <div className="grid min-h-[62svh] items-center gap-10 py-10 md:min-h-[80vh] md:py-20 xl:gap-16 lg:grid-cols-2">
             <div className="text-center lg:text-right space-y-6 md:space-y-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -265,7 +265,7 @@ export default function Hero({
                 <div className="space-y-4">
                   <h1
                     id="hero-title"
-                    className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-tight text-balance"
+                    className="home-hero-title text-3xl font-extrabold leading-tight text-white text-balance sm:text-4xl lg:text-5xl xl:text-6xl"
                   >
                     {currentSlideData.title}
                   </h1>
@@ -382,7 +382,7 @@ export default function Hero({
           )}
 
           {currentNews && (
-            <div className="mx-auto max-w-6xl pb-8" aria-live="off">
+            <div className="mx-auto hidden max-w-6xl pb-8 md:block" aria-live="off">
               <div className="mb-4 flex items-end justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold text-red-200">

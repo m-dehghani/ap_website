@@ -7,16 +7,26 @@ describe('useThemePreference', () => {
     matches: false,
     media: '(prefers-color-scheme: dark)',
     onchange: null,
-    addEventListener: vi.fn(),
+    addEventListener: vi.fn(
+      (
+        type: string,
+        listener: EventListenerOrEventListenerObject,
+      ) => mediaQueryListeners.set(type, listener),
+    ),
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   } as MediaQueryList;
+  const mediaQueryListeners = new Map<
+    string,
+    EventListenerOrEventListenerObject
+  >();
 
   beforeEach(() => {
     localStorage.clear();
     delete document.documentElement.dataset.theme;
     document.head.innerHTML = '<meta name="color-scheme" content="light dark">';
     mediaQuery.matches = false;
+    mediaQueryListeners.clear();
     vi.stubGlobal('matchMedia', vi.fn(() => mediaQuery));
   });
 
@@ -42,5 +52,28 @@ describe('useThemePreference', () => {
     expect(
       document.querySelector('meta[name="color-scheme"]')?.getAttribute('content'),
     ).toBe('light dark');
+  });
+
+  it('updates the applied theme when the system preference changes', () => {
+    renderHook(() => useThemePreference());
+
+    mediaQuery.matches = true;
+    const listener = mediaQueryListeners.get('change');
+    if (typeof listener === 'function') listener(new Event('change'));
+    else listener?.handleEvent(new Event('change'));
+
+    expect(document.documentElement.dataset.theme).toBe('dark');
+  });
+
+  it('keeps an explicit theme when the system preference changes', () => {
+    localStorage.setItem('ap-theme-preference', 'light');
+    renderHook(() => useThemePreference());
+
+    mediaQuery.matches = true;
+    const listener = mediaQueryListeners.get('change');
+    if (typeof listener === 'function') listener(new Event('change'));
+    else listener?.handleEvent(new Event('change'));
+
+    expect(document.documentElement.dataset.theme).toBe('light');
   });
 });
