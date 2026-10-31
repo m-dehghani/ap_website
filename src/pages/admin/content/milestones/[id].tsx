@@ -11,6 +11,7 @@ interface Milestone {
   year: number;
   title: string;
   description: string;
+  isVerified: boolean;
   displayOrder: number;
 }
 
@@ -18,6 +19,7 @@ interface FormData {
   year: number;
   title: string;
   description: string;
+  isVerified: boolean;
   displayOrder: number;
 }
 
@@ -32,6 +34,7 @@ export default function MilestoneEditPage() {
     year: 1402,
     title: '',
     description: '',
+    isVerified: false,
     displayOrder: 0,
   });
 
@@ -43,6 +46,7 @@ export default function MilestoneEditPage() {
           year: data.year,
           title: data.title,
           description: data.description,
+          isVerified: data.isVerified,
           displayOrder: data.displayOrder,
         });
       }
@@ -63,7 +67,12 @@ export default function MilestoneEditPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'year' || name === 'displayOrder' ? parseInt(value, 10) || 0 : value,
+      [name]:
+        e.target instanceof HTMLInputElement && e.target.type === 'checkbox'
+          ? e.target.checked
+          : name === 'year' || name === 'displayOrder'
+            ? parseInt(value, 10) || 0
+            : value,
     }));
   };
 
@@ -96,7 +105,7 @@ export default function MilestoneEditPage() {
 
   if (loading) {
     return (
-      <AdminLayout title="ویرایش رویداد">
+      <AdminLayout title="ویرایش افتخار آکادمی">
         <div className="bg-white rounded-2xl shadow-lg p-8" role="status" aria-label="در حال بارگذاری">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary-600 border-t-transparent" />
@@ -110,8 +119,10 @@ export default function MilestoneEditPage() {
     <AdminLayout title="ویرایش رویداد">
       <div className="max-w-2xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">ویرایش رویداد</h1>
-          <p className="text-gray-600 mt-1">ویرایش رویداد کلیدی تاریخچه آکادمی</p>
+          <h1 className="text-3xl font-bold text-gray-900">ویرایش افتخار آکادمی</h1>
+          <p className="text-gray-600 mt-1">
+            فقط رویدادها و افتخارات تأییدشده آکادمی برای بازدیدکنندگان نمایش داده می‌شوند.
+          </p>
         </div>
 
         {error && (
@@ -148,9 +159,20 @@ export default function MilestoneEditPage() {
               value={formData.title}
               onChange={handleChange}
               required
-              placeholder="مثال: تأسیس آکادمی"
+              placeholder="عنوان افتخار ثبت‌شده"
             />
           </div>
+
+          <label className="flex items-start gap-3 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              name="isVerified"
+              checked={formData.isVerified}
+              onChange={handleChange}
+              className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+            <span>این افتخار بررسی و تأیید شده است و می‌تواند عمومی شود.</span>
+          </label>
 
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">

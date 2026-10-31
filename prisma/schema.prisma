@@ -373,6 +373,7 @@ model Milestone {
   year         Int // Solar Hijri year
   title        String
   description  String
+  isVerified   Boolean @default(false)
   displayOrder Int    @default(0)
 
   @@map("milestones")

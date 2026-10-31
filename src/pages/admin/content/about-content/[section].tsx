@@ -150,6 +150,7 @@ export default function AboutContentEditPage() {
                 value={formData.section}
                 onChange={handleChange}
                 options={[
+                  { value: 'history', label: 'تاریخچه آکادمی' },
                   { value: 'story', label: 'داستان ما' },
                   { value: 'mission', label: 'ماموریت' },
                   { value: 'vision', label: 'چشم‌انداز' },

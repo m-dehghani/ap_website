@@ -8,6 +8,7 @@ interface Milestone {
   year: number;
   title: string;
   description: string;
+  isVerified: boolean;
   displayOrder: number;
 }
 
@@ -29,6 +30,11 @@ const columns: TableColumn<Milestone>[] = [
     ),
   },
   {
+    key: 'isVerified',
+    header: 'تأیید عمومی',
+    render: (item) => (item.isVerified ? 'تأیید شده' : 'در انتظار بررسی'),
+  },
+  {
     key: 'displayOrder',
     header: 'ترتیب',
     render: (item) => String(item.displayOrder),
@@ -37,10 +43,10 @@ const columns: TableColumn<Milestone>[] = [
 
 export default function MilestonesPage() {
   return (
-    <AdminLayout title="مراحل مهم">
+    <AdminLayout title="افتخارات آکادمی">
       <AdminListPage<Milestone>
-        title="مراحل مهم"
-        description="مدیریت رویدادهای کلیدی در تاریخچه آکادمی"
+        title="افتخارات آکادمی"
+        description="مدیریت افتخارات آکادمی؛ فقط موارد بررسی و تأییدشده نمایش داده می‌شوند."
         addHref="/admin/content/milestones/new"
         addLabel="افزودن رویداد"
         columns={columns}

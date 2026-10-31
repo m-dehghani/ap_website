@@ -3,16 +3,13 @@ import { motion } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 import type { TestimonialViewModel } from '@/types/viewModels/content';
-import { AnimatedStatisticViewModel } from '@/types/viewModels/content';
 
 interface TestimonialsProps {
   testimonials: TestimonialViewModel[];
-  stats: AnimatedStatisticViewModel[];
 }
 
 const TestimonialsComponent: React.FC<TestimonialsProps> = ({
   testimonials,
-  stats,
 }) => {
   return (
     <section className="section-padding bg-gray-50">
@@ -26,14 +23,13 @@ const TestimonialsComponent: React.FC<TestimonialsProps> = ({
           >
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-600 text-sm font-medium mb-6">
               <ChatBubbleLeftRightIcon className="w-4 h-4 ml-2" />
-              نظرات بازیکنان
+              دیدگاه‌ها
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              نظرات بازیکنان ما
+            <h2 className="text-3xl font-bold text-gray-900 mb-4 sm:text-4xl">
+              نظرات و تجربه‌ها
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              داستان‌های واقعی از بازیکنان و والدین واقعی که تفاوت آکادمی ما را
-              در مسیر فوتبال خود تجربه کرده‌اند.
+            <p className="text-base text-gray-600 max-w-3xl mx-auto sm:text-lg">
+              دیدگاه‌های ثبت‌شده درباره تجربه حضور در آکادمی.
             </p>
           </motion.div>
         </div>
@@ -89,67 +85,11 @@ const TestimonialsComponent: React.FC<TestimonialsProps> = ({
           ))}
         </div>
 
-        {stats.length > 0 && (
-          <div className="mt-20 bg-white rounded-2xl shadow-lg p-8">
-            <div className="text-center mb-8">
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">
-                آمار و ارقام
-              </h3>
-              <p className="text-gray-600">نتایج ملموس آموزش‌های ما</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="text-4xl font-bold text-primary-600 mb-2 persian-numbers">
-                    {stat.number}
-                  </div>
-                  <div className="text-gray-900 font-medium">{stat.label}</div>
-                  <div className="text-sm text-gray-500">
-                    {stat.description}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+        {testimonials.length === 0 && (
+          <p className="mt-10 text-center text-gray-600">
+            هنوز دیدگاهی برای نمایش ثبت نشده است.
+          </p>
         )}
-
-        <div className="mt-16 text-center">
-          <div className="bg-linear-to-r from-primary-600 to-primary-700 rounded-xl p-8 text-white">
-            <h3 className="text-2xl font-bold mb-4">
-              آماده نوشتن داستان موفقیت خود هستید؟
-            </h3>
-            <p className="text-primary-100 mb-6">
-              به صدها بازیکنی بپیوندید که بازی خود را در آکادمی فوتبال AP متحول
-              کرده‌اند.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <motion.a
-                href="/register"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-secondary-500 hover:bg-secondary-600 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200"
-              >
-                سفر خود را شروع کنید
-              </motion.a>
-              <motion.a
-                href="/contact"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-white/20 hover:bg-white/30 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200 backdrop-blur-sm"
-              >
-                بازدید برنامه‌ریزی کنید
-              </motion.a>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

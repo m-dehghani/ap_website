@@ -57,6 +57,14 @@ function AboutPage({
       ? value.filter((item): item is string => typeof item === 'string')
       : [];
 
+  const historyData = sectionData('history');
+  const historyContent = sections.history?.content;
+  const history = Array.isArray(historyContent)
+    ? stringList(historyContent)
+    : stringList(
+        historyData.paragraphs ?? historyData.history ?? historyData.story,
+      );
+
   const storyData = sectionData('story');
   const storyContent = sections.story?.content;
   const story = Array.isArray(storyContent)
@@ -165,7 +173,7 @@ function AboutPage({
       }
       description={
         academyInfo?.description ??
-        'آکادمی فوتبال AP با هدف آموزش حرفه‌ای فوتبال و پرورش نسل آینده فوتبال ایران تأسیس شده است.'
+        'اطلاعات، تاریخچه و بخش‌های مختلف آکادمی فوتبال AP.'
       }
       canonical="https://ap-football.com/about"
       openGraph={{
@@ -174,7 +182,7 @@ function AboutPage({
           : 'درباره ما - آکادمی فوتبال AP',
         description:
           academyInfo?.description ??
-          'آکادمی فوتبال AP با هدف آموزش حرفه‌ای فوتبال و پرورش نسل آینده فوتبال ایران تأسیس شده است',
+          'اطلاعات، تاریخچه و بخش‌های مختلف آکادمی فوتبال AP.',
         images: [
           {
             url: 'https://ap-football.com/images/about-og.jpg',
@@ -191,13 +199,36 @@ function AboutPage({
         }
         description={
           academyInfo?.tagline ??
-          'بیش از یک دهه تجربه در آموزش حرفه‌ای فوتبال و پرورش نسل آینده فوتبال ایران'
+          'با تاریخچه و بخش‌های مختلف آکادمی آشنا شوید.'
         }
         badge="درباره ما"
       />
 
       <div className="section-padding bg-linear-to-br from-gray-50 to-gray-100">
         <div className="container-custom">
+          <section
+            aria-labelledby="academy-history-heading"
+            className="mb-16 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8"
+          >
+            <h2
+              id="academy-history-heading"
+              className="text-2xl font-bold text-gray-900 sm:text-3xl"
+            >
+              {sections.history?.title ?? 'تاریخچه آکادمی'}
+            </h2>
+            <div className="mt-5 max-w-4xl space-y-4 leading-relaxed text-gray-700">
+              {history.length > 0 ? (
+                history.map((paragraph, index) => (
+                  <p key={`${index}-${paragraph}`}>{paragraph}</p>
+                ))
+              ) : (
+                <p className="text-gray-600">
+                  تاریخچه آکادمی هنوز در پنل مدیریت ثبت نشده است.
+                </p>
+              )}
+            </div>
+          </section>
+
           {/* Story Section */}
           <div className="grid lg:grid-cols-2 gap-12 mb-20">
             <div className="card-glass p-8 rounded-4xl">

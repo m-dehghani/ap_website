@@ -18,7 +18,7 @@
 
 This is the public-facing website for **AP Football Academy** (آکادمی فوتبال AP), a football (soccer) training academy located in Shiraz, Iran. The website serves as:
 
-1. **Marketing / Landing Page** — Showcases the academy, its programs, coaches, success stories, and news
+1. **Marketing / Landing Page** — Shows academy information, programs, coaches, verified academy honors, testimonials, and news
 2. **Registration Portal** — Allows visitors to browse programs and register online
 3. **Student Dashboard** — Authenticated area for students to view schedules, attendance, evaluations, and payment history
 4. **News Hub** — Displays football news updates (including a crawler-based news feed)
@@ -189,7 +189,8 @@ apps/website/
 │   │   ├── privacy.tsx      # Privacy policy
 │   │   ├── programs.tsx     # Programs listing
 │   │   ├── register.tsx     # Registration page
-│   │   ├── success.tsx      # Success stories
+│   │   ├── success.tsx      # Verified academy honors
+│   │   ├── testimonials.tsx # Reviews and experiences
 │   │   ├── terms.tsx        # Terms of service
 │   │   └── api/             # API routes (→ /api/*)
 │   │       ├── crawler-news.ts   # News crawler endpoint
@@ -232,7 +233,8 @@ apps/website/
 | `pages/privacy.tsx` | `/privacy` |
 | `pages/programs.tsx` | `/programs` |
 | `pages/register.tsx` | `/register` |
-| `pages/success.tsx` | `/success` |
+| `pages/success.tsx` | `/success` (verified academy honors) |
+| `pages/testimonials.tsx` | `/testimonials` (published general testimonials) |
 | `pages/terms.tsx` | `/terms` |
 
 ### Dynamic Routes
@@ -533,7 +535,8 @@ behavior without a separately approved product change.
 | News | `/news` | API (crawler) | No |
 | Contact | `/contact` | Static | No |
 | Register | `/register` | API (`/api/register`) | No |
-| Success Stories | `/success` | Static | No |
+| Academy Honors | `/success` | Verified milestone records | No |
+| Testimonials | `/testimonials` | Published general testimonials | No |
 | Privacy | `/privacy` | Static | No |
 | Terms | `/terms` | Static | No |
 | Cookies | `/cookies` | Static | No |

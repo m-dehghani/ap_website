@@ -18,18 +18,15 @@ import {
   getHeroAchievements,
   getFeaturesContent,
   getFeatureStats,
-  getStatistics,
   getTestimonials,
-  getSuccessStories,
   getMilestones,
   getNewsCategories,
   getNewsArticles,
   getCTAContent,
 } from '@/services/content';
-import { HeroContentViewModel, HeroAchievementViewModel, FeaturesContentViewModel, FeatureStatItemViewModel, StatisticViewModel, CTAContentViewModel } from '@/types/viewModels/content';
+import { HeroContentViewModel, HeroAchievementViewModel, FeaturesContentViewModel, FeatureStatItemViewModel, CTAContentViewModel } from '@/types/viewModels/content';
 import { withSite, SiteProps } from '@/lib/page-props';
 import { normalizeClubColorClasses } from '@/lib/brand-colors';
-import { SuccessAchievementViewModel, SuccessTestimonialViewModel, AnimatedStatisticViewModel, SuccessMilestoneViewModel } from '@/types/viewModels/content';
 
 interface HomePageProps extends SiteProps {
   coaches: CoachViewModel[];
@@ -37,9 +34,7 @@ interface HomePageProps extends SiteProps {
   heroAchievements: HeroAchievementViewModel[];
   featuresContent: FeaturesContentViewModel[];
   featureStats: FeatureStatItemViewModel[];
-  statistics: Record<string, StatisticViewModel>;
   testimonials: Awaited<ReturnType<typeof getTestimonials>>;
-  successStories: Awaited<ReturnType<typeof getSuccessStories>>;
   milestones: Awaited<ReturnType<typeof getMilestones>>;
   recentNews: Awaited<ReturnType<typeof getNewsArticles>>;
   newsCategories: Awaited<ReturnType<typeof getNewsCategories>>;
@@ -52,9 +47,7 @@ const HomePage: React.FC<HomePageProps> = ({
   heroAchievements,
   featuresContent,
   featureStats,
-  statistics,
   testimonials,
-  successStories,
   milestones,
   recentNews,
   newsCategories,
@@ -115,47 +108,6 @@ const HomePage: React.FC<HomePageProps> = ({
     primaryCTA: { label: 'همین امروز شروع کنید', href: '/register' },
     secondaryCTA: { label: 'رزرو بازدید', href: '/contact' },
   };
-
-  // Convert success stories to the expected format
-  const stories: SuccessAchievementViewModel[] = successStories.map(s => ({
-    id: s.id,
-    playerName: s.playerName,
-    age: s.age,
-    date: s.date,
-    program: s.programName ?? '',
-    achievement: s.achievement,
-    description: s.description,
-    quote: s.quote ?? '',
-    stats: s.stats,
-    coach: s.coachName ?? '',
-  }));
-
-  // Convert testimonials to the expected format
-  const successTestimonials: SuccessTestimonialViewModel[] = testimonials.map(t => ({
-    id: t.id,
-    name: t.name,
-    role: t.role,
-    program: t.programName ?? '',
-    rating: t.rating,
-    text: t.content,
-    date: t.date ?? '',
-    improvement: t.improvement ?? '',
-  }));
-
-  // Convert statistics to animated stats
-  const stats: AnimatedStatisticViewModel[] = Object.values(statistics).map(s => ({
-    number: s.value,
-    label: s.label,
-    description: s.description ?? '',
-    icon: 'TrophyIcon',
-    color: 'text-primary-600',
-  }));
-
-  const successMilestones: SuccessMilestoneViewModel[] = milestones.map((milestone) => ({
-    year: String(milestone.year),
-    event: milestone.title,
-    description: milestone.description,
-  }));
 
   return (
     <Layout site={site}>
@@ -268,8 +220,8 @@ const HomePage: React.FC<HomePageProps> = ({
           <NewsUpdates categories={newsCategories} articles={recentNews} />
           <Features features={features} stats={featureStatsData} />
           <CoachSpotlight coaches={coaches} />
-          <SuccessStories stories={stories} testimonials={successTestimonials} statistics={stats} milestones={successMilestones} />
-          <Testimonials testimonials={testimonials} stats={stats} />
+          <SuccessStories honors={milestones} />
+          <Testimonials testimonials={testimonials} />
           <CTA content={ctaData} />
         </div>
       </div>
@@ -284,9 +236,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async () =>
     heroAchievements,
     featuresContent,
     featureStats,
-    statistics,
     testimonials,
-    successStories,
     milestones,
     recentNews,
     newsCategories,
@@ -297,9 +247,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async () =>
     getHeroAchievements(),
     getFeaturesContent(),
     getFeatureStats(),
-    getStatistics(),
     getTestimonials('GENERAL'),
-    getSuccessStories(),
     getMilestones(),
     getNewsArticles(6),
     getNewsCategories(),
@@ -313,9 +261,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async () =>
       heroAchievements,
       featuresContent,
       featureStats,
-      statistics,
       testimonials,
-      successStories,
       milestones,
       recentNews,
       newsCategories,

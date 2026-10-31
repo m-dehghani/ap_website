@@ -24,13 +24,13 @@ No distinctive positioning or competitive claim has been confirmed. Do not inven
 
 ## Capabilities and Constraints
 
-The documented product includes public academy and program information, online registration, coach and success-story content, news, a student dashboard, and an academy shop. Tuition and shop checkout use Zarinpal. Shop amounts and registration balances are stored in toman; tuition `Payment.amount` remains in rial. Students, admins, and shop managers use the `users` table; coaches use the separate `coaches` table. Refunds are queued as `REFUND_REQUIRED` for staff to handle outside the application; the app does not call Zarinpal refund APIs. The application stores attendance and coach evaluations for student self-service. The existing application is a Next.js Pages Router web app backed by PostgreSQL and Prisma.
+The documented product includes public academy and program information, online registration, coach content, CMS-managed academy history, verified academy honors, published testimonials, news, a student dashboard, and an academy shop. Individual player stories remain in the CMS and are not presented as academy-wide honors. Tuition and shop checkout use Zarinpal. Shop amounts and registration balances are stored in toman; tuition `Payment.amount` remains in rial. Students, admins, and shop managers use the `users` table; coaches use the separate `coaches` table. Refunds are queued as `REFUND_REQUIRED` for staff to handle outside the application; the app does not call Zarinpal refund APIs. The application stores attendance and coach evaluations for student self-service. The existing application is a Next.js Pages Router web app backed by PostgreSQL and Prisma.
 
 The truth and approval status of individual claims, stories, credentials, prices, and product availability have not been confirmed. Preserve the existing functionality and Persian-only experience; do not fabricate or imply unverified details.
 
 ## Evidence on Hand
 
-The repository contains implementation and content surfaces for programs, coaches, success stories, news, and shop products. Whether individual entries are approved, current, or suitable as promotional proof has not been confirmed. No new testimonials, student outcomes, coach credentials, pricing, or availability claims should be invented.
+The repository contains implementation and content surfaces for programs, coaches, individual success stories, academy milestones, testimonials, news, and shop products. Only academy milestone entries explicitly reviewed and verified by an admin are shown on `/success`; testimonials use the separate `/testimonials` route. Whether individual entries are approved, current, or suitable as promotional proof has not been confirmed. No new academy history, honors, testimonials, student outcomes, coach credentials, pricing, or availability claims should be invented.
 
 ## Product Principles
 

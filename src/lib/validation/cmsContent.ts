@@ -40,3 +40,14 @@ export const statisticCreateSchema = z.object({
   displayOrder,
 });
 export const statisticUpdateSchema = statisticCreateSchema.partial();
+
+export const milestoneCreateSchema = z.object({
+  year: z.number().int().min(1300).max(1500),
+  title: requiredText.max(200),
+  description: requiredText.max(2000),
+  isVerified: z.boolean().default(false),
+  displayOrder,
+});
+export const milestoneUpdateSchema = milestoneCreateSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0);

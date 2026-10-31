@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
 import { authorizeAdmin } from '@/lib/auth';
+import { milestoneCreateSchema } from '@/lib/validation/cmsContent';
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,17 +18,12 @@ export default async function handler(
       return res.status(200).json(milestones);
     }
     case 'POST': {
-      const { year, title, description, displayOrder } = req.body;
-      if (!year || !title || !description) {
-        return res.status(400).json({ error: 'فیلدهای الزامی: year, title, description' });
+      const parsed = milestoneCreateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: 'اطلاعات افتخار معتبر نیست' });
       }
       const milestone = await prisma.milestone.create({
-        data: {
-          year,
-          title,
-          description,
-          displayOrder: displayOrder ?? 0,
-        },
+        data: parsed.data,
       });
       return res.status(201).json(milestone);
     }
