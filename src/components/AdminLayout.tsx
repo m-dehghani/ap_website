@@ -202,6 +202,25 @@ export default function AdminLayout({
             </Link>
 
             <Link
+              href="/admin/messages"
+              aria-current={
+                router.pathname.startsWith('/admin/messages')
+                  ? 'page'
+                  : undefined
+              }
+              className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                router.pathname.startsWith('/admin/messages')
+                  ? 'bg-cyan-50 text-cyan-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <span className="ml-3" aria-hidden="true">
+                ✉
+              </span>
+              صندوق پیام‌ها
+            </Link>
+
+            <Link
               href="/admin/programs"
               aria-current={
                 router.pathname.startsWith('/admin/programs')

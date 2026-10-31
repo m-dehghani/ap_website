@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { APP_CONFIG } from '@/constants/app';
 import Layout from '../components/Layout';
 import PageHero from '../components/PageHero';
@@ -10,27 +10,76 @@ import {
 } from '@heroicons/react/24/outline';
 
 const ContactPage: React.FC = () => {
-  const handleContactSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [statusMessage, setStatusMessage] = useState('');
+  const [failureMessage, setFailureMessage] = useState('');
+  const [mailtoFallback, setMailtoFallback] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleContactSubmit = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const name = [formData.get('firstName'), formData.get('lastName')]
       .filter(
         (part): part is string =>
           typeof part === 'string' && Boolean(part.trim()),
       )
       .join(' ');
-    const subject = encodeURIComponent(`پیام از ${name}`);
-    const body = encodeURIComponent(
+    const values = {
+      firstName: String(formData.get('firstName') ?? ''),
+      lastName: String(formData.get('lastName') ?? ''),
+      email: String(formData.get('email') ?? ''),
+      phone: String(formData.get('phone') ?? ''),
+      message: String(formData.get('message') ?? ''),
+      company: String(formData.get('company') ?? ''),
+    };
+    const mailtoBody = encodeURIComponent(
       [
         `نام: ${name}`,
-        `ایمیل: ${formData.get('email') ?? ''}`,
-        `تلفن: ${formData.get('phone') ?? ''}`,
+        `ایمیل: ${values.email}`,
+        `تلفن: ${values.phone}`,
         '',
-        String(formData.get('message') ?? ''),
+        values.message,
       ].join('\n'),
     );
 
-    window.location.href = `mailto:${APP_CONFIG.email}?subject=${subject}&body=${body}`;
+    setFieldErrors({});
+    setStatusMessage('');
+    setFailureMessage('');
+    setMailtoFallback('');
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        setStatusMessage(result.message ?? 'پیام شما با موفقیت ثبت شد.');
+        form.reset();
+      } else if (response.status === 400 && result.fieldErrors) {
+        setFieldErrors(result.fieldErrors);
+        setFailureMessage(result.message ?? 'لطفاً اطلاعات واردشده را بررسی کنید.');
+      } else {
+        setFailureMessage('ارسال پیام از طریق سامانه ناموفق بود.');
+        setMailtoFallback(
+          `mailto:${APP_CONFIG.email}?subject=${encodeURIComponent(`پیام از ${name}`)}&body=${mailtoBody}`,
+        );
+      }
+    } catch {
+      setFailureMessage('ارسال پیام از طریق سامانه ناموفق بود.');
+      setMailtoFallback(
+        `mailto:${APP_CONFIG.email}?subject=${encodeURIComponent(`پیام از ${name}`)}&body=${mailtoBody}`,
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -65,7 +114,26 @@ const ContactPage: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 پیام خود را ارسال کنید
               </h2>
-              <form className="space-y-6" onSubmit={handleContactSubmit}>
+              <form
+                className="space-y-6"
+                onSubmit={handleContactSubmit}
+                noValidate
+              >
+                {statusMessage && (
+                  <p className="rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">
+                    {statusMessage}
+                  </p>
+                )}
+                {failureMessage && (
+                  <div className="rounded-lg bg-red-50 p-4 text-red-800" role="alert">
+                    <p>{failureMessage}</p>
+                    {mailtoFallback && (
+                      <a className="mt-2 inline-block underline" href={mailtoFallback}>
+                        ارسال با ایمیل
+                      </a>
+                    )}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label
@@ -80,9 +148,18 @@ const ContactPage: React.FC = () => {
                       name="firstName"
                       autoComplete="given-name"
                       required
+                      aria-invalid={Boolean(fieldErrors.firstName?.length)}
+                      aria-describedby={
+                        fieldErrors.firstName?.length ? 'firstName-error' : undefined
+                      }
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                       placeholder="نام شما…"
                     />
+                    {fieldErrors.firstName?.map((error) => (
+                      <p id="firstName-error" key={error} className="mt-1 text-sm text-red-700">
+                        {error}
+                      </p>
+                    ))}
                   </div>
                   <div>
                     <label
@@ -96,9 +173,19 @@ const ContactPage: React.FC = () => {
                       id="lastName"
                       name="lastName"
                       autoComplete="family-name"
+                      required
+                      aria-invalid={Boolean(fieldErrors.lastName?.length)}
+                      aria-describedby={
+                        fieldErrors.lastName?.length ? 'lastName-error' : undefined
+                      }
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                       placeholder="نام خانوادگی شما…"
                     />
+                    {fieldErrors.lastName?.map((error) => (
+                      <p id="lastName-error" key={error} className="mt-1 text-sm text-red-700">
+                        {error}
+                      </p>
+                    ))}
                   </div>
                 </div>
                 <div>
@@ -115,9 +202,18 @@ const ContactPage: React.FC = () => {
                     autoComplete="email"
                     spellCheck={false}
                     required
+                    aria-invalid={Boolean(fieldErrors.email?.length)}
+                    aria-describedby={
+                      fieldErrors.email?.length ? 'email-error' : undefined
+                    }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                     placeholder="name@example.com"
                   />
+                  {fieldErrors.email?.map((error) => (
+                    <p id="email-error" key={error} className="mt-1 text-sm text-red-700">
+                      {error}
+                    </p>
+                  ))}
                 </div>
                 <div>
                   <label
@@ -131,9 +227,18 @@ const ContactPage: React.FC = () => {
                     id="phone"
                     name="phone"
                     autoComplete="tel"
+                    aria-invalid={Boolean(fieldErrors.phone?.length)}
+                    aria-describedby={
+                      fieldErrors.phone?.length ? 'phone-error' : undefined
+                    }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                     placeholder="شماره تلفن شما…"
                   />
+                  {fieldErrors.phone?.map((error) => (
+                    <p id="phone-error" key={error} className="mt-1 text-sm text-red-700">
+                      {error}
+                    </p>
+                  ))}
                 </div>
                 <div>
                   <label
@@ -147,16 +252,38 @@ const ContactPage: React.FC = () => {
                     name="message"
                     rows={5}
                     required
+                    aria-invalid={Boolean(fieldErrors.message?.length)}
+                    aria-describedby={
+                      fieldErrors.message?.length ? 'message-error' : undefined
+                    }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                     placeholder="پیام خود را بنویسید…"
                   />
+                  {fieldErrors.message?.map((error) => (
+                    <p id="message-error" key={error} className="mt-1 text-sm text-red-700">
+                      {error}
+                    </p>
+                  ))}
                 </div>
-                <p className="text-sm text-gray-600" aria-live="polite">
-                  با ارسال پیام، برنامه ایمیل شما برای ارسال آن به{' '}
-                  {APP_CONFIG.email} باز می‌شود.
-                </p>
-                <button type="submit" className="w-full btn btn-primary">
-                  ارسال پیام
+                <div
+                  aria-hidden="true"
+                  className="absolute -left-[10000px] h-px w-px overflow-hidden"
+                >
+                  <label htmlFor="company">نام شرکت</label>
+                  <input
+                    id="company"
+                    name="company"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full btn btn-primary"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'در حال ارسال…' : 'ارسال پیام'}
                 </button>
               </form>
             </div>
