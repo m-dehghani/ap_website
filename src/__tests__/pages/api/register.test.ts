@@ -39,19 +39,26 @@ const mockPrisma = {
 
 let registrationCount = 0;
 
-const createRequest = (body: Record<string, unknown>) =>
+let requestId = 0;
+const createRequest = (
+  body: Record<string, unknown>,
+  remoteAddress = `192.0.2.${++requestId}`,
+) =>
   ({
     method: 'POST',
     body,
+    socket: { remoteAddress },
   }) as never;
 
 const createResponse = () =>
   ({
     status: vi.fn().mockReturnThis(),
     json: vi.fn().mockReturnThis(),
+    setHeader: vi.fn().mockReturnThis(),
   }) as never as {
     status: ReturnType<typeof vi.fn>;
     json: ReturnType<typeof vi.fn>;
+    setHeader: ReturnType<typeof vi.fn>;
   };
 
 const validRegistration = (overrides: Record<string, unknown> = {}) => ({
@@ -108,6 +115,41 @@ describe('/api/register', () => {
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(getPrisma).not.toHaveBeenCalled();
+  });
+
+  it('returns an explicit 429 after five registration requests from one address', async () => {
+    const responses = Array.from({ length: 6 }, () => createResponse());
+
+    for (const res of responses) {
+      await handler(
+        createRequest({}, '192.0.2.201'),
+        res as never,
+      );
+    }
+
+    expect(responses.slice(0, 5).map((res) => res.status.mock.calls.at(-1)?.[0]))
+      .toEqual([400, 400, 400, 400, 400]);
+    expect(responses[5].status).toHaveBeenCalledWith(429);
+    expect(responses[5].setHeader).toHaveBeenCalledWith(
+      'Retry-After',
+      expect.any(String),
+    );
+    expect(
+      Number(responses[5].setHeader.mock.calls[0][1]),
+    ).toBeGreaterThan(0);
+    expect(responses[5].json).toHaveBeenCalledWith({
+      message: 'تعداد درخواست‌ها بیش از حد مجاز است؛ کمی بعد دوباره تلاش کنید',
+    });
+    expect(getPrisma).not.toHaveBeenCalled();
+  });
+
+  it('allows a valid registration request below the rate limit', async () => {
+    const res = createResponse();
+
+    await handler(createRequest(validRegistration()), res as never);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.status).not.toHaveBeenCalledWith(429);
   });
 
   it('requires a 12-character password before accessing the database', async () => {

@@ -123,8 +123,8 @@ export interface NewsArticleViewModel {
   videoUrl: string | null;
   tags: string[];
   readTimeMinutes: number;
-  likes: number;
-  comments: number;
+  likes?: number;
+  comments?: number;
   featured: boolean;
   publishedAt: string;
 }

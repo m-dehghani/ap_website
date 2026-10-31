@@ -20,13 +20,13 @@ No distinctive positioning or competitive claim has been confirmed. Do not inven
 
 ## Operating Context
 
-*Documented or inferred from the current application:* the service is web-based and serves Persian (`fa`, default) and English (`en`) audiences. Public visitors browse academy information; registered students use account features for schedules, attendance, evaluations, and payment history. Staff have content-management capabilities.
+*Documented or inferred from the current application:* the service is web-based and Persian-only. Public routes use ordinary paths without locale prefixes (for example, `/about`, not `/en/about`). Public visitors browse academy information; registered students use account features for schedules, attendance, evaluations, and payment history. Staff have content-management and refund-queue capabilities.
 
 ## Capabilities and Constraints
 
-The documented product includes public academy and program information, online registration, coach and success-story content, news, a student dashboard, and an academy shop. Student checkout uses Zarinpal; program prices and registration balances are stored in toman. The existing application is a Next.js Pages Router web app backed by PostgreSQL and Prisma.
+The documented product includes public academy and program information, online registration, coach and success-story content, news, a student dashboard, and an academy shop. Tuition and shop checkout use Zarinpal. Shop amounts and registration balances are stored in toman; tuition `Payment.amount` remains in rial. Students, admins, and shop managers use the `users` table; coaches use the separate `coaches` table. Refunds are queued as `REFUND_REQUIRED` for staff to handle outside the application; the app does not call Zarinpal refund APIs. The application stores attendance and coach evaluations for student self-service. The existing application is a Next.js Pages Router web app backed by PostgreSQL and Prisma.
 
-The truth and approval status of individual claims, stories, credentials, prices, and product availability have not been confirmed. Preserve the existing functionality and language support; do not fabricate or imply unverified details.
+The truth and approval status of individual claims, stories, credentials, prices, and product availability have not been confirmed. Preserve the existing functionality and Persian-only experience; do not fabricate or imply unverified details.
 
 ## Evidence on Hand
 
@@ -38,5 +38,5 @@ The repository contains implementation and content surfaces for programs, coache
 
 - Keep discovery and registration tied to accurate, current academy program information.
 - Make student self-service workflows for schedules, attendance, evaluations, and payments clear.
-- Preserve access to core information in both supported languages.
+- Keep core information and user-facing API responses in Persian.
 - Treat promotional proof and commercial details as factual content that requires verification.

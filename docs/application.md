@@ -7,9 +7,9 @@
 **Language**: TypeScript
 **Styling**: Tailwind CSS v4
 **Database**: PostgreSQL (via Prisma ORM)
-**Payments**: Zarinpal (student dashboard checkout)
-**Authentication**: Custom session-based auth (bcryptjs)
-**i18n**: Persian (`fa`, default) and English (`en`) — sub-path routing
+**Payments**: Zarinpal (student tuition and shop checkout)
+**Authentication**: Custom session-based auth (bcryptjs), with separate `users` and `coaches` identities
+**Language and routing**: Persian-only; routes have no locale prefix
 **Location**: Shiraz, Iran
 
 ---
@@ -83,6 +83,16 @@ gateway is used. Keep `ZARINPAL_MERCHANT_ID` server-only. Program prices and
 registration balances are stored in toman and converted to rial when sent to
 Zarinpal. Apply the student-payment Prisma migration before deploying.
 
+### Identity, refunds, attendance, and evaluations
+
+Students, admins, and shop managers are stored in `users`; coaches are stored
+separately in `coaches`. Authentication helpers resolve the account from the
+appropriate table rather than treating coaches as user rows. Student dashboards
+include attendance history and coach evaluations. Admins have a refund queue
+for tuition payments and shop orders marked `REFUND_REQUIRED`. Staff complete
+refunds outside the application and record the result there; the app does not
+call a Zarinpal refund API.
+
 ### Student verification and staff messaging
 
 Profile email, phone, and password changes use one-time codes sent with
@@ -130,17 +140,12 @@ Ratings and reviews are accepted only from signed-in students whose account is
 attached to a paid order for that product; submissions remain unpublished until
 a shop manager approves them. Guest favorites are stored in that browser only.
 
-### Internationalization (i18n)
+### Language and routing
 
-- **Locales**: `fa` (default), `en`
-- **Strategy**: Sub-path routing (`/fa/...`, `/en/...`)
-- Default locale (`fa`) has **no prefix**
-- Automatic locale detection from `Accept-Language` header or `NEXT_LOCALE` cookie
-- The `NEXT_LOCALE` cookie takes priority over `Accept-Language` header
-- `Link` component supports `locale` prop for locale transitions
-- `useRouter()` provides `locale`, `locales`, `defaultLocale` properties
-- `getStaticProps`/`getServerSideProps` receive `locale` in context
-- `hreflang` meta tags should be added manually for SEO
+The application is Persian-only and uses ordinary Pages Router paths without
+locale prefixes. For example, the About page is `/about`; `/fa/about` and
+`/en/about` are not configured locale routes. Do not rely on Next.js locale
+properties, locale detection, or language-switching links.
 
 ---
 
@@ -210,7 +215,7 @@ apps/website/
 
 ## Pages Router — Routing Reference
 
-### File-system Routing
+### Persian-only file-system routing
 
 | File | Route |
 |------|-------|
@@ -226,8 +231,6 @@ apps/website/
 | `pages/success.tsx` | `/success` |
 | `pages/terms.tsx` | `/terms` |
 
-With i18n, each page is also available at `/{locale}/...` (e.g., `/en/about`, `/fa/about`).
-
 ### Dynamic Routes
 
 Bracket notation creates dynamic routes:
@@ -236,7 +239,7 @@ Bracket notation creates dynamic routes:
 
 ### Custom App & Document
 
-- **`_app.tsx`**: Wraps all pages. Handles layout, auth providers, global styles, and i18n setup.
+- **`_app.tsx`**: Wraps all pages with layout, providers, and global styles.
 - **`_document.tsx`**: Custom HTML document. Loads Google Fonts.
 
 ### Layout Pattern
@@ -260,8 +263,8 @@ The application uses **PostgreSQL** with **Prisma ORM**.
 
 | Model | Table | Purpose |
 |-------|-------|---------|
-| `User` | `users` | Auth users (students, admins, coaches) |
-| `Coach` | `coaches` | Academy coaches |
+| `User` | `users` | Student, admin, and shop-manager accounts |
+| `Coach` | `coaches` | Coach accounts and public coach profiles |
 | `Program` | `programs` | Training programs |
 | `Schedule` | `Schedules` | Program schedules (day/time) |
 | `Registration` | `registrations` | User program registrations |
@@ -280,9 +283,9 @@ The application uses **PostgreSQL** with **Prisma ORM**.
 
 ### Enum Values (stored as strings)
 
-- **User roles**: `STUDENT`, `ADMIN`, `COACH`
+- **User roles**: `STUDENT`, `ADMIN`, `SHOP_MANAGER`; coaches authenticate through the separate `coaches` table
 - **Registration status**: `PENDING`, `APPROVED`, `CANCELLED`, `COMPLETED`
-- **Payment status**: `PENDING`, `COMPLETED`, `FAILED`, `REFUNDED`
+- **Payment status**: `PENDING`, `COMPLETED`, `FAILED`, `REFUND_REQUIRED`, `REFUNDED`
 - **Payment method**: `ONLINE`, `CASH`, `BANK_TRANSFER`
 - **Session status**: `SCHEDULED`, `ONGOING`, `COMPLETED`, `CANCELLED`
 - **Attendance status**: `PRESENT`, `ABSENT`, `LATE`, `EXCUSED`
@@ -304,12 +307,16 @@ Two client instances exist:
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/api/crawler-news` | GET/POST | News crawler endpoint |
-| `/api/get-session` | GET | Retrieve session data |
+| `/api/crawler-news` | GET | News crawler endpoint (empty response if unconfigured; bounded upstream requests) |
+| `/api/auth/login` | POST | Authenticate user or coach; rate limited |
 | `/api/programs` | GET | Fetch programs list |
-| `/api/register` | POST | Handle user registration |
+| `/api/register` | POST | Handle user registration; rate limited |
 | `/api/students` | GET | Student data (authenticated) |
-| `/api/webhook` | POST | Stripe webhook handler |
+
+Login and public registration each allow five POST requests per client socket
+address during a 15-minute window. The limiter is in memory and applies only to
+one application process. Behind a proxy, the server must expose the actual
+client address as the socket address; multiple instances do not share counters.
 
 ### API Route Patterns
 
@@ -348,7 +355,7 @@ export const config = {
 }
 ```
 
-To disable body parsing (e.g., for webhook verification):
+To disable body parsing for an endpoint that needs to read a raw request body:
 ```tsx
 export const config = {
   api: { bodyParser: false },
@@ -361,7 +368,7 @@ export const config = {
 
 | Package | Purpose |
 |---------|---------|
-| `next` (16.2.10) | Framework (Pages Router) |
+| `next` (16.4.2) | Framework (Pages Router) |
 | `react` / `react-dom` (19.2.7) | UI library |
 | `@prisma/client` (7.9.0) | Database ORM |
 | `@prisma/adapter-pg` | PostgreSQL adapter |
@@ -371,7 +378,7 @@ export const config = {
 | `framer-motion` | Animation library |
 | `@heroicons/react` | Icon library |
 | `react-hook-form` + `@hookform/resolvers` + `zod` | Form handling & validation |
-| `stripe` | Payment processing |
+| `jose` | JWT signing and verification |
 | `bcryptjs` | Password hashing |
 | `next-seo` | SEO meta tag management |
 | `react-hot-toast` | Toast notifications |
@@ -383,15 +390,17 @@ export const config = {
 
 ```bash
 # Development
-pnpm dev              # Start dev server (default)
-pnpm dev:turbopack    # Start dev server with Turbopack (faster HMR)
+npm run dev           # Start dev server (webpack)
+npm run dev:turbopack # Start dev server with Turbopack
 
 # Production
-pnpm build            # Build for production
-pnpm start            # Start production server
+npm run build         # Build for production
+npm run start         # Start production server
 
 # Code quality
-pnpm lint             # Run ESLint
+npm run lint          # Run ESLint
+npm test              # Run Vitest
+npm run typecheck     # Generate routes and run TypeScript
 ```
 
 ---
@@ -482,31 +491,11 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 }
 ```
 
-### i18n Usage
+### Persian-only UI and API
 
-```tsx
-// In pages with getStaticProps / getServerSideProps
-export async function getStaticProps({ locale }) {
-  // locale is 'fa' or 'en'
-  const data = await fetchData(locale)
-  return { props: { data } }
-}
-
-// Link with locale
-import Link from 'next/link'
-<Link href="/about" locale="en">About in English</Link>
-
-// Router
-import { useRouter } from 'next/router'
-const router = useRouter()
-router.push('/about', '/about', { locale: 'en' })
-router.push({ pathname: '/about', query: {} }, '/about', { locale: 'en' })
-
-// Access locale
-router.locale       // current locale
-router.locales     // all supported locales
-router.defaultLocale  // 'fa'
-```
+Keep page routes, UI copy, and API error messages consistent with the
+Persian-only product. Do not add locale-prefixed routes or locale-switching
+behavior without a separately approved product change.
 
 ### getStaticProps vs getServerSideProps Decision Guide
 
@@ -524,9 +513,8 @@ router.defaultLocale  // 'fa'
 2. **Share data fetching logic** via `lib/` to avoid duplication between `getStaticProps` and API routes
 3. **Never put Prisma client in client components** — use API routes or `getServerSideProps`
 4. **Validate API route bodies** at runtime — `NextApiRequest.body` is `any`
-5. **Add `hreflang` meta tags** manually for i18n SEO (Next.js doesn't auto-generate them)
-6. **Use `NEXT_LOCALE` cookie** to persist user's language preference
-7. **Server-only env vars** should not leak to client — verify with [next-code-elimination tool](https://next-code-elimination.vercel.app/)
+5. **Keep the Persian-only route and response conventions**; do not assume locale routing
+6. **Keep server-only env vars out of client code**; verify with [next-code-elimination tool](https://next-code-elimination.vercel.app/)
 
 ---
 
@@ -548,5 +536,5 @@ router.defaultLocale  // 'fa'
 
 ---
 
-*Last updated: 2025-01-29*
-*This document covers the `apps/website` project. Other projects in the monorepo will be documented separately.*
+*Last updated: 2026-11-01*
+*This document covers the website project. Other projects in the monorepo are documented separately.*

@@ -4,6 +4,7 @@ import { getJwtSecret, normalizePhone } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { SignJWT } from 'jose';
+import { rejectRateLimitedRequest } from '@/lib/api-rate-limit';
 
 const loginSchema = z
   .object({
@@ -28,6 +29,7 @@ export default async function handler(
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
+  if (rejectRateLimitedRequest(req, res, 'login')) return;
 
   try {
     const validatedData = loginSchema.parse(req.body);

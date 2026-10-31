@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { FORM_VALIDATION } from '@/constants/app';
 import { normalizePhone } from '@/lib/auth';
 import { calculateAge, parseBirthDateInput } from '@/lib/age';
+import { rejectRateLimitedRequest } from '@/lib/api-rate-limit';
 
 const registrationSchema = z
   .object({
@@ -46,6 +47,7 @@ export default async function handler(
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
+  if (rejectRateLimitedRequest(req, res, 'register')) return;
 
   try {
     // Validate request body

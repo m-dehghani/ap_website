@@ -2,6 +2,15 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import type { CrawlerArticle, CrawlerArticlePage } from '@/types/api/crawler';
 import { formatPersianDate } from '@/lib/format';
 
+const CRAWLER_TIMEOUT_MS = 5_000;
+const SOURCES = [
+  { id: 'all', name: 'همه منابع' },
+  { id: 'varzesh3', name: 'ورزش سه' },
+  { id: 'persian_football', name: 'فوتبال پارسیان' },
+  { id: 'football_iran', name: 'فوتبال ایران' },
+  { id: 'isna', name: 'ایسنا' },
+];
+
 // Transform crawler data to website format
 function transformCrawlerToWebsite(crawlerData: CrawlerArticle[]) {
   return crawlerData.map(article => ({
@@ -15,8 +24,6 @@ function transformCrawlerToWebsite(crawlerData: CrawlerArticle[]) {
     image: article.image_url || '/api/placeholder/400/250',
     tags: article.tags,
     readTime: calculateReadTime(article.content),
-    likes: Math.floor(Math.random() * 100), // Placeholder
-    comments: Math.floor(Math.random() * 20), // Placeholder
     type: 'external',
     featured: article.importance_score > 0.8,
     source: article.source,
@@ -56,17 +63,26 @@ export default async function handler(
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  try {
-    const { 
-      page = 1, 
-      category = 'all', 
-      limit = 10,
-      importance_min = 0.3,
-      source = 'all'
-    } = req.query;
+  const {
+    page = 1,
+    category = 'all',
+    limit = 10,
+    importance_min = 0.3,
+    source = 'all',
+  } = req.query;
+  const crawlerBaseUrl = process.env.CRAWLER_API_URL;
+  if (!crawlerBaseUrl) {
+    return res.status(200).json({
+      news: [],
+      total: 0,
+      page: Number(page),
+      per_page: Number(limit),
+      stats: null,
+      sources: SOURCES,
+    });
+  }
 
-    // Construct crawler API URL
-    const crawlerBaseUrl = process.env.CRAWLER_API_URL || 'http://localhost:8000';
+  try {
     const params = new URLSearchParams({
       page: page.toString(),
       per_page: limit.toString(),
@@ -75,7 +91,9 @@ export default async function handler(
       ...(source !== 'all' && { source: source.toString() })
     });
 
-    const response = await fetch(`${crawlerBaseUrl}/api/articles?${params}`);
+    const response = await fetch(`${crawlerBaseUrl}/api/articles?${params}`, {
+      signal: AbortSignal.timeout(CRAWLER_TIMEOUT_MS),
+    });
     
     if (!response.ok) {
       throw new Error(`Crawler API error: ${response.status}`);
@@ -85,7 +103,9 @@ export default async function handler(
     const transformedData = transformCrawlerToWebsite(crawlerData.articles);
 
     // Get additional stats
-    const statsResponse = await fetch(`${crawlerBaseUrl}/api/stats`);
+    const statsResponse = await fetch(`${crawlerBaseUrl}/api/stats`, {
+      signal: AbortSignal.timeout(CRAWLER_TIMEOUT_MS),
+    });
     const stats = statsResponse.ok ? await statsResponse.json() : null;
 
     res.status(200).json({
@@ -103,11 +123,8 @@ export default async function handler(
       ]
     });
 
-  } catch (error) {
-    console.error('Error fetching crawler news:', error);
-    res.status(500).json({ 
-      message: 'خطا در دریافت اخبار',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
+  } catch {
+    console.error('Error fetching crawler news');
+    res.status(500).json({ message: 'خطا در دریافت اخبار' });
   }
-} 
+}
