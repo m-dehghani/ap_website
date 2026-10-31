@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import AttendanceRoster from '@/components/AttendanceRoster';
+import { attendanceEligibleRegistrationStatuses } from '@/lib/attendance';
 
 interface CoachDashboardProps {
   coach: any;
@@ -350,6 +352,25 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
                             </p>
                           </div>
                         </div>
+                        <AttendanceRoster
+                          sessionId={session.id}
+                          endpoint={`/api/coach/sessions/${session.id}/attendance`}
+                          roster={(session.program?.registrations ?? []).map(
+                            (registration: {
+                              userId: string;
+                              user: { firstName: string; lastName: string };
+                            }) => ({
+                              userId: registration.userId,
+                              firstName: registration.user.firstName,
+                              lastName: registration.user.lastName,
+                              status:
+                                session.attendance?.find(
+                                  (entry: { userId: string }) =>
+                                    entry.userId === registration.userId,
+                                )?.status ?? null,
+                            }),
+                          )}
+                        />
                       </div>
                     ))}
                 </div>
@@ -418,6 +439,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           location: true,
           maxCapacity: true,
           status: true,
+          program: {
+            select: {
+              registrations: {
+                where: {
+                  status: { in: [...attendanceEligibleRegistrationStatuses] },
+                },
+                select: {
+                  userId: true,
+                  user: {
+                    select: { firstName: true, lastName: true },
+                  },
+                },
+              },
+            },
+          },
+          attendance: {
+            select: { userId: true, status: true },
+          },
         },
       },
     },

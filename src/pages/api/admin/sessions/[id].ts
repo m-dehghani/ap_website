@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import { getPrisma } from '@/lib/db';
 import { authorizeAdmin } from '@/lib/auth';
+import { attendanceEligibleRegistrationStatuses } from '@/lib/attendance';
 
 const positiveInteger = (max: number) =>
   z
@@ -37,7 +38,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const session = await prisma.session.findUnique({
         where: { id },
         include: {
-          program: { select: { id: true, name: true } },
+          program: {
+            select: {
+              id: true,
+              name: true,
+              registrations: {
+                where: {
+                  status: { in: [...attendanceEligibleRegistrationStatuses] },
+                },
+                select: {
+                  userId: true,
+                  user: { select: { firstName: true, lastName: true } },
+                },
+              },
+            },
+          },
           coach: { select: { id: true, firstName: true, lastName: true } },
           attendance: {
             include: {

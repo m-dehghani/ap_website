@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/AdminLayout';
+import AttendanceRoster, {
+  type AttendanceRosterStudent,
+} from '@/components/AttendanceRoster';
 import { fetchJson } from '@/lib/api-client';
 import type {
   AdminCoachListItem,
@@ -21,7 +24,7 @@ interface SessionFormValues {
   coachId: string;
 }
 
-type SessionRecord = Pick<
+type SessionRecord = Omit<Pick<
   AdminSessionListItem,
   | 'name'
   | 'description'
@@ -30,9 +33,18 @@ type SessionRecord = Pick<
   | 'location'
   | 'maxCapacity'
   | 'status'
-  | 'program'
   | 'coach'
->;
+>, 'program'> & {
+  program: {
+    id: string;
+    name: string;
+    registrations: {
+      userId: string;
+      user: { firstName: string; lastName: string };
+    }[];
+  } | null;
+  attendance: { userId: string; status: string }[];
+};
 
 const initialValues: SessionFormValues = {
   name: '',
@@ -68,6 +80,9 @@ export default function SessionForm() {
   const [coaches, setCoaches] = useState<
     Pick<AdminCoachListItem, 'id' | 'firstName' | 'lastName'>[]
   >([]);
+  const [attendanceRoster, setAttendanceRoster] = useState<
+    AttendanceRosterStudent[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -96,6 +111,17 @@ export default function SessionForm() {
         setPrograms(programOptions);
         setCoaches(coachOptions);
         if (session) {
+          setAttendanceRoster(
+            (session.program?.registrations ?? []).map((registration) => ({
+              userId: registration.userId,
+              firstName: registration.user.firstName,
+              lastName: registration.user.lastName,
+              status:
+                (session.attendance.find(
+                  (entry) => entry.userId === registration.userId,
+                )?.status as AttendanceRosterStudent['status']) ?? null,
+            })),
+          );
           setFormData({
             name: session.name,
             description: session.description ?? '',
@@ -399,6 +425,13 @@ export default function SessionForm() {
             </button>
           </div>
         </form>
+        {sessionId && (
+          <AttendanceRoster
+            sessionId={sessionId}
+            endpoint={`/api/admin/sessions/${sessionId}/attendance`}
+            roster={attendanceRoster}
+          />
+        )}
       </div>
     </AdminLayout>
   );

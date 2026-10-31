@@ -35,6 +35,7 @@ export interface StudentDashboardStudentViewModel {
   birthDate: string | null;
   marketingOptIn: boolean;
   registrations: StudentRegistrationViewModel[];
+  attendance: StudentAttendanceViewModel[];
 }
 
 export interface StudentDashboardProgramViewModel {
@@ -43,6 +44,18 @@ export interface StudentDashboardProgramViewModel {
   price: number;
   minAge: number;
   maxAge: number;
+}
+
+export interface StudentAttendanceViewModel {
+  id: string;
+  status: string;
+  createdAt: string;
+  session: {
+    id: string;
+    name: string;
+    date: string;
+    program: { name: string };
+  };
 }
 
 export interface StudentDashboardViewModel {
