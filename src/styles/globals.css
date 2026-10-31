@@ -7,7 +7,7 @@
 @source inline("{from,to}-{emerald,purple,accent,primary,secondary,navy,gold}-{500,600,700,800,900,950}");
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   --page-background: #f8fafc;
   --surface-background: #ffffff;
   --surface-muted: #f1f5f9;

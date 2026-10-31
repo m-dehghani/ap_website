@@ -16,6 +16,7 @@ function applyTheme(preference: ThemePreference) {
       window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+  document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
   document
     .querySelector<HTMLMetaElement>('meta[name="color-scheme"]')
     ?.setAttribute('content', preference === 'system' ? 'light dark' : preference);

@@ -6,7 +6,7 @@ export default function Document() {
     <Html lang="fa-IR" dir="rtl">
       <Head>
         <Script id="theme-preference-init" strategy="beforeInteractive">
-          {`(function(){var preference=window.localStorage.getItem('ap-theme-preference');var dark=preference==='dark'||(preference!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';})();`}
+          {`(function(){var preference=window.localStorage.getItem('ap-theme-preference');var dark=preference==='dark'||(preference!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';document.documentElement.style.colorScheme=dark?'dark':'light';})();`}
         </Script>
         <meta name="theme-color" content="#b91c1c" />
         <meta name="color-scheme" content="light dark" />

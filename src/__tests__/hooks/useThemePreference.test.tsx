@@ -37,6 +37,7 @@ describe('useThemePreference', () => {
 
     expect(localStorage.getItem('ap-theme-preference')).toBe('dark');
     expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(document.documentElement.style.colorScheme).toBe('dark');
     expect(
       document.querySelector('meta[name="color-scheme"]')?.getAttribute('content'),
     ).toBe('dark');
@@ -49,6 +50,7 @@ describe('useThemePreference', () => {
     renderHook(() => useThemePreference());
 
     expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(document.documentElement.style.colorScheme).toBe('dark');
     expect(
       document.querySelector('meta[name="color-scheme"]')?.getAttribute('content'),
     ).toBe('light dark');
@@ -63,6 +65,7 @@ describe('useThemePreference', () => {
     else listener?.handleEvent(new Event('change'));
 
     expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(document.documentElement.style.colorScheme).toBe('dark');
   });
 
   it('keeps an explicit theme when the system preference changes', () => {
@@ -75,5 +78,6 @@ describe('useThemePreference', () => {
     else listener?.handleEvent(new Event('change'));
 
     expect(document.documentElement.dataset.theme).toBe('light');
+    expect(document.documentElement.style.colorScheme).toBe('light');
   });
 });

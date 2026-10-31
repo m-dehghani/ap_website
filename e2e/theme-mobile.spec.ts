@@ -17,6 +17,7 @@ for (const theme of ['light', 'dark'] as const) {
     for (const route of routeGroups) {
       await page.goto(route.path);
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+      await expect(page.locator('html')).toHaveCSS('color-scheme', theme);
       await expect(page.locator('body')).toHaveCSS(
         'background-color',
         theme === 'dark' ? 'rgb(22, 15, 18)' : 'rgb(248, 250, 252)',
