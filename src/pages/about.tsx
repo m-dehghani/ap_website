@@ -78,7 +78,7 @@ function AboutPage({
     title: text(missionData.title, sections.mission?.title ?? 'ماموریت ما'),
     description: text(
       missionData.description,
-      'آموزش حرفه‌ای فوتبال و پرورش نسل آینده فوتبال ایران با تأکید بر ارزش‌های اخلاقی و انسانی',
+      'اطلاعات مأموریت آکادمی هنوز در پنل مدیریت ثبت نشده است.',
     ),
   };
   const visionData = sectionData('vision');
@@ -86,7 +86,7 @@ function AboutPage({
     title: text(visionData.title, sections.vision?.title ?? 'چشم‌انداز ما'),
     description: text(
       visionData.description,
-      'تبدیل شدن به برترین آکادمی فوتبال خاورمیانه و تربیت بازیکنانی که در سطح بین‌المللی بدرخشند',
+      'اطلاعات چشم‌انداز آکادمی هنوز در پنل مدیریت ثبت نشده است.',
     ),
   };
   const valuesData = sectionData('values');
@@ -94,21 +94,14 @@ function AboutPage({
   const configuredValues = stringList(valuesData.items);
   const values = {
     title: text(valuesData.title, sections.values?.title ?? 'ارزش‌های ما'),
-    items: hasConfiguredValues
-      ? configuredValues
-      : [
-          'کیفیت در آموزش',
-          'احترام و صداقت',
-          'کار تیمی و همکاری',
-          'تعهد و پشتکار',
-        ],
+    items: hasConfiguredValues ? configuredValues : [],
   };
   const ctaData = sectionData('cta');
   const aboutCTA = {
     title: text(ctaData.title, 'آماده پیوستن به ما هستید؟'),
     description: text(
       ctaData.description,
-      'همین امروز ثبت نام کنید و سفر فوتبالی خود را با بهترین مربیان آغاز کنید.',
+      'برای اطلاعات بیشتر یا پیگیری ثبت‌نام، با آکادمی تماس بگیرید.',
     ),
   };
   const facilitiesData = sectionData('facilities');
@@ -275,14 +268,20 @@ function AboutPage({
                     {values.title}
                   </h3>
                 </div>
-                <ul className="text-gray-700 space-y-2 mr-4">
-                  {values.items.map((item, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent-500 shrink-0"></span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                {values.items.length > 0 ? (
+                  <ul className="text-gray-700 space-y-2 mr-4">
+                    {values.items.map((item, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent-500 shrink-0"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-600">
+                    ارزش‌های آکادمی هنوز در پنل مدیریت ثبت نشده است.
+                  </p>
+                )}
               </div>
             </div>
           </div>

@@ -58,4 +58,24 @@ describe('academy history section', () => {
       screen.getByText('تاریخچه آکادمی هنوز در پنل مدیریت ثبت نشده است.'),
     ).toBeInTheDocument();
   });
+
+  it('does not present unsupported mission, vision, values, or outcome claims', () => {
+    renderWithProviders(<AboutPage {...pageProps([])} />);
+
+    expect(
+      screen.getByText('اطلاعات مأموریت آکادمی هنوز در پنل مدیریت ثبت نشده است.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('اطلاعات چشم‌انداز آکادمی هنوز در پنل مدیریت ثبت نشده است.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('ارزش‌های آکادمی هنوز در پنل مدیریت ثبت نشده است.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/برترین آکادمی|بهترین مربیان|نسل آینده فوتبال/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('کیفیت در آموزش'),
+    ).not.toBeInTheDocument();
+  });
 });
