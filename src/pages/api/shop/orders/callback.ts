@@ -115,6 +115,13 @@ export default async function handler(
           return 'success';
         }
         if (current.status === 'CANCELLED') {
+          if (current.expiresAt <= new Date()) {
+            await tx.shopOrder.update({
+              where: { id: order.id },
+              data: { status: 'REFUND_REQUIRED' },
+            });
+            return 'refund-required';
+          }
           return 'cancelled';
         }
         if (current.status === 'PAYMENT_FAILED') {

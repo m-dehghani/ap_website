@@ -77,6 +77,44 @@ describe('expired shop order cleanup', () => {
       data: { reserved: { decrement: 2 } },
     });
   });
+
+  it('treats a missing order-item variant as a reservation mismatch', async () => {
+    const tx = {
+      shopVariant: { updateMany: vi.fn() },
+    };
+
+    await expect(
+      releaseOrderReservation(tx as never, {
+        id: 'order-1',
+        items: [{ variantId: null, quantity: 1 }],
+      }),
+    ).rejects.toThrow('Reservation count mismatch for order order-1');
+
+    expect(tx.shopVariant.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('does not release an expired order when its pending-state transition lost a race', async () => {
+    const tx = {
+      shopOrder: {
+        findMany: vi.fn().mockResolvedValue([
+          { id: 'order-1', items: [{ variantId: 'variant-1', quantity: 2 }] },
+        ]),
+        updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+      },
+      shopVariant: { updateMany: vi.fn() },
+    };
+    const db = {
+      shopOrder: { findFirst: vi.fn().mockResolvedValue({ id: 'order-1' }) },
+      $transaction: vi.fn(
+        (operation: (transaction: typeof tx) => Promise<unknown>) =>
+          operation(tx),
+      ),
+    };
+
+    await releaseExpiredShopOrders(db as never, new Date('2026-10-20T00:00:00Z'));
+
+    expect(tx.shopVariant.updateMany).not.toHaveBeenCalled();
+  });
 });
 
 describe('shop pricing and inventory helpers', () => {

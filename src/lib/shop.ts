@@ -19,7 +19,9 @@ export async function releaseOrderReservation(
   order: ShopOrderReservation,
 ) {
   for (const item of order.items) {
-    if (!item.variantId) continue;
+    if (!item.variantId) {
+      throw new Error(`Reservation count mismatch for order ${order.id}`);
+    }
 
     const released = await tx.shopVariant.updateMany({
       where: { id: item.variantId, reserved: { gte: item.quantity } },
