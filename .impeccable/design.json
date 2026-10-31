@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T17:05:35.213+03:30",
+  "title": "Design System: AP Football Academy",
+  "extensions": {
+    "colorMeta": {
+      "club-red": {
+        "role": "primary",
+        "displayName": "Club Red",
+        "canonical": "#dc2626",
+        "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#fca5a5", "#fef2f2"]
+      },
+      "club-red-deep": {
+        "role": "primary",
+        "displayName": "Club Red Deep",
+        "canonical": "#b91c1c",
+        "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#fca5a5", "#fef2f2"]
+      },
+      "training-orange": {
+        "role": "secondary",
+        "displayName": "Training Orange",
+        "canonical": "#ea580c",
+        "tonalRamp": ["#7c2d12", "#9a3412", "#c2410c", "#ea580c", "#f97316", "#fb923c", "#fed7aa", "#fff7ed"]
+      },
+      "growth-green": {
+        "role": "tertiary",
+        "displayName": "Growth Green",
+        "canonical": "#16a34a",
+        "tonalRamp": ["#14532d", "#166534", "#15803d", "#16a34a", "#22c55e", "#4ade80", "#bbf7d0", "#f0fdf4"]
+      },
+      "achievement-gold": {
+        "role": "tertiary",
+        "displayName": "Achievement Gold",
+        "canonical": "#ca8a04",
+        "tonalRamp": ["#713f12", "#854d0e", "#a16207", "#ca8a04", "#eab308", "#facc15", "#fef08a", "#fefce8"]
+      },
+      "warm-charcoal": {
+        "role": "neutral",
+        "displayName": "Warm Charcoal",
+        "canonical": "#241519",
+        "tonalRamp": ["#160f12", "#241519", "#3b252b", "#573941", "#704c56", "#a9868f", "#e5d3d7", "#faf6f6"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#f8fafc",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f8fafc"]
+      },
+      "surface-white": {
+        "role": "neutral",
+        "displayName": "Surface White",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#ffffff"]
+      },
+      "body-slate": {
+        "role": "neutral",
+        "displayName": "Body Slate",
+        "canonical": "#334155",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f8fafc"]
+      },
+      "heading-ink": {
+        "role": "neutral",
+        "displayName": "Heading Ink",
+        "canonical": "#0f172a",
+        "tonalRamp": ["#020617", "#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#f8fafc"]
+      },
+      "border-slate": {
+        "role": "neutral",
+        "displayName": "Border Slate",
+        "canonical": "#cbd5e1",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f8fafc"]
+      },
+      "dark-ground": {
+        "role": "neutral",
+        "displayName": "Dark Ground",
+        "canonical": "#160f12",
+        "tonalRamp": ["#100b0d", "#160f12", "#241519", "#3b252b", "#573941", "#704c56", "#a9868f", "#faf6f6"]
+      },
+      "dark-surface": {
+        "role": "neutral",
+        "displayName": "Dark Surface",
+        "canonical": "#24191d",
+        "tonalRamp": ["#100b0d", "#160f12", "#24191d", "#302126", "#3b252b", "#573941", "#a9868f", "#faf6f6"]
+      },
+      "dark-raised": {
+        "role": "neutral",
+        "displayName": "Dark Raised",
+        "canonical": "#3b252b",
+        "tonalRamp": ["#100b0d", "#160f12", "#24191d", "#302126", "#3b252b", "#573941", "#a9868f", "#faf6f6"]
+      },
+      "dark-text": {
+        "role": "neutral",
+        "displayName": "Dark Text",
+        "canonical": "#fff1f3",
+        "tonalRamp": ["#160f12", "#241519", "#3b252b", "#704c56", "#a9868f", "#d8c5cb", "#fff1f3", "#ffffff"]
+      },
+      "dark-text-muted": {
+        "role": "neutral",
+        "displayName": "Dark Text Muted",
+        "canonical": "#d8c5cb",
+        "tonalRamp": ["#160f12", "#241519", "#3b252b", "#704c56", "#a9868f", "#d8c5cb", "#fff1f3", "#ffffff"]
+      },
+      "dark-border": {
+        "role": "neutral",
+        "displayName": "Dark Border",
+        "canonical": "#493239",
+        "tonalRamp": ["#160f12", "#241519", "#3b252b", "#493239", "#704c56", "#a9868f", "#d8c5cb", "#fff1f3"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Configured Display Stack",
+        "purpose": "A small number of opt-in feature headings request this stack; its named fonts are not imported by the global stylesheet."
+      },
+      "headline": {
+        "displayName": "Vazirmatn Headline",
+        "purpose": "Global h1-h6 typography and page or section heading hierarchy."
+      },
+      "title": {
+        "displayName": "Vazirmatn Title",
+        "purpose": "Bold card titles and secondary section headings."
+      },
+      "body": {
+        "displayName": "Vazirmatn Body",
+        "purpose": "Default Persian and English paragraph and interface text."
+      },
+      "label": {
+        "displayName": "Vazirmatn Label",
+        "purpose": "Buttons, navigation, badges, and field labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "elevation-1",
+        "value": "0 1px 2px rgba(15, 23, 42, 0.05)",
+        "purpose": "Barely raised neutral elements."
+      },
+      {
+        "name": "elevation-3",
+        "value": "0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.1)",
+        "purpose": "Glass cards and default visible elevation."
+      },
+      {
+        "name": "elevation-4",
+        "value": "0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1)",
+        "purpose": "Strong glass and floating panels."
+      },
+      {
+        "name": "colored-action",
+        "value": "0 10px 15px -3px rgba(220, 38, 38, 0.1), 0 4px 6px -2px rgba(220, 38, 38, 0.05)",
+        "purpose": "Colored elevation for prominent red actions."
+      }
+    ],
+    "motion": [
+      {
+        "name": "transition-fast",
+        "value": "150ms ease",
+        "purpose": "Short feedback transitions."
+      },
+      {
+        "name": "transition-base",
+        "value": "200ms ease",
+        "purpose": "Default button and control state transitions."
+      },
+      {
+        "name": "transition-slow",
+        "value": "300ms ease",
+        "purpose": "Card and larger component transitions."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Global stylesheet sharply reduces animation and transition duration and disables smooth scrolling."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Highest-emphasis action with a red gradient and visible interaction feedback.",
+      "html": "<button class=\"ds-btn-primary\">Continue</button>",
+      "css": ".ds-btn-primary { background: linear-gradient(135deg, var(--primary-color), #b91c1c); color: #fff; padding: 12px 24px; border: 0; border-radius: 0.75rem; font: 500 0.875rem 'Vazirmatn', system-ui, sans-serif; transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease; box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.1), 0 4px 6px -2px rgba(220, 38, 38, 0.05); cursor: pointer; } .ds-btn-primary:hover { background: linear-gradient(135deg, #b91c1c, #991b1b); transform: translateY(-2px); box-shadow: 0 10px 24px rgba(220, 38, 38, 0.22); } .ds-btn-primary:focus-visible { outline: 2px solid #dc2626; outline-offset: 3px; } .ds-btn-primary:active { transform: translateY(0); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting action differentiated with the established orange gradient.",
+      "html": "<button class=\"ds-btn-secondary\">Register</button>",
+      "css": ".ds-btn-secondary { background: linear-gradient(135deg, var(--secondary-color), #c2410c); color: #fff; padding: 12px 24px; border: 0; border-radius: 0.75rem; font: 500 0.875rem 'Vazirmatn', system-ui, sans-serif; transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); cursor: pointer; } .ds-btn-secondary:hover { background: linear-gradient(135deg, #c2410c, #9a3412); transform: translateY(-2px); } .ds-btn-secondary:focus-visible { outline: 2px solid #ea580c; outline-offset: 3px; } .ds-btn-secondary:active { transform: translateY(0); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Lower-emphasis action that fills with the primary color on hover.",
+      "html": "<button class=\"ds-btn-outline\">Learn more</button>",
+      "css": ".ds-btn-outline { background: #fff; color: var(--primary-color); padding: 12px 24px; border: 2px solid var(--primary-color); border-radius: 0.75rem; font: 500 0.875rem 'Vazirmatn', system-ui, sans-serif; transition: background 200ms ease, color 200ms ease; cursor: pointer; } .ds-btn-outline:hover { background: var(--primary-color); color: #fff; } .ds-btn-outline:focus-visible { outline: 2px solid #dc2626; outline-offset: 3px; } .ds-btn-outline:active { background: #b91c1c; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Full-width bordered field with a clear primary focus state.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Email</span><input class=\"ds-input\" type=\"email\" placeholder=\"name@example.com\"></label>",
+      "css": ".ds-field { display: grid; gap: 8px; color: #334155; font: 500 0.875rem 'Vazirmatn', system-ui, sans-serif; } .ds-input { width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 0.75rem; background: #fff; color: #0f172a; font: 400 1rem 'Vazirmatn', system-ui, sans-serif; transition: border-color 200ms ease, box-shadow 200ms ease; } .ds-input::placeholder { color: #94a3b8; } .ds-input:focus-visible { outline: 0; border-color: #dc2626; box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2); }"
+    },
+    {
+      "name": "Content Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "White content surface for programs, products, and news.",
+      "html": "<article class=\"ds-card\"><h3>Program title</h3><p>Supporting content sits in a clear, readable block.</p></article>",
+      "css": ".ds-card { padding: 24px; border-radius: 1rem; background: #fff; color: #334155; box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.1); transition: transform 300ms ease, box-shadow 300ms ease; } .ds-card h3 { margin: 0 0 8px; color: #0f172a; font: 700 1.25rem/1.3 'Vazirmatn', system-ui, sans-serif; } .ds-card p { margin: 0; font: 400 1rem/1.7 'Vazirmatn', system-ui, sans-serif; } .ds-card:hover { transform: translateY(-2px); box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.1); }"
+    },
+    {
+      "name": "Navigation Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Compact rounded header link with a quiet active state.",
+      "html": "<a class=\"ds-nav-link\" href=\"#programs\">Programs</a>",
+      "css": ".ds-nav-link { display: inline-flex; align-items: center; padding: 8px 12px; border-radius: 0.75rem; color: #475569; font: 500 0.875rem 'Vazirmatn', system-ui, sans-serif; text-decoration: none; transition: color 150ms ease, background 150ms ease; } .ds-nav-link:hover, .ds-nav-link.is-active { background: #fef2f2; color: #b91c1c; } .ds-nav-link:focus-visible { outline: 2px solid #dc2626; outline-offset: 2px; }"
+    },
+    {
+      "name": "Glass Panel",
+      "kind": "custom",
+      "description": "Translucent elevated content treatment for dark or image-led regions.",
+      "html": "<section class=\"ds-glass-panel\"><strong>Featured</strong><p>Layered content over an image or dark surface.</p></section>",
+      "css": ".ds-glass-panel { padding: 24px; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 1rem; background: rgba(255, 255, 255, 0.95); color: #334155; -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.1); font-family: 'Vazirmatn', system-ui, sans-serif; } .ds-glass-panel p { margin: 8px 0 0; line-height: 1.7; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Matchday Signal",
+    "overview": "Inferred from the implemented interface because a product owner was unavailable for the visual-language interview; this is a descriptive shorthand, not a confirmed brand commitment.\n\nThe current site pairs a football-led, high-energy first impression with practical browsing surfaces. A red and warm-charcoal hero, sports photography, achievement highlights, and gradient actions establish momentum; white cards and generous section spacing carry programs, products, and news. Orange, green, and gold distinguish secondary actions and content accents rather than replacing the red-led core.\n\nThe implementation also includes a dark theme, rounded controls, translucent panels, and layered shadows. In the rendered homepage, dark styling is not applied uniformly to every section, so new work should follow the actual theme tokens and verify both themes rather than assume automatic coverage. No visual anti-reference or rejection was confirmed.",
+    "keyCharacteristics": [
+      "Sport-led and energetic, with a red-centered action hierarchy.",
+      "Image-forward sections balanced by clear, light content surfaces.",
+      "Rounded cards and controls with gradients, translucency, and visible elevation.",
+      "Persian-first typography and layout with a responsive English counterpart."
+    ],
+    "rules": [
+      {
+        "name": "The Active Palette Rule",
+        "body": "Use the named utility palette as the source for new work. The separate --navy-color custom property is unused and blue-toned, while the active navy-* Tailwind ramp is warm charcoal; do not treat them as interchangeable tokens.",
+        "section": "colors"
+      },
+      {
+        "name": "The Loaded-Font Rule",
+        "body": "Prefer the globally loaded Vazirmatn stack for new typography; do not assume the separately configured Poppins/Inter stacks are available at runtime.",
+        "section": "typography"
+      },
+      {
+        "name": "The State-Lift Rule",
+        "body": "Keep ordinary content readable on its surface; reserve stronger lift and colored shadow for prominent cards or interaction states.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use the existing red-led palette and established orange, green, and gold accents.",
+      "Do keep the centered responsive containers, generous section spacing, and card-based content grids.",
+      "Do use Vazirmatn as the dependable default and preserve Persian RTL and English LTR behavior.",
+      "Do check dark-mode surfaces explicitly; the current rendered site contains sections that remain light in dark mode.",
+      "Do preserve clear focus, error, disabled, and reduced-motion states in interactive components."
+    ],
+    "donts": [
+      "Don't treat the unused blue-toned --navy-color property as the active warm navy-* palette.",
+      "Don't assume Poppins or Inter is loaded just because the Tailwind font stacks are configured.",
+      "Don't assume the dark theme automatically recolors every hard-coded light section.",
+      "Don't add new accent hues or replace existing sports imagery without a surface-specific brief.",
+      "Don't present this inferred North Star or color naming as a user-confirmed brand decision."
+    ]
+  }
+}

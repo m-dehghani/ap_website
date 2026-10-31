@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { calculateAge, parseBirthDate, parsePersianBirthDate } from '@/lib/age';
 import { formatPersianDate, formatToman, toPersianDigits } from '@/lib/format';
 import PersianDatePicker from '@/components/PersianDatePicker';
+import { FORM_VALIDATION } from '@/constants/app';
 import type {
   StudentDashboardViewModel,
   StudentProfileFormValues,
@@ -285,6 +286,10 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
   const requestPasswordVerification = async () => {
     setError('');
     setMessage('');
+    if (passwordForm.password.length < FORM_VALIDATION.password.minLength) {
+      setError(FORM_VALIDATION.password.message);
+      return;
+    }
     if (passwordForm.password !== passwordForm.confirmPassword) {
       setError('تکرار رمز عبور با رمز جدید مطابقت ندارد.');
       return;
@@ -680,7 +685,7 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                 <input
                   type="password"
                   autoComplete="new-password"
-                  minLength={8}
+                  minLength={FORM_VALIDATION.password.minLength}
                   maxLength={128}
                   value={passwordForm.password}
                   onChange={(event) =>
@@ -691,13 +696,16 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
                   }
                   className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
                 />
+                <span className="mt-1 block text-xs text-gray-500">
+                  رمز عبور باید حداقل ۱۲ کاراکتر باشد.
+                </span>
               </label>
               <label className="text-sm font-medium text-gray-700">
                 تکرار رمز عبور جدید
                 <input
                   type="password"
                   autoComplete="new-password"
-                  minLength={8}
+                  minLength={FORM_VALIDATION.password.minLength}
                   maxLength={128}
                   value={passwordForm.confirmPassword}
                   onChange={(event) =>
@@ -1073,92 +1081,83 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
 export const getServerSideProps: GetServerSideProps<
   StudentDashboardViewModel
 > = async (context) => {
-  const token = context.req.cookies.auth_token;
-  if (!token) {
+  const { getSession } = await import('@/lib/auth');
+  const session = await getSession(context.req);
+  if (
+    !session ||
+    session.role !== 'STUDENT' ||
+    session.source !== 'user'
+  ) {
     return { redirect: { destination: '/login', permanent: false } };
   }
 
-  try {
-    const [{ jwtVerify }, { getJwtSecret }, { getPrisma }] = await Promise.all([
-      import('jose'),
-      import('@/lib/auth'),
-      import('@/lib/db'),
-    ]);
-    const { payload } = await jwtVerify(token, getJwtSecret());
-    if (typeof payload.userId !== 'string') {
-      return { redirect: { destination: '/login', permanent: false } };
-    }
-
-    const db = await getPrisma();
-    const [student, programs] = await Promise.all([
-      db.user.findUnique({
-        where: { id: payload.userId },
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          phone: true,
-          birthDate: true,
-          marketingOptIn: true,
-          role: true,
-          registrations: {
-            select: {
-              id: true,
-              status: true,
-              totalAmount: true,
-              paidAmount: true,
-              experienceLevel: true,
-              parentName: true,
-              parentEmail: true,
-              emergencyContactName: true,
-              emergencyContactPhone: true,
-              medicalConditions: true,
-              payments: { select: { status: true } },
-              program: {
-                select: {
-                  id: true,
-                  name: true,
-                  coach: {
-                    select: { firstName: true, lastName: true },
-                  },
+  const { getPrisma } = await import('@/lib/db');
+  const db = await getPrisma();
+  const [student, programs] = await Promise.all([
+    db.user.findUnique({
+      where: { id: session.id },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        birthDate: true,
+        marketingOptIn: true,
+        role: true,
+        registrations: {
+          select: {
+            id: true,
+            status: true,
+            totalAmount: true,
+            paidAmount: true,
+            experienceLevel: true,
+            parentName: true,
+            parentEmail: true,
+            emergencyContactName: true,
+            emergencyContactPhone: true,
+            medicalConditions: true,
+            payments: { select: { status: true } },
+            program: {
+              select: {
+                id: true,
+                name: true,
+                coach: {
+                  select: { firstName: true, lastName: true },
                 },
               },
             },
-            orderBy: { registeredAt: 'desc' },
           },
+          orderBy: { registeredAt: 'desc' },
         },
-      }),
-      db.program.findMany({
-        where: { isActive: true },
-        select: {
-          id: true,
-          name: true,
-          price: true,
-          minAge: true,
-          maxAge: true,
-        },
-        orderBy: { displayOrder: 'asc' },
-      }),
-    ]);
-
-    if (!student || student.role !== 'STUDENT') {
-      return { redirect: { destination: '/login', permanent: false } };
-    }
-
-    return {
-      props: {
-        student: {
-          ...student,
-          birthDate: student.birthDate?.toISOString() ?? null,
-        },
-        programs,
       },
-    };
-  } catch (error) {
-    console.error('Student dashboard load error:', error);
+    }),
+    db.program.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        minAge: true,
+        maxAge: true,
+      },
+      orderBy: { displayOrder: 'asc' },
+    }),
+  ]);
+
+  if (!student || student.role !== 'STUDENT') {
     return { redirect: { destination: '/login', permanent: false } };
   }
+
+  return {
+    props: {
+      student: {
+        ...student,
+        birthDate: student.birthDate?.toISOString() ?? null,
+      },
+      programs,
+    },
+  };
 };
 
 export default StudentDashboardPage;

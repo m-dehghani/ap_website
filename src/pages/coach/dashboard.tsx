@@ -363,9 +363,13 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const token = context.req.cookies.auth_token;
-
-  if (!token) {
+  const { getSession } = await import('@/lib/auth');
+  const session = await getSession(context.req);
+  if (
+    !session ||
+    session.role !== 'COACH' ||
+    session.source !== 'coach'
+  ) {
     return {
       redirect: {
         destination: '/login',
@@ -374,54 +378,52 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  try {
-    const { jwtVerify } = await import('jose');
-    const { getJwtSecret } = await import('@/lib/auth');
-    const { payload } = await jwtVerify(token, getJwtSecret());
-
-    if (payload.role !== 'COACH') {
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
-        },
-      };
-    }
-
-    const { getPrisma } = await import('@/lib/db');
-    const db = await getPrisma();
-
-    const coach = await db.coach.findUnique({
-      where: { id: payload.userId as string },
-      include: {
-        programs: {
-          where: { isActive: true },
-          orderBy: { displayOrder: 'asc' },
-        },
-        sessions: {
-          where: { status: 'SCHEDULED' },
-          orderBy: { date: 'asc' },
-          take: 10,
+  const { getPrisma } = await import('@/lib/db');
+  const db = await getPrisma();
+  const coach = await db.coach.findUnique({
+    where: { id: session.id },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      specialization: true,
+      title: true,
+      experience: true,
+      studentsCount: true,
+      rating: true,
+      programs: {
+        where: { isActive: true },
+        orderBy: { displayOrder: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          sessionCount: true,
+          duration: true,
+          price: true,
+          maxStudents: true,
+          isActive: true,
         },
       },
-    });
-
-    if (!coach) {
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
+      sessions: {
+        where: { status: 'SCHEDULED' },
+        orderBy: { date: 'asc' },
+        take: 10,
+        select: {
+          id: true,
+          name: true,
+          date: true,
+          duration: true,
+          location: true,
+          maxCapacity: true,
+          status: true,
         },
-      };
-    }
-
-    return {
-      props: {
-        coach,
       },
-    };
-  } catch (error) {
-    console.error('Auth error:', error);
+    },
+  });
+
+  if (!coach) {
     return {
       redirect: {
         destination: '/login',
@@ -429,6 +431,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+
+  return {
+    props: {
+      coach: {
+        ...coach,
+        sessions: coach.sessions.map((session) => ({
+          ...session,
+          date: session.date.toISOString(),
+        })),
+      },
+    },
+  };
 };
 
 export default CoachDashboardPage;

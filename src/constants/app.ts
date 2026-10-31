@@ -94,8 +94,8 @@ export const FORM_VALIDATION = {
     message: 'شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود',
   },
   password: {
-    minLength: 8,
-    message: 'رمز عبور باید حداقل ۸ کاراکتر باشد',
+    minLength: 12,
+    message: 'رمز عبور باید حداقل ۱۲ کاراکتر باشد',
   },
 } as const;
 

@@ -275,9 +275,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const token = context.req.cookies.auth_token;
-
-  if (!token) {
+  const { getSession } = await import('@/lib/auth');
+  const session = await getSession(context.req);
+  if (!session || session.role !== 'ADMIN' || session.source !== 'user') {
     return {
       redirect: {
         destination: '/login',
@@ -286,52 +286,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  try {
-    const [{ jwtVerify }, { getJwtSecret }] = await Promise.all([
-      import('jose'),
-      import('@/lib/auth'),
-    ]);
-    const { payload } = await jwtVerify(token, getJwtSecret());
+  const { getPrisma } = await import('@/lib/db');
+  const db = await getPrisma();
 
-    if (typeof payload.userId !== 'string') {
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
-        },
-      };
-    }
+  const admin = await db.user.findUnique({
+    where: { id: session.id },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+    },
+  });
 
-    const { getPrisma } = await import('@/lib/db');
-    const db = await getPrisma();
-
-    const admin = await db.user.findUnique({
-      where: { id: payload.userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-      },
-    });
-
-    if (!admin || admin.role !== 'ADMIN') {
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
-        },
-      };
-    }
-
-    return {
-      props: {
-        admin,
-      },
-    };
-  } catch (error) {
-    console.error('Auth error:', error);
+  if (!admin || admin.role !== 'ADMIN') {
     return {
       redirect: {
         destination: '/login',
@@ -339,6 +308,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+
+  return {
+    props: {
+      admin,
+    },
+  };
 };
 
 export default AdminDashboard;

@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { randomBytes } from 'node:crypto';
-import { jwtVerify } from 'jose';
 import { z } from 'zod';
 import { getPrisma } from '@/lib/db';
-import { getJwtSecret, normalizePhone } from '@/lib/auth';
+import { getOptionalSession, normalizePhone } from '@/lib/auth';
 import { getAvailableStock, getVariantPrice, isValidTomanAmount } from '@/lib/shop';
 import { getZarinpalConfig, requestPayment } from '@/lib/zarinpal';
 
@@ -24,25 +23,6 @@ const checkoutSchema = z.object({
     }),
   ).min(1).max(30),
 });
-
-async function getOptionalStudentId(
-  req: NextApiRequest,
-): Promise<string | null> {
-  const token = req.cookies.auth_token;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, getJwtSecret());
-    if (typeof payload.userId !== 'string') return null;
-    const db = await getPrisma();
-    const user = await db.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, role: true },
-    });
-    return user?.role === 'STUDENT' ? user.id : null;
-  } catch {
-    return null;
-  }
-}
 
 export default async function handler(
   req: NextApiRequest,
@@ -84,7 +64,11 @@ export default async function handler(
   }
 
   const db = await getPrisma();
-  const userId = await getOptionalStudentId(req);
+  const session = await getOptionalSession(req);
+  const userId =
+    session?.source === 'user' && session.role === 'STUDENT'
+      ? session.id
+      : null;
   const now = new Date();
   let orderId: string | undefined;
 

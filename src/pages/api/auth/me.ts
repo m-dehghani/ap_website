@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
-import { getJwtSecret } from '@/lib/auth';
-import { jwtVerify } from 'jose';
+import { getSessionResult } from '@/lib/auth';
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,64 +10,69 @@ export default async function handler(
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const token = req.cookies.auth_token;
-  if (!token) {
+  if (!req.cookies.auth_token) {
     return res.status(401).json({ message: 'احراز هویت نشده' });
   }
 
-  const secret = getJwtSecret();
-  let userId: string;
   try {
-    const { payload } = await jwtVerify(token, secret);
-    if (typeof payload.userId !== 'string') {
-      return res.status(401).json({ message: 'توکن نامعتبر است' });
-    }
-    userId = payload.userId;
-  } catch {
-    return res.status(401).json({ message: 'توکن نامعتبر یا منقضی شده' });
-  }
+    const result = await getSessionResult(req);
+    if (!result.session) {
+      if (result.reason === 'unrecognized') {
+        return res.status(404).json({ message: 'کاربر یافت نشد' });
+      }
 
-  try {
+      const message =
+        result.reason === 'invalid-subject'
+          ? 'توکن نامعتبر است'
+          : 'توکن نامعتبر یا منقضی شده';
+      return res.status(401).json({ message });
+    }
+
+    const { session } = result;
     const db = await getPrisma();
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        phone: true,
-        birthDate: true,
-        role: true,
-        registrations: {
-          include: {
-            program: {
-              include: {
-                coach: {
-                  select: {
-                    id: true,
-                    firstName: true,
-                    lastName: true,
-                    email: true,
-                    phone: true,
-                    specialization: true,
-                    title: true,
-                    image: true,
+    if (session.source === 'user') {
+      const user = await db.user.findUnique({
+        where: { id: session.id },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          birthDate: true,
+          role: true,
+          registrations: {
+            include: {
+              program: {
+                include: {
+                  coach: {
+                    select: {
+                      id: true,
+                      firstName: true,
+                      lastName: true,
+                      email: true,
+                      phone: true,
+                      specialization: true,
+                      title: true,
+                      image: true,
+                    },
                   },
                 },
               },
             },
           },
         },
-      },
-    });
+      });
 
-    if (user && ['STUDENT', 'ADMIN', 'SHOP_MANAGER'].includes(user.role)) {
-      return res.status(200).json({ user });
+      if (user && ['STUDENT', 'ADMIN', 'SHOP_MANAGER'].includes(user.role)) {
+        return res.status(200).json({ user });
+      }
+
+      return res.status(404).json({ message: 'کاربر یافت نشد' });
     }
 
     const coach = await db.coach.findUnique({
-      where: { id: userId },
+      where: { id: session.id },
       select: {
         id: true,
         email: true,
@@ -78,11 +82,12 @@ export default async function handler(
         specialization: true,
         title: true,
         image: true,
+        role: true,
         isActive: true,
       },
     });
 
-    if (coach?.isActive) {
+    if (coach?.isActive && coach.role === 'COACH') {
       return res.status(200).json({ user: { ...coach, role: 'COACH' } });
     }
 
