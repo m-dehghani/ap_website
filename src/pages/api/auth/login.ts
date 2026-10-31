@@ -114,6 +114,7 @@ export default async function handler(
         phone: userRecord.phone,
         firstName: userRecord.firstName,
         lastName: userRecord.lastName,
+        image: userRecord.image,
         role: userRecord.role,
       },
     });

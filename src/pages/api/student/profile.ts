@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { authorizeStudent, normalizePhone } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
 import { parseBirthDateInput } from '@/lib/age';
+import { deleteUnreferencedImage, isValidImageReference } from '@/lib/uploads';
 
 const registrationProfileSchema = z.object({
   id: z.string().min(1),
@@ -30,6 +31,7 @@ const profileSchema = z
         message: 'تاریخ تولد معتبر نیست',
       }),
     marketingOptIn: z.boolean().optional(),
+    image: z.string().max(100).nullable().optional(),
     registrations: z.array(registrationProfileSchema).max(30).optional(),
   })
   .refine(
@@ -42,6 +44,7 @@ const profileSchema = z
       data.firstName !== undefined ||
       data.birthDate !== undefined ||
       data.marketingOptIn !== undefined ||
+      data.image !== undefined ||
       Boolean(data.registrations?.length),
     { message: 'اطلاعاتی برای ذخیره وارد نشده است' },
   );
@@ -66,8 +69,25 @@ export default async function handler(
       if (
         data.firstName !== undefined ||
         data.birthDate !== undefined ||
-        data.marketingOptIn !== undefined
+        data.marketingOptIn !== undefined ||
+        data.image !== undefined
       ) {
+        const current =
+          data.image === undefined
+            ? null
+            : await tx.user.findUnique({
+                where: { id: userId },
+                select: { image: true },
+              });
+        if (data.image !== undefined && !current) {
+          throw new Error('STUDENT_PROFILE_NOT_FOUND');
+        }
+        if (
+          data.image !== undefined &&
+          !(await isValidImageReference(tx, data.image, [current?.image]))
+        ) {
+          throw new Error('INVALID_PROFILE_IMAGE');
+        }
         updatedUser = await tx.user.update({
           where: { id: userId },
           data: {
@@ -84,6 +104,7 @@ export default async function handler(
             ...(data.marketingOptIn === undefined
               ? {}
               : { marketingOptIn: data.marketingOptIn }),
+            ...(data.image === undefined ? {} : { image: data.image }),
           },
           select: {
             id: true,
@@ -93,8 +114,12 @@ export default async function handler(
             phone: true,
             birthDate: true,
             marketingOptIn: true,
+            image: true,
           },
         });
+        if (current && data.image !== current.image) {
+          await deleteUnreferencedImage(tx, current.image);
+        }
       }
 
       for (const registration of data.registrations ?? []) {
@@ -139,6 +164,12 @@ export default async function handler(
       return res
         .status(409)
         .json({ message: 'این ایمیل یا شماره تلفن قبلاً استفاده شده است' });
+    }
+    if (error instanceof Error && error.message === 'INVALID_PROFILE_IMAGE') {
+      return res.status(400).json({ message: 'تصویر باید از بخش بارگذاری انتخاب شود' });
+    }
+    if (error instanceof Error && error.message === 'STUDENT_PROFILE_NOT_FOUND') {
+      return res.status(404).json({ message: 'حساب کاربری یافت نشد' });
     }
     if (error instanceof Error && error.message === 'STUDENT_REGISTRATION_NOT_FOUND') {
       return res.status(404).json({ message: 'اطلاعات ثبت‌نام یافت نشد' });

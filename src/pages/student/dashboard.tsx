@@ -26,6 +26,7 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
   const { user, loading, refreshUser } = useAuth();
   const router = useRouter();
   const [savedBirthDate, setSavedBirthDate] = useState(student.birthDate);
+  const [profileImage, setProfileImage] = useState(student.image ?? '');
   const [profile, setProfile] = useState<StudentProfileFormValues>({
     firstName: student.firstName,
     lastName: student.lastName,
@@ -467,6 +468,11 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
           <ProfileSection
             profile={profile}
             setProfile={setProfile}
+            image={profileImage}
+            onImageChange={(image) => {
+              setProfileImage(image);
+              void refreshUser();
+            }}
             verificationCodes={verificationCodes}
             setVerificationCodes={setVerificationCodes}
             busyAction={busyAction}
@@ -647,6 +653,7 @@ export const getServerSideProps: GetServerSideProps<
         firstName: true,
         lastName: true,
         phone: true,
+        image: true,
         birthDate: true,
         marketingOptIn: true,
         role: true,

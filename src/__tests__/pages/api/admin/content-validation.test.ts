@@ -27,15 +27,36 @@ const response = () =>
 
 describe('admin CMS content mutation validation', () => {
   const prisma = {
-    testimonial: { create: vi.fn(), update: vi.fn() },
+      testimonial: {
+        create: vi.fn(),
+        update: vi.fn(),
+        findUnique: vi.fn(),
+        findFirst: vi.fn(),
+      },
     facility: { create: vi.fn() },
     statistic: { create: vi.fn() },
-  };
+      imageAsset: { findUnique: vi.fn(), deleteMany: vi.fn() },
+      user: { findFirst: vi.fn() },
+      coach: { findFirst: vi.fn() },
+      successStory: { findFirst: vi.fn() },
+      newsArticle: { findFirst: vi.fn() },
+      shopProduct: { findFirst: vi.fn() },
+    };
 
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(authorizeAdmin).mockResolvedValue(true);
     vi.mocked(getPrisma).mockResolvedValue(prisma as never);
+    for (const model of [
+      prisma.user,
+      prisma.coach,
+      prisma.successStory,
+      prisma.testimonial,
+      prisma.newsArticle,
+      prisma.shopProduct,
+    ]) {
+      model.findFirst.mockResolvedValue(null);
+    }
   });
 
   it.each([
@@ -97,6 +118,43 @@ describe('admin CMS content mutation validation', () => {
         data: { rating: 4 },
       }),
     );
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('rejects a new testimonial image URL that is not an uploaded app asset', async () => {
+    const res = response();
+
+    await testimonialsHandler(
+      request('POST', {
+        name: 'مربی',
+        role: 'والد',
+        content: 'نظر',
+        image: 'https://external.example/photo.jpg',
+      }),
+      res as never,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(prisma.testimonial.create).not.toHaveBeenCalled();
+  });
+
+  it('cleans up an unreferenced replaced testimonial image after the update succeeds', async () => {
+    const oldImage = '/api/uploads/550e8400-e29b-41d4-a716-446655440000';
+    const newImage = '/api/uploads/550e8400-e29b-41d4-a716-446655440001';
+    prisma.testimonial.findUnique.mockResolvedValue({ image: oldImage });
+    prisma.imageAsset.findUnique.mockResolvedValue({ id: '550e8400-e29b-41d4-a716-446655440001' });
+    prisma.testimonial.update.mockResolvedValue({ id: 'testimonial-1', image: newImage });
+    const res = response();
+
+    await testimonialDetailHandler(
+      request('PUT', { image: newImage }, { id: 'testimonial-1' }),
+      res as never,
+    );
+
+    expect(prisma.testimonial.update).toHaveBeenCalled();
+    expect(prisma.imageAsset.deleteMany).toHaveBeenCalledWith({
+      where: { id: '550e8400-e29b-41d4-a716-446655440000' },
+    });
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });

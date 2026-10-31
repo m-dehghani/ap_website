@@ -134,8 +134,12 @@ UPDATE "users" SET "role" = 'SHOP_MANAGER' WHERE "email" = 'manager@example.com'
 
 Shop managers can manage products,
 orders, reviews, and the configurable shipping fee; regular academy admin users
-can also access the shop panel. Product and review media are validated HTTPS
-URLs because the project does not currently configure an upload/storage service.
+can also access the shop panel. Product images can be uploaded by admins and shop managers. Profile photos and
+CMS image uploads use the existing PostgreSQL database for durable storage;
+the application accepts JPEG, PNG, and WebP files up to 5 MiB and serves them
+through `/api/uploads/<id>`. Include the `image_assets` table in database
+backups and capacity planning because uploaded bytes increase database size.
+User-submitted shop-review media is outside this CMS image-upload workflow.
 Ratings and reviews are accepted only from signed-in students whose account is
 attached to a paid order for that product; submissions remain unpublished until
 a shop manager approves them. Guest favorites are stored in that browser only.

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
 import { authorizeAdmin } from '@/lib/auth';
+import { deleteUnreferencedImage, isValidImageReference } from '@/lib/uploads';
 
 export default async function handler(
   req: NextApiRequest,
@@ -45,6 +46,22 @@ export default async function handler(
         coachId,
         displayOrder,
       } = req.body;
+      const current =
+        image === undefined
+          ? null
+          : await prisma.successStory.findUnique({
+              where: { id },
+              select: { image: true },
+            });
+      if (image !== undefined && !current) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+      if (
+        image !== undefined &&
+        !(await isValidImageReference(prisma, image, [current?.image]))
+      ) {
+        return res.status(400).json({ error: 'تصویر باید از بخش بارگذاری انتخاب شود' });
+      }
       const story = await prisma.successStory.update({
         where: { id },
         data: {
@@ -68,12 +85,17 @@ export default async function handler(
           coach: { select: { firstName: true, lastName: true } },
         },
       });
+      if (current && image !== current.image) {
+        await deleteUnreferencedImage(prisma, current.image);
+      }
       return res.status(200).json(story);
     }
     case 'DELETE': {
-      await prisma.successStory.delete({
+      const removed = await prisma.successStory.delete({
         where: { id },
+        select: { image: true },
       });
+      await deleteUnreferencedImage(prisma, removed.image);
       return res.status(204).end();
     }
     default:

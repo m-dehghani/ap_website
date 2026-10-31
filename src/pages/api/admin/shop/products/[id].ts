@@ -2,6 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
 import { authorizeShopManager } from '@/lib/auth';
 import { shopProductInputSchema } from '@/lib/shop';
+import {
+  areValidImageReferences,
+  deleteUnreferencedImage,
+} from '@/lib/uploads';
 
 export default async function handler(
   req: NextApiRequest,
@@ -42,6 +46,15 @@ export default async function handler(
   }
   const { variants, ...product } = parsed.data;
   try {
+    const currentProduct = await db.shopProduct.findUnique({
+      where: { id },
+      select: { id: true, images: true },
+    });
+    if (!currentProduct) return res.status(404).json({ message: 'محصول یافت نشد' });
+    if (!(await areValidImageReferences(db, product.images, currentProduct.images))) {
+      return res.status(400).json({ message: 'تصاویر باید از بخش بارگذاری انتخاب شوند' });
+    }
+
     const updated = await db.$transaction(async (tx) => {
       const current = await tx.shopProduct.findUnique({
         where: { id },
@@ -104,6 +117,11 @@ export default async function handler(
       return saved;
     });
     if (!updated) return res.status(404).json({ message: 'محصول یافت نشد' });
+    for (const oldImage of currentProduct.images) {
+      if (!product.images.includes(oldImage)) {
+        await deleteUnreferencedImage(db, oldImage);
+      }
+    }
     const result = await db.shopProduct.findUnique({
       where: { id },
       include: { variants: { orderBy: { sku: 'asc' } } },

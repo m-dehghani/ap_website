@@ -4,6 +4,7 @@ import type {
   SetStateAction,
 } from 'react';
 import PersianDatePicker from '@/components/PersianDatePicker';
+import ImageUploadField from '@/components/ImageUploadField';
 import type {
   StudentProfileFormValues,
 } from '@/types/viewModels/student';
@@ -16,6 +17,8 @@ export default function ProfileSection({
   verificationCodes,
   setVerificationCodes,
   busyAction,
+  image,
+  onImageChange,
   onSubmit,
   onRequestVerification,
   onConfirmVerification,
@@ -27,6 +30,8 @@ export default function ProfileSection({
     SetStateAction<{ email: string; phone: string }>
   >;
   busyAction: string | null;
+  image: string;
+  onImageChange: (image: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onRequestVerification: (channel: VerificationChannel) => void;
   onConfirmVerification: (channel: VerificationChannel) => void;
@@ -37,6 +42,17 @@ export default function ProfileSection({
         <h2 className="text-white text-lg font-semibold">اطلاعات پروفایل</h2>
       </div>
       <form onSubmit={onSubmit} className="p-6">
+        <div className="mb-6 max-w-sm">
+          <ImageUploadField
+            label="تصویر پروفایل"
+            scope="profile"
+            value={image}
+            removable={false}
+            onChange={(value) => {
+              if (typeof value === 'string') onImageChange(value);
+            }}
+          />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <label className="block text-sm font-medium text-gray-700">
             نام

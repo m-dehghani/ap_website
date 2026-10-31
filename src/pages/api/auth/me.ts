@@ -40,6 +40,7 @@ export default async function handler(
           lastName: true,
           phone: true,
           birthDate: true,
+          image: true,
           role: true,
           registrations: {
             include: {

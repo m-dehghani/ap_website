@@ -12,7 +12,7 @@ const testimonialFields = {
   name: requiredText,
   role: requiredText,
   content: requiredText,
-  image: z.string().nullable().optional(),
+  image: z.string().max(2048).nullable().optional(),
   rating: z.number().int().min(1).max(5).optional(),
   category: requiredText.optional(),
   improvement: z.string().nullable().optional(),

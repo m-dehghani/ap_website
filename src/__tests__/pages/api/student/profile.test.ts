@@ -12,7 +12,7 @@ vi.mock('@/lib/auth', () => ({
 vi.mock('@/lib/db', () => ({ getPrisma: vi.fn() }));
 
 const mockPrisma = {
-  user: { findFirst: vi.fn(), update: vi.fn() },
+  user: { findFirst: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
   coach: { findFirst: vi.fn() },
   registration: { updateMany: vi.fn() },
   $transaction: vi.fn(),
@@ -37,6 +37,7 @@ describe('/api/student/profile', () => {
     vi.mocked(authorizeStudent).mockResolvedValue('student-1');
     vi.mocked(getPrisma).mockResolvedValue(mockPrisma as never);
     mockPrisma.user.findFirst.mockResolvedValue(null);
+    mockPrisma.user.findUnique.mockResolvedValue({ image: null });
     mockPrisma.coach.findFirst.mockResolvedValue(null);
     mockPrisma.user.update.mockResolvedValue({
       id: 'student-1',
@@ -86,6 +87,18 @@ describe('/api/student/profile', () => {
         lastName: 'User',
         birthDate: 'not-a-date',
       }),
+      res as never,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(mockPrisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects an arbitrary remote image URL as a profile upload substitute', async () => {
+    const res = response();
+
+    await handler(
+      request({ image: 'https://external.example/profile.png' }),
       res as never,
     );
 

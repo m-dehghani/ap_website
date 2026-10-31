@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
+import ImageUploadField from '@/components/ImageUploadField';
 
 interface Program {
   id: string;
@@ -220,18 +221,17 @@ export default function TestimonialNewPage() {
               />
             </div>
 
-            <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                آدرس تصویر
-              </label>
-              <Input
-                id="image"
-                name="image"
-                value={formData.image}
-                onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
+            <ImageUploadField
+              label="تصویر نظر"
+              scope="testimonial"
+              value={formData.image}
+              onChange={(image) =>
+                setFormData((previous) => ({
+                  ...previous,
+                  image: typeof image === 'string' ? image : '',
+                }))
+              }
+            />
 
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer">

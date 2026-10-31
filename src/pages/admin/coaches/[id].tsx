@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/AdminLayout';
+import ImageUploadField from '@/components/ImageUploadField';
 
 const CoachFormPage: React.FC = () => {
   const router = useRouter();
@@ -383,19 +384,17 @@ const CoachFormPage: React.FC = () => {
                   placeholder="@username"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  تصویر (URL)
-                </label>
-                <input
-                  type="url"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
+              <ImageUploadField
+                label="تصویر مربی"
+                scope="coach"
+                value={formData.image}
+                onChange={(image) =>
+                  setFormData((previous) => ({
+                    ...previous,
+                    image: typeof image === 'string' ? image : '',
+                  }))
+                }
+              />
             </div>
           </section>
 

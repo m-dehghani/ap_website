@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import AttendanceRoster from '@/components/AttendanceRoster';
 import CoachEvaluationsPanel from '@/components/CoachEvaluationsPanel';
 import { attendanceEligibleRegistrationStatuses } from '@/lib/attendance';
+import ImageUploadField from '@/components/ImageUploadField';
 
 interface CoachDashboardProps {
   coach: any;
@@ -21,6 +22,7 @@ type CoachProgramRoster = {
 
 const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
   const router = useRouter();
+  const [profileImage, setProfileImage] = React.useState(coach.image ?? '');
 
   useEffect(() => {
     // Check auth on client side
@@ -101,6 +103,17 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
               </h2>
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="md:col-span-2 lg:col-span-4 max-w-sm">
+                <ImageUploadField
+                  label="تصویر پروفایل"
+                  scope="profile"
+                  value={profileImage}
+                  removable={false}
+                  onChange={(value) => {
+                    if (typeof value === 'string') setProfileImage(value);
+                  }}
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-500">
                   نام
@@ -436,6 +449,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       id: true,
       firstName: true,
       lastName: true,
+      image: true,
       email: true,
       phone: true,
       specialization: true,

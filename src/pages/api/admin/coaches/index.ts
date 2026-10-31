@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
 import { authorizeAdmin } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
+import { isValidImageReference } from '@/lib/uploads';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!(await authorizeAdmin(req, res))) return;
@@ -44,6 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (typeof password !== 'string' || password.length < 6) {
         return res.status(400).json({ error: 'رمز عبور باید حداقل ۶ کاراکتر باشد' });
+      }
+      if (!(await isValidImageReference(prisma, image))) {
+        return res.status(400).json({ error: 'تصویر باید از بخش بارگذاری انتخاب شود' });
       }
 
       const coach = await prisma.coach.create({

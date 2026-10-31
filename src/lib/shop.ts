@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { imageAssetUrlSchema } from '@/lib/uploads';
 import type { PrismaClient } from '../../prisma/generated/client';
 
 type ShopOrderReservation = {
@@ -89,7 +90,7 @@ export const shopProductInputSchema = z.object({
   category: z.string().trim().min(1).max(80),
   description: z.string().trim().min(1).max(10_000),
   shortDescription: z.string().trim().max(500).nullable().optional(),
-  images: z.array(httpUrlSchema).max(12),
+  images: z.array(z.union([httpUrlSchema, imageAssetUrlSchema])).max(12),
   price: z.number().int().positive(),
   salePrice: z.number().int().positive().nullable().optional(),
   saleStartsAt: z.coerce.date().nullable().optional(),

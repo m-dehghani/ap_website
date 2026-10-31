@@ -32,6 +32,7 @@ export interface StudentDashboardStudentViewModel {
   firstName: string;
   lastName: string;
   phone: string | null;
+  image?: string | null;
   birthDate: string | null;
   marketingOptIn: boolean;
   registrations: StudentRegistrationViewModel[];

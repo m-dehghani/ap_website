@@ -56,8 +56,9 @@ describe('admin contact inbox', () => {
         }),
       );
     });
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'وضعیت پیام به‌روزرسانی شد.',
+    expect(await screen.findByText('وضعیت پیام به‌روزرسانی شد.')).toHaveAttribute(
+      'role',
+      'status',
     );
     expect(status).toHaveValue('READ');
   });

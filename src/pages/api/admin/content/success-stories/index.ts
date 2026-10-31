@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
 import { authorizeAdmin } from '@/lib/auth';
+import { isValidImageReference } from '@/lib/uploads';
 
 export default async function handler(
   req: NextApiRequest,
@@ -43,6 +44,9 @@ export default async function handler(
       } = req.body;
       if (!playerName || !achievement || !description) {
         return res.status(400).json({ error: 'فیلدهای الزامی: playerName, achievement, description' });
+      }
+      if (!(await isValidImageReference(prisma, image))) {
+        return res.status(400).json({ error: 'تصویر باید از بخش بارگذاری انتخاب شود' });
       }
       const story = await prisma.successStory.create({
         data: {

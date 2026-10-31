@@ -9,6 +9,7 @@ interface User {
   role: 'STUDENT' | 'COACH' | 'ADMIN' | 'SHOP_MANAGER';
   phone?: string;
   birthDate?: string | null;
+  image?: string | null;
 }
 
 interface AuthContextType {
