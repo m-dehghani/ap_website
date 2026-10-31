@@ -27,7 +27,26 @@ describe('student attendance history UI', () => {
           phone: null,
           birthDate: null,
           marketingOptIn: false,
-          registrations: [],
+          registrations: [
+            {
+              id: 'registration-1',
+              status: 'APPROVED',
+              totalAmount: 120000,
+              paidAmount: 0,
+              experienceLevel: null,
+              parentName: null,
+              parentEmail: null,
+              emergencyContactName: null,
+              emergencyContactPhone: null,
+              medicalConditions: null,
+              payments: [{ status: 'PENDING' }],
+              program: {
+                id: 'program-1',
+                name: 'برنامه نوجوانان',
+                coach: null,
+              },
+            },
+          ],
           attendance: [
             {
               id: 'attendance-1',
@@ -62,6 +81,26 @@ describe('student attendance history UI', () => {
     expect(
       screen.getByRole('heading', { name: 'سابقه حضور و غیاب' }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'اطلاعات پروفایل' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'ثبت‌نام‌های من' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'پرداخت شهریه' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('برنامه نوجوانان')).toBeInTheDocument();
+    expect(
+      screen.getByText(/برای لغو ثبت‌نامی که پرداخت آن آغاز یا انجام شده است/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'لغو ثبت‌نام' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'پرداخت از طریق زرین‌پال' }),
+    ).toBeEnabled();
+    expect(screen.getByLabelText('نام')).toHaveValue('علی');
     expect(screen.getByText('تمرین پایه')).toBeInTheDocument();
     expect(screen.getByText('با تأخیر')).toBeInTheDocument();
     const evaluationsHeading = screen.getByRole('heading', {
