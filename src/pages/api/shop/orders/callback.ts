@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
+import { releaseOrderReservation } from '@/lib/shop';
 import { getZarinpalConfig, verifyPayment } from '@/lib/zarinpal';
 
 function redirectResult(res: NextApiResponse, result: string, order?: string) {
@@ -50,14 +51,10 @@ export default async function handler(
           select: { status: true, items: { select: { variantId: true, quantity: true } } },
         });
         if (pending?.status !== 'PENDING_PAYMENT') return;
-        for (const item of pending.items) {
-          if (item.variantId) {
-            await tx.shopVariant.update({
-              where: { id: item.variantId },
-              data: { reserved: { decrement: item.quantity } },
-            });
-          }
-        }
+        await releaseOrderReservation(tx, {
+          id: order.id,
+          items: pending.items,
+        });
         await tx.shopOrder.update({
           where: { id: order.id },
           data: { status: 'CANCELLED' },
@@ -90,14 +87,10 @@ export default async function handler(
           select: { status: true, items: { select: { variantId: true, quantity: true } } },
         });
         if (pending?.status !== 'PENDING_PAYMENT') return;
-        for (const item of pending.items) {
-          if (item.variantId) {
-            await tx.shopVariant.update({
-              where: { id: item.variantId },
-              data: { reserved: { decrement: item.quantity } },
-            });
-          }
-        }
+        await releaseOrderReservation(tx, {
+          id: order.id,
+          items: pending.items,
+        });
         await tx.shopOrder.update({
           where: { id: order.id },
           data: { status: 'PAYMENT_FAILED' },
@@ -113,7 +106,7 @@ export default async function handler(
       async (tx) => {
         const current = await tx.shopOrder.findUnique({
           where: { id: order.id },
-          select: { status: true, expiresAt: true, items: true },
+          select: { id: true, status: true, expiresAt: true, items: true },
         });
         if (!current) return 'verification-error';
         if (
@@ -121,17 +114,20 @@ export default async function handler(
         ) {
           return 'success';
         }
-        if (current.status !== 'PENDING_PAYMENT' || current.expiresAt <= new Date()) {
-          if (current.status === 'PENDING_PAYMENT') {
-            for (const item of current.items) {
-              if (item.variantId) {
-                await tx.shopVariant.update({
-                  where: { id: item.variantId },
-                  data: { reserved: { decrement: item.quantity } },
-                });
-              }
-            }
-          }
+        if (current.status === 'CANCELLED') {
+          return 'cancelled';
+        }
+        if (current.status === 'PAYMENT_FAILED') {
+          return 'failed';
+        }
+        if (current.status === 'REFUND_REQUIRED') {
+          return 'refund-required';
+        }
+        if (current.status !== 'PENDING_PAYMENT') {
+          return 'verification-error';
+        }
+        if (current.expiresAt <= new Date()) {
+          await releaseOrderReservation(tx, current);
           await tx.shopOrder.update({
             where: { id: order.id },
             data: { status: 'REFUND_REQUIRED' },

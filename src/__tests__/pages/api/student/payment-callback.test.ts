@@ -57,6 +57,8 @@ describe('/api/student/payments/callback', () => {
         id: 'payment-1',
         amount: 10000,
         status: 'PENDING',
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
         registrationId: 'registration-1',
         registration: {
           status: 'APPROVED',
@@ -115,6 +117,46 @@ describe('/api/student/payments/callback', () => {
     expect(res.redirect).toHaveBeenCalledWith(
       302,
       '/student/dashboard?payment=cancelled',
+    );
+  });
+
+  it('queues a gateway-verified success after expiry without crediting tuition', async () => {
+    const expiredAt = new Date(Date.now() - 15 * 60 * 1000);
+    mockPrisma.payment.findMany.mockResolvedValue([
+      { id: 'payment-1', amount: 10000, status: 'FAILED' },
+    ]);
+    tx.payment.findMany.mockResolvedValue([
+      {
+        id: 'payment-1',
+        amount: 10000,
+        status: 'FAILED',
+        createdAt: expiredAt,
+        expiresAt: expiredAt,
+        registrationId: 'registration-1',
+        registration: {
+          status: 'APPROVED',
+          totalAmount: 1000,
+          paidAmount: 0,
+        },
+      },
+    ]);
+    const res = response();
+
+    await handler(request('OK'), res as never);
+
+    expect(verifyPayment).toHaveBeenCalledWith(
+      expect.any(Object),
+      'authority123',
+      10000,
+    );
+    expect(tx.payment.update).toHaveBeenCalledWith({
+      where: { id: 'payment-1' },
+      data: { status: 'REFUND_REQUIRED' },
+    });
+    expect(tx.registration.update).not.toHaveBeenCalled();
+    expect(res.redirect).toHaveBeenCalledWith(
+      302,
+      '/student/dashboard?payment=refund-required',
     );
   });
 });

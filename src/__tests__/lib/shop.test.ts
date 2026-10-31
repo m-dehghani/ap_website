@@ -4,6 +4,7 @@ import {
   getVariantPrice,
   isValidTomanAmount,
   releaseExpiredShopOrders,
+  releaseOrderReservation,
   shopProductInputSchema,
   shopReviewInputSchema,
 } from '@/lib/shop';
@@ -51,6 +52,26 @@ describe('expired shop order cleanup', () => {
       },
       data: { status: 'CANCELLED' },
     });
+    expect(tx.shopVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: 'variant-1', reserved: { gte: 2 } },
+      data: { reserved: { decrement: 2 } },
+    });
+  });
+
+  it('releases only when the variant actually reserved enough stock', async () => {
+    const tx = {
+      shopVariant: {
+        updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+      },
+    };
+
+    await expect(
+      releaseOrderReservation(tx as never, {
+        id: 'order-1',
+        items: [{ variantId: 'variant-1', quantity: 2 }],
+      }),
+    ).rejects.toThrow('Reservation count mismatch for order order-1');
+
     expect(tx.shopVariant.updateMany).toHaveBeenCalledWith({
       where: { id: 'variant-1', reserved: { gte: 2 } },
       data: { reserved: { decrement: 2 } },

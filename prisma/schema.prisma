@@ -183,6 +183,7 @@ model Payment {
   method            String   @default("ONLINE")
   stripeId          String?
   providerReference String?
+  expiresAt         DateTime?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -192,6 +193,7 @@ model Payment {
   registration   Registration @relation(fields: [registrationId], references: [id])
   registrationId String
 
+  @@index([method, status, expiresAt])
   @@index([providerReference, method])
   @@map("payments")
 }

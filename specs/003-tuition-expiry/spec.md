@@ -1,7 +1,19 @@
 # Phase 3 — Tuition payment expiry
 
-**Status:** Draft; requirements need clarification and review before planning or
-implementation.
+**Status:** Clarified for implementation.
+
+## Decisions
+
+- Use a persisted nullable `Payment.expiresAt`, set to 15 minutes after each
+  tuition checkout is created. The column remains nullable for non-checkout and
+  non-Zarinpal payments.
+- Backfill existing pending Zarinpal payments from `createdAt + 15 minutes`.
+- Treat expiry as a strict deadline: a payment is expired when
+  `expiresAt <= now`.
+- Expired pending payments become `FAILED` when a student retries, allowing a
+  new checkout. A later gateway-verified success becomes `REFUND_REQUIRED` and
+  never credits its registration.
+- Reuse one `CHECKOUT_TTL_MS` constant for tuition and shop checkouts.
 
 ## User stories
 
@@ -14,11 +26,12 @@ implementation.
 
 - Expire pending tuition checkout after 15 minutes, using the shop window or a
   shared checkout TTL.
-- Prefer a persisted `Payment.expiresAt` timestamp and migration if confirmed
-   during clarification.
+- Persist checkout expiry on each tuition payment and backfill existing
+  pending Zarinpal payments.
 - Allow a new checkout after expiry.
 - Mark a verified successful callback arriving after expiry as
   `REFUND_REQUIRED`; do not apply it to an ineligible registration.
+- Preserve the existing rial amounts and Persian API responses.
 
 ## Success criteria
 
