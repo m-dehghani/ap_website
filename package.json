@@ -36,6 +36,7 @@
     "prebuild": "prisma generate",
     "build": "next build --webpack",
     "start": "next start",
+    "migrate:uploads": "tsx scripts/migrate-image-assets-to-disk.ts",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit -p tsconfig.json",
     "test": "vitest run",

@@ -9,6 +9,7 @@ dist/
 build/
 .turbo/
 .vercel/
+/uploads/
 
 # Tests
 coverage/

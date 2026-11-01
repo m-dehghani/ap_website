@@ -6,8 +6,11 @@ import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   ChevronDownIcon,
+  ComputerDesktopIcon,
   Cog6ToothIcon,
+  MoonIcon,
   ShoppingBagIcon,
+  SunIcon,
   UserIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
@@ -16,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { readShopCart } from '@/lib/shop-cart';
 import { SiteInfoViewModel } from '@/types/viewModels/site';
 import ThemePreferenceControl from '@/components/ui/ThemePreferenceControl';
+import { useThemePreference } from '@/hooks/useThemePreference';
 
 interface HeaderProps {
   site?: SiteInfoViewModel | null;
@@ -28,6 +32,7 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user, loading, logout } = useAuth();
+  const { preference } = useThemePreference();
 
   const navigation = NAVIGATION.main;
 
@@ -90,6 +95,12 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
         STUDENT: '/student/dashboard',
       }[user.role]
     : '/login';
+  const ThemeIcon =
+    preference === 'dark'
+      ? MoonIcon
+      : preference === 'light'
+        ? SunIcon
+        : ComputerDesktopIcon;
 
   return (
     <header className="site-header sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 shadow-sm backdrop-blur-xl">
@@ -98,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
       </a>
       <div className="container-custom">
         <div className="flex items-center justify-between gap-2 py-3 md:py-4">
-          <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
+          <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-primary-600 to-primary-800 text-lg font-bold text-white shadow-md sm:h-11 sm:w-11">
               AP
             </div>
@@ -135,6 +146,21 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
           </nav>
 
           <div className="flex shrink-0 items-center gap-2 lg:gap-3">
+            <details className="relative hidden lg:block">
+              <summary
+                aria-label="انتخاب پوسته سایت"
+                title="انتخاب پوسته سایت"
+                className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition-colors hover:bg-primary-50 hover:text-primary-700 focus-visible:outline-primary-600 [&::-webkit-details-marker]:hidden"
+              >
+                <ThemeIcon className="h-5 w-5" aria-hidden="true" />
+              </summary>
+              <div className="absolute left-0 top-full z-[60] mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
+                <p className="mb-2 px-1 text-xs font-semibold text-slate-500">
+                  پوسته سایت
+                </p>
+                <ThemePreferenceControl />
+              </div>
+            </details>
             <Link
               href="/shop/cart"
               className="relative hidden rounded-xl p-2 text-slate-700 transition-colors hover:bg-primary-50 hover:text-primary-700 lg:block"
@@ -298,6 +324,12 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
                 >
                   سبد خرید ({cartCount})
                 </Link>
+                <div className="mt-2 border-t border-slate-200 px-4 pt-4">
+                  <p className="mb-2 text-xs font-semibold text-slate-500">
+                    پوسته سایت
+                  </p>
+                  <ThemePreferenceControl />
+                </div>
                 {!loading && !user ? (
                   <>
                     <Link

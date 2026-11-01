@@ -12,7 +12,7 @@ describe('ImageUploadField', () => {
       'fetch',
       vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ url: '/api/uploads/550e8400-e29b-41d4-a716-446655440000' }),
+        json: async () => ({ url: '/api/uploads/550e8400-e29b-41d4-a716-446655440000.png' }),
       }),
     );
   });
@@ -45,7 +45,7 @@ describe('ImageUploadField', () => {
         }),
       );
       expect(onChange).toHaveBeenCalledWith(
-        '/api/uploads/550e8400-e29b-41d4-a716-446655440000',
+        '/api/uploads/550e8400-e29b-41d4-a716-446655440000.png',
       );
       expect(screen.getByRole('status')).toHaveTextContent(
         'تصویر با موفقیت بارگذاری شد',

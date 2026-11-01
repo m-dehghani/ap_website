@@ -1,12 +1,16 @@
 // @vitest-environment node
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { mkdtemp, rm } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import testimonialsHandler from '@/pages/api/admin/content/testimonials';
 import testimonialDetailHandler from '@/pages/api/admin/content/testimonials/[id]';
 import facilitiesHandler from '@/pages/api/admin/content/facilities';
 import statisticsHandler from '@/pages/api/admin/content/statistics';
 import { authorizeAdmin } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
+import { readImageFile, writeImageFile } from '@/lib/uploads';
 
 vi.mock('@/lib/auth', () => ({ authorizeAdmin: vi.fn() }));
 vi.mock('@/lib/db', () => ({ getPrisma: vi.fn() }));
@@ -35,7 +39,6 @@ describe('admin CMS content mutation validation', () => {
       },
     facility: { create: vi.fn() },
     statistic: { create: vi.fn() },
-      imageAsset: { findUnique: vi.fn(), deleteMany: vi.fn() },
       user: { findFirst: vi.fn() },
       coach: { findFirst: vi.fn() },
       successStory: { findFirst: vi.fn() },
@@ -43,8 +46,12 @@ describe('admin CMS content mutation validation', () => {
       shopProduct: { findFirst: vi.fn() },
     };
 
-  beforeEach(() => {
+  let directory: string;
+
+  beforeEach(async () => {
     vi.resetAllMocks();
+    directory = await mkdtemp(path.join(os.tmpdir(), 'ap-cms-images-'));
+    vi.stubEnv('UPLOADS_DIR', directory);
     vi.mocked(authorizeAdmin).mockResolvedValue(true);
     vi.mocked(getPrisma).mockResolvedValue(prisma as never);
     for (const model of [
@@ -57,6 +64,11 @@ describe('admin CMS content mutation validation', () => {
     ]) {
       model.findFirst.mockResolvedValue(null);
     }
+  });
+
+  afterEach(async () => {
+    vi.unstubAllEnvs();
+    await rm(directory, { recursive: true, force: true });
   });
 
   it.each([
@@ -139,10 +151,21 @@ describe('admin CMS content mutation validation', () => {
   });
 
   it('cleans up an unreferenced replaced testimonial image after the update succeeds', async () => {
-    const oldImage = '/api/uploads/550e8400-e29b-41d4-a716-446655440000';
-    const newImage = '/api/uploads/550e8400-e29b-41d4-a716-446655440001';
+    const bytes = Buffer.from([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+    ]);
+    const oldImage = await writeImageFile(
+      '550e8400-e29b-41d4-a716-446655440000',
+      'image/png',
+      bytes,
+    );
+    const newImage = await writeImageFile(
+      '550e8400-e29b-41d4-a716-446655440001',
+      'image/png',
+      bytes,
+    );
     prisma.testimonial.findUnique.mockResolvedValue({ image: oldImage });
-    prisma.imageAsset.findUnique.mockResolvedValue({ id: '550e8400-e29b-41d4-a716-446655440001' });
     prisma.testimonial.update.mockResolvedValue({ id: 'testimonial-1', image: newImage });
     const res = response();
 
@@ -150,11 +173,10 @@ describe('admin CMS content mutation validation', () => {
       request('PUT', { image: newImage }, { id: 'testimonial-1' }),
       res as never,
     );
-
     expect(prisma.testimonial.update).toHaveBeenCalled();
-    expect(prisma.imageAsset.deleteMany).toHaveBeenCalledWith({
-      where: { id: '550e8400-e29b-41d4-a716-446655440000' },
-    });
+    expect(prisma.testimonial.update).toHaveBeenCalled();
+    await expect(readImageFile(oldImage)).resolves.toBeNull();
+    await expect(readImageFile(newImage)).resolves.not.toBeNull();
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });

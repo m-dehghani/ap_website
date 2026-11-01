@@ -64,8 +64,9 @@ export default async function handler(
 
     const data = profileSchema.parse(req.body);
     const db = await getPrisma();
-    const user = await db.$transaction(async (tx) => {
+    const { user, replacedImage } = await db.$transaction(async (tx) => {
       let updatedUser = null;
+      let replacedImage: string | null = null;
       if (
         data.firstName !== undefined ||
         data.birthDate !== undefined ||
@@ -118,7 +119,7 @@ export default async function handler(
           },
         });
         if (current && data.image !== current.image) {
-          await deleteUnreferencedImage(tx, current.image);
+          replacedImage = current.image;
         }
       }
 
@@ -140,8 +141,9 @@ export default async function handler(
           throw new Error('STUDENT_REGISTRATION_NOT_FOUND');
         }
       }
-      return updatedUser;
+      return { user: updatedUser, replacedImage };
     });
+    await deleteUnreferencedImage(db, replacedImage);
     return res
       .status(200)
       .json({ user, registrations: data.registrations ?? [] });

@@ -3,7 +3,7 @@ import {
   MoonIcon,
   SunIcon,
 } from '@heroicons/react/24/outline';
-import { useThemePreference } from '@/hooks/useThemePreference';
+import { useThemeSelection } from '@/hooks/useThemePreference';
 import type { ThemePreference } from '@/hooks/useThemePreference';
 
 const choices: {
@@ -17,7 +17,7 @@ const choices: {
 ];
 
 export default function ThemePreferenceControl() {
-  const { preference, setThemePreference } = useThemePreference();
+  const { preference, selectThemePreference, saving } = useThemeSelection();
 
   return (
     <div
@@ -29,9 +29,10 @@ export default function ThemePreferenceControl() {
         <button
           key={value}
           type="button"
-          onClick={() => setThemePreference(value)}
+          onClick={() => void selectThemePreference(value)}
+          disabled={saving}
           aria-pressed={preference === value}
-          className={`flex min-h-11 items-center justify-center gap-1 rounded-lg px-2 py-2 text-xs font-semibold transition-colors sm:text-sm ${
+          className={`flex min-h-11 items-center justify-center gap-1 rounded-lg px-2 py-2 text-xs font-semibold transition-colors disabled:cursor-wait disabled:opacity-70 sm:text-sm ${
             preference === value
               ? 'bg-white text-primary-700 shadow-sm'
               : 'text-slate-600 hover:bg-white/70 hover:text-primary-700'

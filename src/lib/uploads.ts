@@ -1,3 +1,6 @@
+import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { z } from 'zod';
 import { getPrisma } from '@/lib/db';
 
@@ -11,30 +14,54 @@ export const imageUploadScopeSchema = z.enum([
   'shop-product',
 ]);
 
+export type ImageMimeType = 'image/jpeg' | 'image/png' | 'image/webp';
+
+const imageExtensions: Record<ImageMimeType, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+const imageMimeTypesByExtension: Record<string, ImageMimeType> = {
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+};
 const imageAssetUrlPattern =
-  /^\/api\/uploads\/([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/i;
+  /^\/api\/uploads\/([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.(jpg|png|webp)$/i;
 export const imageAssetUrlSchema = z
   .string()
   .regex(imageAssetUrlPattern, 'نشانی تصویر بارگذاری‌شده معتبر نیست');
 
 type ImageStore = Pick<
   Awaited<ReturnType<typeof getPrisma>>,
-  | 'imageAsset'
-  | 'user'
-  | 'coach'
-  | 'successStory'
-  | 'testimonial'
-  | 'newsArticle'
-  | 'shopProduct'
+  'user' | 'coach' | 'successStory' | 'testimonial' | 'newsArticle' | 'shopProduct'
 >;
+
+function getUploadsDirectory() {
+  return path.resolve(process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads'));
+}
+
+function getImageFilename(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const match = imageAssetUrlPattern.exec(url);
+  return match ? `${match[1]}.${match[2].toLowerCase()}` : null;
+}
+
+export function getImageMimeTypeFromUrl(
+  url: string | null | undefined,
+): ImageMimeType | null {
+  const filename = getImageFilename(url);
+  if (!filename) return null;
+  return imageMimeTypesByExtension[path.extname(filename).slice(1)] ?? null;
+}
 
 export function detectImageMimeType(
   data: Buffer,
   declaredMimeType: string,
-): 'image/jpeg' | 'image/png' | 'image/webp' | null {
+): ImageMimeType | null {
   if (!data.length || data.length > MAX_IMAGE_BYTES) return null;
 
-  let detected: 'image/jpeg' | 'image/png' | 'image/webp' | null = null;
+  let detected: ImageMimeType | null = null;
   if (
     data.length >= 8 &&
     data.subarray(0, 8).equals(
@@ -60,26 +87,116 @@ export function detectImageMimeType(
   return detected === declaredMimeType ? detected : null;
 }
 
-export function imageAssetIdFromUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  return imageAssetUrlPattern.exec(url)?.[1] ?? null;
+export async function writeImageFile(
+  id: string,
+  contentType: ImageMimeType,
+  data: Uint8Array,
+): Promise<string> {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+    throw new Error('INVALID_IMAGE_ID');
+  }
+  if (data.byteLength === 0 || data.byteLength > MAX_IMAGE_BYTES) {
+    throw new Error('INVALID_IMAGE_SIZE');
+  }
+
+  const filename = `${id}.${imageExtensions[contentType]}`;
+  const filePath = path.join(getUploadsDirectory(), filename);
+  await mkdir(path.dirname(filePath), { recursive: true });
+
+  try {
+    await writeFile(filePath, data, { flag: 'wx', mode: 0o640 });
+  } catch (error) {
+    if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) {
+      throw error;
+    }
+    const existing = await readFile(filePath);
+    if (!existing.equals(Buffer.from(data))) {
+      throw new Error('IMAGE_FILE_ALREADY_EXISTS');
+    }
+  }
+
+  return `/api/uploads/${filename}`;
+}
+
+export async function saveUploadedImage(
+  contentType: ImageMimeType,
+  data: Uint8Array,
+): Promise<string> {
+  return writeImageFile(randomUUID(), contentType, data);
+}
+
+export async function readImageFile(
+  url: string,
+): Promise<{ contentType: ImageMimeType; data: Buffer } | null> {
+  const filename = getImageFilename(url);
+  const contentType = getImageMimeTypeFromUrl(url);
+  if (!filename || !contentType) return null;
+
+  try {
+    return {
+      contentType,
+      data: await readFile(path.join(getUploadsDirectory(), filename)),
+    };
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function removeImageFile(url: string): Promise<void> {
+  const filename = getImageFilename(url);
+  if (filename) {
+    await rm(path.join(getUploadsDirectory(), filename), { force: true });
+  }
+}
+
+export async function clearStoredImageFiles(): Promise<void> {
+  const directory = getUploadsDirectory();
+  let entries;
+  try {
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      return;
+    }
+    throw error;
+  }
+
+  const storedImageFilename =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|png|webp)$/i;
+  await Promise.all(
+    entries
+      .filter(
+        (entry) => entry.isFile() && storedImageFilename.test(entry.name),
+      )
+      .map((entry) => rm(path.join(directory, entry.name))),
+  );
+}
+
+export function imageAssetUrlFromLegacyId(
+  id: string,
+  contentType: string,
+): string {
+  const extension = Object.entries(imageExtensions).find(
+    ([mimeType]) => mimeType === contentType,
+  )?.[1];
+  if (!extension) {
+    throw new Error('UNSUPPORTED_IMAGE_CONTENT_TYPE');
+  }
+  return `/api/uploads/${id}.${extension}`;
 }
 
 export async function isValidImageReference(
-  store: ImageStore,
+  _store: ImageStore,
   image: string | null | undefined,
   unchanged: readonly (string | null | undefined)[] = [],
 ): Promise<boolean> {
   if (!image) return true;
   if (unchanged.includes(image)) return true;
-  const id = imageAssetIdFromUrl(image);
-  if (!id) return false;
-  return Boolean(
-    await store.imageAsset.findUnique({
-      where: { id },
-      select: { id: true },
-    }),
-  );
+  if (!imageAssetUrlSchema.safeParse(image).success) return false;
+  return (await readImageFile(image)) !== null;
 }
 
 export async function areValidImageReferences(
@@ -97,8 +214,7 @@ export async function deleteUnreferencedImage(
   store: ImageStore,
   image: string | null | undefined,
 ): Promise<void> {
-  const id = imageAssetIdFromUrl(image);
-  if (!id || !image) return;
+  if (!image || !getImageFilename(image)) return;
 
   const [user, coach, story, testimonial, article, product] = await Promise.all([
     store.user.findFirst({ where: { image }, select: { id: true } }),
@@ -113,5 +229,5 @@ export async function deleteUnreferencedImage(
   ]);
   if (user || coach || story || testimonial || article || product) return;
 
-  await store.imageAsset.deleteMany({ where: { id } });
+  await removeImageFile(image);
 }

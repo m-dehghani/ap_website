@@ -116,6 +116,7 @@ export default async function handler(
         lastName: userRecord.lastName,
         image: userRecord.image,
         role: userRecord.role,
+        themePreference: userRecord.themePreference ?? 'system',
       },
     });
   } catch (error) {

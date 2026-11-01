@@ -65,7 +65,9 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(page.locator('main')).not.toContainText('نظرات و تجربه‌ها');
     await expect(page.locator('main')).not.toContainText('بازیکنان');
     await expect(
-      page.getByRole('link', { name: 'نظرات و تجربه‌ها', exact: true }),
+      page
+        .getByRole('navigation', { name: 'منوی اصلی' })
+        .getByRole('link', { name: 'نظرات و تجربه‌ها', exact: true }),
     ).toBeVisible();
   });
 }

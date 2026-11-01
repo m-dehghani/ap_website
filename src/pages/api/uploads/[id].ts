@@ -1,8 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
-import { getPrisma } from '@/lib/db';
+import { readImageFile } from '@/lib/uploads';
 
-const idSchema = z.string().uuid();
+const imagePathSchema = z
+  .string()
+  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|png|webp)$/i);
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,24 +14,20 @@ export default async function handler(
     res.setHeader('Allow', 'GET');
     return res.status(405).end();
   }
-  const parsedId = idSchema.safeParse(req.query.id);
-  if (!parsedId.success) return res.status(404).end();
+  const parsedPath = imagePathSchema.safeParse(req.query.id);
+  if (!parsedPath.success) return res.status(404).end();
 
   try {
-    const db = await getPrisma();
-    const asset = await db.imageAsset.findUnique({
-      where: { id: parsedId.data },
-      select: { contentType: true, data: true },
-    });
-    if (!asset) return res.status(404).end();
+    const image = await readImageFile(`/api/uploads/${parsedPath.data}`);
+    if (!image) return res.status(404).end();
 
-    res.setHeader('Content-Type', asset.contentType);
-    res.setHeader('Content-Length', String(asset.data.byteLength));
+    res.setHeader('Content-Type', image.contentType);
+    res.setHeader('Content-Length', String(image.data.byteLength));
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    return res.status(200).send(Buffer.from(asset.data));
+    return res.status(200).send(image.data);
   } catch (error) {
-    console.error('Image asset read failed:', error);
+    console.error('Image file read failed:', error);
     return res.status(500).end();
   }
 }

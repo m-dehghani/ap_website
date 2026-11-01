@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { useRouter } from 'next/router';
+import type { ThemePreference } from '@/hooks/useThemePreference';
 
 interface User {
   id: string;
@@ -10,6 +11,7 @@ interface User {
   phone?: string;
   birthDate?: string | null;
   image?: string | null;
+  themePreference?: ThemePreference;
 }
 
 interface AuthContextType {

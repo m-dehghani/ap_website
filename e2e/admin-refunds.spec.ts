@@ -45,7 +45,9 @@ test('admin can record a staff-handled refund from the queue', async ({
   });
 
   await page.goto('/admin/refunds');
-  await expect(page.getByRole('heading', { name: 'صف بازپرداخت' })).toBeVisible();
+  await expect(
+    page.getByRole('main').getByRole('heading', { name: 'صف بازپرداخت' }),
+  ).toBeVisible();
   await expect(page.getByText('علی محمدی')).toBeVisible();
   await expect(page.getByText('۵٬۰۰۰ تومان')).toBeVisible();
   await page.getByRole('button', { name: 'ثبت انجام بازپرداخت' }).click();

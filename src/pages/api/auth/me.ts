@@ -42,6 +42,7 @@ export default async function handler(
           birthDate: true,
           image: true,
           role: true,
+          themePreference: true,
           registrations: {
             include: {
               program: {
@@ -85,6 +86,7 @@ export default async function handler(
         image: true,
         role: true,
         isActive: true,
+        themePreference: true,
       },
     });
 

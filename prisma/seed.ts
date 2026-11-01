@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { getPrisma } from '@/lib/db';
+import { clearStoredImageFiles } from '@/lib/uploads';
 
 const prisma = await getPrisma();
 
@@ -32,6 +33,7 @@ async function clearDatabase() {
   await prisma.facility.deleteMany({});
   await prisma.newsArticle.deleteMany({});
   await prisma.newsCategory.deleteMany({});
+  await clearStoredImageFiles();
 }
 
 async function seedAcademy() {

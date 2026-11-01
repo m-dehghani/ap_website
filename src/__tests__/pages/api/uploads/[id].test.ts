@@ -1,16 +1,16 @@
 // @vitest-environment node
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { mkdtemp, rm } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import handler from '@/pages/api/uploads/[id]';
-import { getPrisma } from '@/lib/db';
+import { readImageFile, saveUploadedImage } from '@/lib/uploads';
 
-vi.mock('@/lib/db', () => ({ getPrisma: vi.fn() }));
-
-const imageBytes = Uint8Array.from([0x89, 0x50, 0x4e, 0x47]);
-
-const prisma = {
-  imageAsset: { findUnique: vi.fn() },
-};
+const imageBytes = Uint8Array.from([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+  0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+]);
 
 function response() {
   return {
@@ -25,29 +25,30 @@ function response() {
 }
 
 describe('/api/uploads/[id]', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-    vi.mocked(getPrisma).mockResolvedValue(prisma as never);
+  let directory: string;
+
+  beforeEach(async () => {
+    directory = await mkdtemp(path.join(os.tmpdir(), 'ap-upload-read-'));
+    vi.stubEnv('UPLOADS_DIR', directory);
   });
 
-  it('serves image bytes read from the durable asset record with safe headers', async () => {
-    prisma.imageAsset.findUnique.mockResolvedValue({
-      contentType: 'image/png',
-      data: imageBytes,
-    });
+  afterEach(async () => {
+    vi.unstubAllEnvs();
+    await rm(directory, { recursive: true, force: true });
+  });
+
+  it('serves image bytes from disk with safe headers', async () => {
+    const url = await saveUploadedImage('image/png', imageBytes);
     const res = response();
 
     await handler(
-      { method: 'GET', query: { id: '550e8400-e29b-41d4-a716-446655440000' } } as never,
+      { method: 'GET', query: { id: url.split('/').at(-1) } } as never,
       res as never,
     );
 
-    expect(prisma.imageAsset.findUnique).toHaveBeenCalledWith({
-      where: { id: '550e8400-e29b-41d4-a716-446655440000' },
-      select: { contentType: true, data: true },
-    });
     expect(res.headers).toMatchObject({
       'Content-Type': 'image/png',
+      'Content-Length': String(imageBytes.byteLength),
       'X-Content-Type-Options': 'nosniff',
       'Cache-Control': 'public, max-age=31536000, immutable',
     });
@@ -55,7 +56,7 @@ describe('/api/uploads/[id]', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
-  it('does not query storage with an unsafe or malformed asset key', async () => {
+  it('returns 404 for a missing or unsafe disk path', async () => {
     const res = response();
 
     await handler(
@@ -64,6 +65,7 @@ describe('/api/uploads/[id]', () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(prisma.imageAsset.findUnique).not.toHaveBeenCalled();
+    expect(res.send).not.toHaveBeenCalled();
+    expect(await readImageFile('/api/uploads/../private-file')).toBeNull();
   });
 });

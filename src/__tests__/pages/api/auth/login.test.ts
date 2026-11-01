@@ -83,6 +83,7 @@ describe('/api/auth/login', () => {
         firstName: 'Student',
         lastName: 'User',
         role: 'STUDENT',
+        themePreference: 'system',
       },
     });
   });

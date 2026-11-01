@@ -1,10 +1,14 @@
 // @vitest-environment node
 
 import { Readable } from 'node:stream';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { mkdtemp, rm } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import handler from '@/pages/api/uploads';
 import { getSession, requireRole } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
+import { readImageFile, saveUploadedImage } from '@/lib/uploads';
 
 vi.mock('@/lib/auth', () => ({
   getSession: vi.fn(),
@@ -44,7 +48,6 @@ function response() {
 }
 
 const prisma = {
-  imageAsset: { create: vi.fn(), deleteMany: vi.fn() },
   user: { findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
   coach: { findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
   successStory: { findFirst: vi.fn() },
@@ -55,8 +58,12 @@ const prisma = {
 };
 
 describe('/api/uploads', () => {
-  beforeEach(() => {
+  let directory: string;
+
+  beforeEach(async () => {
     vi.resetAllMocks();
+    directory = await mkdtemp(path.join(os.tmpdir(), 'ap-upload-api-'));
+    vi.stubEnv('UPLOADS_DIR', directory);
     vi.mocked(getPrisma).mockResolvedValue(prisma as never);
     vi.mocked(getSession).mockResolvedValue({
       id: 'student-1',
@@ -70,11 +77,9 @@ describe('/api/uploads', () => {
       return null;
     });
     prisma.user.findUnique.mockResolvedValue({
-      image: '/api/uploads/550e8400-e29b-41d4-a716-446655440000',
+      image: '/api/uploads/550e8400-e29b-41d4-a716-446655440000.png',
     });
-    prisma.user.update.mockResolvedValue({ image: '/api/uploads/generated-id' });
-    prisma.imageAsset.create.mockResolvedValue({});
-    prisma.imageAsset.deleteMany.mockResolvedValue({ count: 1 });
+    prisma.user.update.mockResolvedValue({ image: '/api/uploads/generated-id.png' });
     for (const model of [
       prisma.user,
       prisma.coach,
@@ -90,6 +95,11 @@ describe('/api/uploads', () => {
     );
   });
 
+  afterEach(async () => {
+    vi.unstubAllEnvs();
+    await rm(directory, { recursive: true, force: true });
+  });
+
   it('rejects profile uploads without a session before persisting bytes', async () => {
     vi.mocked(getSession).mockResolvedValue(null);
     const res = response();
@@ -97,7 +107,6 @@ describe('/api/uploads', () => {
     await handler(request('profile'), res as never);
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(prisma.imageAsset.create).not.toHaveBeenCalled();
   });
 
   it('rejects CMS uploads for a student before persisting bytes', async () => {
@@ -111,10 +120,9 @@ describe('/api/uploads', () => {
       ['ADMIN'],
     );
     expect(res.status).toHaveBeenCalledWith(403);
-    expect(prisma.imageAsset.create).not.toHaveBeenCalled();
   });
 
-  it('allows shop managers to upload product images', async () => {
+  it('allows shop managers to upload product images to disk', async () => {
     vi.mocked(getSession).mockResolvedValue({
       id: 'manager-1',
       role: 'SHOP_MANAGER',
@@ -129,28 +137,31 @@ describe('/api/uploads', () => {
       res,
       ['ADMIN', 'SHOP_MANAGER'],
     );
-    expect(prisma.imageAsset.create).toHaveBeenCalledOnce();
     expect(res.status).toHaveBeenCalledWith(201);
+    const url = res.json.mock.calls[0][0].url;
+    await expect(readImageFile(url)).resolves.toEqual({
+      contentType: 'image/png',
+      data: png,
+    });
   });
 
-  it('persists and references a new profile asset, then cleans the replaced asset', async () => {
+  it('stores the profile image on disk, updates its path, and removes the replaced file', async () => {
+    const oldImage = await saveUploadedImage('image/png', png);
+    prisma.user.findUnique.mockResolvedValue({ image: oldImage });
     const res = response();
 
     await handler(request('profile'), res as never);
 
-    expect(prisma.imageAsset.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        contentType: 'image/png',
-        data: Uint8Array.from(png),
-      }),
-    });
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: 'student-1' },
-      data: { image: expect.stringMatching(/^\/api\/uploads\/[a-f0-9-]+$/) },
+      data: { image: expect.stringMatching(/^\/api\/uploads\/[a-f0-9-]+\.png$/) },
       select: { image: true },
     });
-    expect(prisma.imageAsset.deleteMany).toHaveBeenCalledWith({
-      where: { id: '550e8400-e29b-41d4-a716-446655440000' },
+    expect(await readImageFile(oldImage)).toBeNull();
+    const newImage = prisma.user.update.mock.calls[0][0].data.image;
+    await expect(readImageFile(newImage!)).resolves.toEqual({
+      contentType: 'image/png',
+      data: png,
     });
     expect(res.status).toHaveBeenCalledWith(200);
   });
@@ -168,7 +179,7 @@ describe('/api/uploads', () => {
 
     expect(prisma.coach.update).toHaveBeenCalledWith({
       where: { id: 'coach-2' },
-      data: { image: expect.stringMatching(/^\/api\/uploads\/[a-f0-9-]+$/) },
+      data: { image: expect.stringMatching(/^\/api\/uploads\/[a-f0-9-]+\.png$/) },
       select: { image: true },
     });
     expect(prisma.user.update).not.toHaveBeenCalled();
@@ -186,6 +197,5 @@ describe('/api/uploads', () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(413);
-    expect(prisma.imageAsset.create).not.toHaveBeenCalled();
   });
 });

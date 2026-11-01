@@ -1,12 +1,25 @@
 // @vitest-environment node
 
-import { describe, expect, it, vi } from 'vitest';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import {
   areValidImageReferences,
+  clearStoredImageFiles,
   deleteUnreferencedImage,
   MAX_IMAGE_BYTES,
   detectImageMimeType,
   isValidImageReference,
+  readImageFile,
+  saveUploadedImage,
 } from '@/lib/uploads';
 
 const png = Buffer.from([
@@ -14,7 +27,19 @@ const png = Buffer.from([
   0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
 ]);
 
-describe('uploaded image validation', () => {
+describe('uploaded image storage', () => {
+  let directory: string;
+
+  beforeEach(async () => {
+    directory = await mkdtemp(path.join(os.tmpdir(), 'ap-uploads-'));
+    vi.stubEnv('UPLOADS_DIR', directory);
+  });
+
+  afterEach(async () => {
+    vi.unstubAllEnvs();
+    await rm(directory, { recursive: true, force: true });
+  });
+
   it('accepts supported formats only when the declared MIME matches the signature', () => {
     expect(detectImageMimeType(png, 'image/png')).toBe('image/png');
     expect(detectImageMimeType(png, 'image/jpeg')).toBeNull();
@@ -29,10 +54,33 @@ describe('uploaded image validation', () => {
     ).toBeNull();
   });
 
+  it('writes image bytes to disk and reads them using the stored application path', async () => {
+    const url = await saveUploadedImage('image/png', png);
+
+    expect(url).toMatch(
+      /^\/api\/uploads\/[a-f0-9-]+\.png$/,
+    );
+    const stored = await readImageFile(url);
+    expect(stored).toEqual({ contentType: 'image/png', data: png });
+    expect(await readFile(path.join(directory, url.split('/').at(-1)!))).toEqual(png);
+  });
+
+  it('rejects unsafe filenames instead of resolving outside the upload directory', async () => {
+    await expect(readImageFile('/api/uploads/../secret.png')).resolves.toBeNull();
+  });
+
+  it('clears only app-managed image files when resetting seeded data', async () => {
+    await saveUploadedImage('image/png', png);
+    await writeFile(path.join(directory, 'keep.txt'), 'preserve');
+
+    await clearStoredImageFiles();
+
+    await expect(readdir(directory)).resolves.toEqual(['keep.txt']);
+  });
+
   it('accepts only persisted app references for new CMS media, retaining unchanged legacy URLs', async () => {
-    const store = {
-      imageAsset: { findUnique: vi.fn().mockResolvedValue({ id: 'asset' }) },
-    } as never;
+    const store = {} as never;
+    const url = await saveUploadedImage('image/png', png);
 
     await expect(
       isValidImageReference(store, 'https://external.example/photo.jpg'),
@@ -44,18 +92,12 @@ describe('uploaded image validation', () => {
         ['https://external.example/photo.jpg'],
       ),
     ).resolves.toBe(true);
-    await expect(
-      isValidImageReference(
-        store,
-        '/api/uploads/550e8400-e29b-41d4-a716-446655440000',
-      ),
-    ).resolves.toBe(true);
+    await expect(isValidImageReference(store, url)).resolves.toBe(true);
   });
 
-  it('deletes a replaced asset only after all profile and CMS references are gone', async () => {
-    const image = '/api/uploads/550e8400-e29b-41d4-a716-446655440000';
+  it('deletes a replaced file only after all profile and CMS references are gone', async () => {
+    const image = await saveUploadedImage('image/png', png);
     const findFirst = vi.fn().mockResolvedValue(null);
-    const deleteMany = vi.fn();
     const store = {
       user: { findFirst },
       coach: { findFirst },
@@ -63,31 +105,27 @@ describe('uploaded image validation', () => {
       testimonial: { findFirst },
       newsArticle: { findFirst },
       shopProduct: { findFirst },
-      imageAsset: { deleteMany },
     } as never;
 
     await deleteUnreferencedImage(store, image);
-    expect(deleteMany).toHaveBeenCalledWith({
-      where: { id: '550e8400-e29b-41d4-a716-446655440000' },
-    });
+    await expect(readImageFile(image)).resolves.toBeNull();
 
+    const retainedImage = await saveUploadedImage('image/png', png);
     findFirst.mockResolvedValueOnce({ id: 'other-record' });
-    await deleteUnreferencedImage(store, image);
-    expect(deleteMany).toHaveBeenCalledTimes(1);
+    await deleteUnreferencedImage(store, retainedImage);
+    await expect(readImageFile(retainedImage)).resolves.not.toBeNull();
   });
 
   it('validates every product image reference instead of allowing an arbitrary URL', async () => {
-    const store = {
-      imageAsset: {
-        findUnique: vi.fn().mockResolvedValueOnce({ id: 'asset' }),
-      },
-    } as never;
+    const store = {} as never;
+    const validUrl = await saveUploadedImage('image/png', png);
 
     await expect(
       areValidImageReferences(store, [
-        '/api/uploads/550e8400-e29b-41d4-a716-446655440000',
+        validUrl,
         'https://external.example/photo.jpg',
       ]),
     ).resolves.toBe(false);
+    await expect(areValidImageReferences(store, [validUrl])).resolves.toBe(true);
   });
 });

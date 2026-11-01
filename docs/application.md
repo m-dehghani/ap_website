@@ -93,6 +93,14 @@ for tuition payments and shop orders marked `REFUND_REQUIRED`. Staff complete
 refunds outside the application and record the result there; the app does not
 call a Zarinpal refund API.
 
+### Theme preferences
+
+Visitors can choose light, dark, or system appearance without signing in. The
+choice is kept in that browser's `localStorage`. Signed-in users and coaches
+also save their selection to `theme_preference` on their account, so it follows
+them across browsers; the account value is applied when their session loads.
+Apply the theme-preference Prisma migration before deploying this behavior.
+
 ### Student verification and staff messaging
 
 Profile email, phone, and password changes use one-time codes sent with
@@ -135,10 +143,20 @@ UPDATE "users" SET "role" = 'SHOP_MANAGER' WHERE "email" = 'manager@example.com'
 Shop managers can manage products,
 orders, reviews, and the configurable shipping fee; regular academy admin users
 can also access the shop panel. Product images can be uploaded by admins and shop managers. Profile photos and
-CMS image uploads use the existing PostgreSQL database for durable storage;
-the application accepts JPEG, PNG, and WebP files up to 5 MiB and serves them
-through `/api/uploads/<id>`. Include the `image_assets` table in database
-backups and capacity planning because uploaded bytes increase database size.
+CMS image uploads are written to the filesystem, while the database stores
+only their application paths (for example, `/api/uploads/<id>.webp`). The
+application accepts JPEG, PNG, and WebP files up to 5 MiB and serves them
+through `/api/uploads/<id>.<extension>`. Set `UPLOADS_DIR` to the upload
+directory; it defaults to `<application working directory>/uploads`. Production
+deployments must mount durable storage at this path, and every app instance
+that serves uploads must see the same files. Include this directory in file
+backups and restores; PostgreSQL backups contain paths only, not image bytes.
+An existing deployment must run `npm run migrate:uploads` with its existing
+database and intended persistent `UPLOADS_DIR` before `npx prisma migrate
+deploy`. The migration exports image bytes, updates their stored paths, then
+removes the legacy database asset rows. The migration fails if any legacy
+asset cannot be copied safely. User-submitted shop-review media is outside
+this CMS image-upload workflow.
 User-submitted shop-review media is outside this CMS image-upload workflow.
 Ratings and reviews are accepted only from signed-in students whose account is
 attached to a paid order for that product; submissions remain unpublished until

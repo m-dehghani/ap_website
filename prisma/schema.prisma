@@ -26,6 +26,7 @@ model User {
   phoneVerifiedAt DateTime?
   marketingOptIn Boolean @default(false)
   image     String?
+  themePreference String @default("system") @map("theme_preference")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -70,16 +71,6 @@ model Role {
   @@map("roles")
 }
 
-model ImageAsset {
-  id          String   @id
-  contentType String
-  data        Bytes
-  createdAt   DateTime @default(now())
-
-  @@index([createdAt])
-  @@map("image_assets")
-}
-
 model Coach {
   id             String   @id @default(cuid())
   firstName      String
@@ -98,6 +89,7 @@ model Coach {
   rating         Float    @default(0)
   studentsCount  Int      @default(0)
   image          String?
+  themePreference String  @default("system") @map("theme_preference")
   instagram      String?
   twitter        String?
   isActive       Boolean  @default(true)

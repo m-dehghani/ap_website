@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession, requireRole } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
@@ -7,6 +6,8 @@ import {
   detectImageMimeType,
   imageUploadScopeSchema,
   MAX_IMAGE_BYTES,
+  removeImageFile,
+  saveUploadedImage,
 } from '@/lib/uploads';
 
 export const config = {
@@ -73,62 +74,63 @@ export default async function handler(
       ?.trim()
       .toLowerCase();
     const image = await readImageBody(req);
-    if (!image || !detectImageMimeType(image, declaredMimeType ?? '')) {
+    const contentType = image
+      ? detectImageMimeType(image, declaredMimeType ?? '')
+      : null;
+    if (!contentType) {
       return res.status(400).json({
         message: 'فقط تصویر معتبر JPEG، PNG یا WebP پذیرفته می‌شود',
       });
     }
 
-    const db = await getPrisma();
-    const id = randomUUID();
-    const url = `/api/uploads/${id}`;
-    if (scope === 'profile') {
-      await db.$transaction(async (tx) => {
-        const current =
-          session.source === 'coach'
-            ? await tx.coach.findUnique({
-                where: { id: session.id },
-                select: { image: true },
-              })
-            : await tx.user.findUnique({
-                where: { id: session.id },
-                select: { image: true },
-              });
-        if (!current) throw new Error('PROFILE_NOT_FOUND');
-
-        await tx.imageAsset.create({
-          data: {
-            id,
-            contentType: declaredMimeType!,
-            data: Uint8Array.from(image),
-          },
-        });
-        if (session.source === 'coach') {
-          await tx.coach.update({
-            where: { id: session.id },
-            data: { image: url },
-            select: { image: true },
-          });
-        } else {
-          await tx.user.update({
-            where: { id: session.id },
-            data: { image: url },
-            select: { image: true },
-          });
-        }
-        await deleteUnreferencedImage(tx, current.image);
+    if (!image) {
+      return res.status(400).json({
+        message: 'فقط تصویر معتبر JPEG، PNG یا WebP پذیرفته می‌شود',
       });
+    }
+
+    const url = await saveUploadedImage(contentType, image);
+    if (scope === 'profile') {
+      let oldImage: string | null;
+      try {
+        const db = await getPrisma();
+        oldImage = await db.$transaction(async (tx) => {
+          const current =
+            session.source === 'coach'
+              ? await tx.coach.findUnique({
+                  where: { id: session.id },
+                  select: { image: true },
+                })
+              : await tx.user.findUnique({
+                  where: { id: session.id },
+                  select: { image: true },
+                });
+          if (!current) throw new Error('PROFILE_NOT_FOUND');
+
+          if (session.source === 'coach') {
+            await tx.coach.update({
+              where: { id: session.id },
+              data: { image: url },
+              select: { image: true },
+            });
+          } else {
+            await tx.user.update({
+              where: { id: session.id },
+              data: { image: url },
+              select: { image: true },
+            });
+          }
+          return current.image;
+        });
+      } catch (error) {
+        await removeImageFile(url);
+        throw error;
+      }
+      await deleteUnreferencedImage(await getPrisma(), oldImage);
       return res.status(200).json({ url });
     }
 
-    await db.imageAsset.create({
-      data: {
-        id,
-        contentType: declaredMimeType!,
-        data: Uint8Array.from(image),
-      },
-    });
-    return res.status(201).json({ id, url });
+    return res.status(201).json({ url });
   } catch (error) {
     if (error instanceof Error && error.message === 'IMAGE_TOO_LARGE') {
       return res.status(413).json({

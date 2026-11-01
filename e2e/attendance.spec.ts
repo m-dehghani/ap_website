@@ -55,7 +55,7 @@ test('admin records attendance for a student enrolled in the session program', a
   );
 
   await page.goto('/admin/sessions/session-1');
-  await page.getByRole('combobox').selectOption('LATE');
+  await page.locator('select[name="attendance-student-1"]').selectOption('LATE');
   await page.getByRole('button', { name: 'ذخیره حضور و غیاب' }).click();
 
   await expect(page.getByRole('status')).toContainText('وضعیت حضور ثبت شد');
