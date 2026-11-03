@@ -3,6 +3,7 @@ import { AdminListPage } from '@/components/admin/AdminListPage';
 import { Badge } from '@/components/ui/Badge';
 import { deleteResource, fetchJson } from '@/lib/api-client';
 import type { TableColumn } from '@/components/ui/Table';
+import ProfileAvatar from '@/components/ProfileAvatar';
 
 interface StaffMember {
   id: string;
@@ -10,18 +11,21 @@ interface StaffMember {
   role: string;
   bio: string;
   initials: string;
+  image: string | null;
   isActive: boolean;
   displayOrder: number;
 }
 
 const columns: TableColumn<StaffMember>[] = [
   {
-    key: 'initials',
+    key: 'image',
     header: '',
     render: (item) => (
-      <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold">
-        {item.initials}
-      </div>
+      <ProfileAvatar
+        image={item.image}
+        initials={item.initials}
+        size={40}
+      />
     ),
   },
   {

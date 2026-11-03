@@ -41,6 +41,7 @@ describe('admin CMS content mutation validation', () => {
     statistic: { create: vi.fn() },
       user: { findFirst: vi.fn() },
       coach: { findFirst: vi.fn() },
+      staffMember: { findFirst: vi.fn() },
       successStory: { findFirst: vi.fn() },
       newsArticle: { findFirst: vi.fn() },
       shopProduct: { findFirst: vi.fn() },

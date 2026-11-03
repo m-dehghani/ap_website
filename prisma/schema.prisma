@@ -377,6 +377,7 @@ model StaffMember {
   role         String
   bio          String
   initials     String
+  image        String?
   isActive     Boolean @default(true)
   displayOrder Int     @default(0)
 

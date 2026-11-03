@@ -356,8 +356,10 @@ function NewsFollowCTA() {
   return (
     <div className="mt-16 flex flex-col items-center justify-between gap-6 rounded-2xl bg-navy-800 p-8 text-center text-white sm:flex-row sm:text-right">
       <div>
-        <h3 className="text-2xl font-bold mb-2">از اخبار آکادمی مطلع شوید</h3>
-        <p className="text-navy-100">
+        <h3 className="mb-2 text-2xl font-bold text-white">
+          از اخبار آکادمی مطلع شوید
+        </h3>
+        <p className="text-white/85">
           خبرها، رویدادها و دستاوردهای بازیکنان را در صفحه اخبار دنبال کنید.
         </p>
       </div>

@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import handler from '@/pages/api/uploads';
 import { getSession, requireRole } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
-import { readImageFile, saveUploadedImage } from '@/lib/uploads';
+import { readImageFile } from '@/lib/uploads';
 
 vi.mock('@/lib/auth', () => ({
   getSession: vi.fn(),
@@ -50,6 +50,7 @@ function response() {
 const prisma = {
   user: { findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
   coach: { findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
+  staffMember: { findFirst: vi.fn() },
   successStory: { findFirst: vi.fn() },
   testimonial: { findFirst: vi.fn() },
   newsArticle: { findFirst: vi.fn() },
@@ -122,6 +123,24 @@ describe('/api/uploads', () => {
     expect(res.status).toHaveBeenCalledWith(403);
   });
 
+  it('allows admins to upload staff-member photos', async () => {
+    vi.mocked(getSession).mockResolvedValue({
+      id: 'admin-1',
+      role: 'ADMIN',
+      source: 'user',
+    });
+    const res = response();
+
+    await handler(request('staff-member'), res as never);
+
+    expect(requireRole).toHaveBeenCalledWith(
+      expect.anything(),
+      res,
+      ['ADMIN'],
+    );
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
   it('allows shop managers to upload product images to disk', async () => {
     vi.mocked(getSession).mockResolvedValue({
       id: 'manager-1',
@@ -145,43 +164,33 @@ describe('/api/uploads', () => {
     });
   });
 
-  it('stores the profile image on disk, updates its path, and removes the replaced file', async () => {
-    const oldImage = await saveUploadedImage('image/png', png);
-    prisma.user.findUnique.mockResolvedValue({ image: oldImage });
+  it('stores a profile image for preview without saving it to the account', async () => {
     const res = response();
 
     await handler(request('profile'), res as never);
 
-    expect(prisma.user.update).toHaveBeenCalledWith({
-      where: { id: 'student-1' },
-      data: { image: expect.stringMatching(/^\/api\/uploads\/[a-f0-9-]+\.png$/) },
-      select: { image: true },
-    });
-    expect(await readImageFile(oldImage)).toBeNull();
-    const newImage = prisma.user.update.mock.calls[0][0].data.image;
+    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(prisma.coach.update).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+    const newImage = res.json.mock.calls[0][0].url;
     await expect(readImageFile(newImage!)).resolves.toEqual({
       contentType: 'image/png',
       data: png,
     });
-    expect(res.status).toHaveBeenCalledWith(200);
   });
 
-  it('updates the authenticated coach record without accepting a client identity', async () => {
+  it('stages coach profile uploads without updating either profile record', async () => {
     vi.mocked(getSession).mockResolvedValue({
       id: 'coach-2',
       role: 'COACH',
       source: 'coach',
     });
-    prisma.coach.findUnique.mockResolvedValue({ image: null });
     const res = response();
 
     await handler(request('profile'), res as never);
 
-    expect(prisma.coach.update).toHaveBeenCalledWith({
-      where: { id: 'coach-2' },
-      data: { image: expect.stringMatching(/^\/api\/uploads\/[a-f0-9-]+\.png$/) },
-      select: { image: true },
-    });
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(prisma.coach.update).not.toHaveBeenCalled();
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 

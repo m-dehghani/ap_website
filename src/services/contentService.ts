@@ -81,7 +81,14 @@ export async function getStaffMembers(): Promise<StaffMemberViewModel[]> {
   const prisma = await getPrisma();
   return prisma.staffMember.findMany({
     where: { isActive: true },
-    select: { id: true, name: true, role: true, bio: true, initials: true },
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      bio: true,
+      initials: true,
+      image: true,
+    },
     orderBy: { displayOrder: 'asc' },
   });
 }

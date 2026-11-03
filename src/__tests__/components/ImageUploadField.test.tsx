@@ -54,6 +54,37 @@ describe('ImageUploadField', () => {
     });
   });
 
+  it('accepts staff-member photo uploads for the staff form', async () => {
+    const onChange = vi.fn();
+    render(
+      <ImageUploadField
+        label="تصویر عضو تیم"
+        scope="staff-member"
+        value=""
+        onChange={onChange}
+      />,
+    );
+    const file = new File(
+      [new Uint8Array([0x89, 0x50, 0x4e, 0x47])],
+      'staff.png',
+      { type: 'image/png' },
+    );
+
+    fireEvent.change(screen.getByLabelText('تصویر عضو تیم'), {
+      target: { files: [file] },
+    });
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/uploads?scope=staff-member',
+        expect.objectContaining({ method: 'POST', body: file }),
+      );
+      expect(onChange).toHaveBeenCalledWith(
+        '/api/uploads/550e8400-e29b-41d4-a716-446655440000.png',
+      );
+    });
+  });
+
   it('shows a Persian error and does not send an unsupported file', async () => {
     const onChange = vi.fn();
     render(
@@ -77,5 +108,52 @@ describe('ImageUploadField', () => {
     );
     expect(fetch).not.toHaveBeenCalled();
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('saves a profile image only after the user confirms it', async () => {
+    const onChange = vi.fn();
+    render(
+      <ImageUploadField
+        label="تصویر پروفایل"
+        scope="profile"
+        value=""
+        onChange={onChange}
+        removable={false}
+      />,
+    );
+    const file = new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], 'test.png', {
+      type: 'image/png',
+    });
+
+    fireEvent.change(screen.getByLabelText('تصویر پروفایل'), {
+      target: { files: [file] },
+    });
+
+    const saveButton = await screen.findByRole('button', {
+      name: 'ذخیره تصویر پروفایل',
+    });
+    expect(onChange).not.toHaveBeenCalled();
+
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenNthCalledWith(
+        2,
+        '/api/profile/image',
+        expect.objectContaining({
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: '/api/uploads/550e8400-e29b-41d4-a716-446655440000.png',
+          }),
+        }),
+      );
+      expect(onChange).toHaveBeenCalledWith(
+        '/api/uploads/550e8400-e29b-41d4-a716-446655440000.png',
+      );
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'تصویر با موفقیت ذخیره شد',
+      );
+    });
   });
 });

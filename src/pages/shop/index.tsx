@@ -311,7 +311,7 @@ export default function ShopPage() {
                     <option value="price-desc">گران‌ترین</option>
                   </select>
                 </div>
-                <fieldset className="space-y-4 rounded-xl border border-red-100 bg-red-50/60 p-4">
+                <fieldset className="shop-price-filter space-y-4 rounded-xl border border-red-100 bg-red-50/60 p-4">
                   <legend className="px-1 text-sm font-bold text-red-950">محدوده قیمت</legend>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">

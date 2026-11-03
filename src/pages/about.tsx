@@ -17,6 +17,7 @@ import {
   AcademyInfoViewModel,
 } from '@/types/viewModels/content';
 import { OpeningHourViewModel } from '@/types/viewModels/site';
+import ProfileAvatar from '@/components/ProfileAvatar';
 
 interface AboutPageProps extends SiteProps {
   academyInfo: AcademyInfoViewModel | null;
@@ -139,6 +140,7 @@ function AboutPage({
             name,
             role: text(member.role, ''),
             bio: text(member.bio, ''),
+            image: text(member.image, '') || null,
             initials: text(
               member.initials,
               name
@@ -286,20 +288,37 @@ function AboutPage({
             </div>
           </div>
 
-          {/* Statistics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-            {Object.values(statistics).map((stat, index) => (
-              <div
-                key={stat.key ?? index}
-                className="card-glass p-8 rounded-4xl text-center"
-              >
-                <div className="text-4xl font-bold text-primary-600 mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-gray-900 font-semibold">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+          <section
+            aria-labelledby="academy-statistics-heading"
+            className="mb-20 rounded-3xl bg-navy-800 px-6 py-7 text-white sm:px-8"
+          >
+            <h2
+              id="academy-statistics-heading"
+              className="text-xl font-bold sm:text-2xl"
+            >
+              آمار آکادمی در یک نگاه
+            </h2>
+            <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+              {Object.values(statistics)
+                .slice(0, 4)
+                .map((stat, index) => (
+                  <div
+                    key={stat.key ?? index}
+                    className="flex min-w-0 flex-col gap-1 border-b border-white/20 pb-3 last:border-0 sm:border-0 sm:pb-0"
+                  >
+                    <dt className="text-sm font-medium text-white/85">
+                      {stat.label}
+                    </dt>
+                    <dd
+                      dir="auto"
+                      className="text-2xl font-extrabold tabular-nums sm:text-3xl"
+                    >
+                      {stat.value}
+                    </dd>
+                  </div>
+                ))}
+            </dl>
+          </section>
 
           {/* Team Section */}
           <div className="card-glass p-8 rounded-4xl mb-20">
@@ -309,10 +328,12 @@ function AboutPage({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {displayedTeam.map((member, index) => (
                 <div key={member.id ?? index} className="text-center">
-                  <div
-                    className={`w-32 h-32 bg-linear-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4`}
-                  >
-                    {member.initials}
+                  <div className="mx-auto mb-4 h-32 w-32">
+                    <ProfileAvatar
+                      image={member.image}
+                      initials={member.initials}
+                      size={128}
+                    />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
                     {member.name}

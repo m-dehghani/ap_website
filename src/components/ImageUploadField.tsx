@@ -6,6 +6,7 @@ export type ImageUploadScope =
   | 'success-story'
   | 'testimonial'
   | 'coach'
+  | 'staff-member'
   | 'news-article'
   | 'shop-product';
 
@@ -33,9 +34,17 @@ export default function ImageUploadField({
 }: ImageUploadFieldProps) {
   const id = useId();
   const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [pendingProfileImage, setPendingProfileImage] = useState<string | null>(
+    null,
+  );
   const currentImages = Array.isArray(value) ? value : value ? [value] : [];
+  const previewImages =
+    scope === 'profile' && pendingProfileImage
+      ? [pendingProfileImage]
+      : currentImages;
 
   const uploadImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.currentTarget.files ?? []);
@@ -80,9 +89,13 @@ export default function ImageUploadField({
           throw new Error(result.message || 'بارگذاری تصویر ناموفق بود');
         }
         uploaded.push(result.url);
-        onChange(multiple ? [...currentImages, ...uploaded] : uploaded[0]);
+        if (scope === 'profile') {
+          setPendingProfileImage(uploaded[0]);
+        } else {
+          onChange(multiple ? [...currentImages, ...uploaded] : uploaded[0]);
+        }
       }
-      setSuccess(true);
+      setSuccess(scope !== 'profile');
     } catch (uploadError) {
       setSuccess(false);
       setError(
@@ -92,6 +105,37 @@ export default function ImageUploadField({
       );
     } finally {
       setBusy(false);
+    }
+  };
+
+  const saveProfileImage = async () => {
+    if (!pendingProfileImage) return;
+
+    setSaving(true);
+    setError('');
+    setSuccess(false);
+    try {
+      const response = await fetch('/api/profile/image', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: pendingProfileImage }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || 'ذخیره تصویر پروفایل ناموفق بود');
+      }
+
+      onChange(pendingProfileImage);
+      setPendingProfileImage(null);
+      setSuccess(true);
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : 'ذخیره تصویر پروفایل ناموفق بود',
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -136,26 +180,33 @@ export default function ImageUploadField({
         className={
           error
             ? 'text-sm text-red-700'
-            : success
-              ? 'text-sm text-green-700'
-              : 'sr-only'
+            : pendingProfileImage
+              ? 'text-sm font-medium text-primary-700'
+              : success
+                ? 'text-sm text-green-700'
+                : 'sr-only'
         }
       >
         {error ||
-          (success
-            ? 'تصویر با موفقیت بارگذاری شد'
-            : currentImages.length
-              ? 'تصویر فعلی انتخاب شده است'
-              : 'تصویری انتخاب نشده است')}
+          (pendingProfileImage
+            ? 'تصویر بارگذاری شد؛ برای اعمال، آن را ذخیره کنید'
+            : success
+              ? scope === 'profile'
+                ? 'تصویر با موفقیت ذخیره شد'
+                : 'تصویر با موفقیت بارگذاری شد'
+              : currentImages.length
+                ? 'تصویر فعلی انتخاب شده است'
+                : 'تصویری انتخاب نشده است')}
       </p>
-      {currentImages.length > 0 && (
+      {previewImages.length > 0 && (
         <ul className="flex flex-wrap gap-3">
-          {currentImages.map((image, index) => (
+          {previewImages.map((image, index) => (
             <li
               key={`${image}-${index}`}
               className="flex items-center gap-2 rounded-lg border border-gray-200 p-2"
             >
-              {image.startsWith('/api/uploads/') ? (
+              {(image.startsWith('/') && !image.startsWith('//')) ||
+              /^https?:\/\//i.test(image) ? (
                 <Image
                   src={image}
                   alt={`پیش‌نمایش تصویر ${index + 1}`}
@@ -183,6 +234,16 @@ export default function ImageUploadField({
             </li>
           ))}
         </ul>
+      )}
+      {pendingProfileImage && (
+        <button
+          type="button"
+          onClick={() => void saveProfileImage()}
+          disabled={busy || saving}
+          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700 disabled:cursor-wait disabled:opacity-60"
+        >
+          {saving ? 'در حال ذخیره تصویر...' : 'ذخیره تصویر پروفایل'}
+        </button>
       )}
     </div>
   );

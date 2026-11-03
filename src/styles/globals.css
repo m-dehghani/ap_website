@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap');
 @import 'tailwindcss';
 @config '../../tailwind.config.ts';
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
@@ -105,7 +104,7 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -117,6 +116,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Poppins', 'Vazirmatn', system-ui, sans-serif;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -211,6 +219,10 @@ body {
 .shop-price-slider:focus-visible {
   outline: 2px solid #b91c1c;
   outline-offset: 4px;
+}
+
+.program-stat-value {
+  overflow-wrap: anywhere;
 }
 
 /* Typography */
@@ -681,6 +693,58 @@ body {
   background-size: 200% 100%;
 }
 
+.coach-card {
+  position: relative;
+}
+
+.coach-portrait {
+  position: relative;
+  z-index: 0;
+  scale: 1;
+  transition: scale 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.coach-portrait img {
+  filter: grayscale(1);
+  transition: filter 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.coach-card:focus-visible {
+  z-index: 1;
+}
+
+.coach-card:focus-visible .coach-portrait {
+  scale: 1.06;
+  z-index: 1;
+}
+
+.coach-card:focus-visible .coach-portrait img {
+  filter: grayscale(0);
+}
+
+@media (hover: hover) {
+  .coach-card:hover {
+    z-index: 1;
+  }
+
+  .coach-card:hover .coach-portrait,
+  .coach-portrait:hover {
+    scale: 1.06;
+    z-index: 1;
+  }
+
+  .coach-card:hover .coach-portrait img,
+  .coach-portrait:hover img {
+    filter: grayscale(0);
+  }
+}
+
+@media (hover: none) {
+  .coach-portrait img {
+    filter: none;
+  }
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -690,6 +754,12 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .coach-card:focus-visible .coach-portrait,
+  .coach-portrait:hover,
+  .coach-card:hover .coach-portrait {
+    scale: 1;
   }
 }
 
@@ -786,7 +856,9 @@ body {
 :root[data-theme='dark'] .bg-gray-50,
 :root[data-theme='dark'] .bg-neutral-50,
 :root[data-theme='dark'] .bg-zinc-50,
-:root[data-theme='dark'] .bg-stone-50 {
+:root[data-theme='dark'] .bg-stone-50,
+:root[data-theme='dark'] .bg-navy-50,
+:root[data-theme='dark'] .bg-navy-100 {
   background-color: var(--page-background);
 }
 
@@ -909,6 +981,19 @@ body {
   background-color: #3f2028;
 }
 
+:root[data-theme='dark'] .shop-price-filter {
+  border-color: #71303b;
+  background-color: #3f2028;
+}
+
+:root[data-theme='dark'] .shop-price-filter legend {
+  color: var(--text-primary);
+}
+
+:root[data-theme='dark'] .shop-price-filter output {
+  color: #fecdd3;
+}
+
 :root[data-theme='dark'] .bg-orange-50,
 :root[data-theme='dark'] .bg-orange-100,
 :root[data-theme='dark'] .bg-amber-50,
@@ -961,6 +1046,22 @@ body {
 :root[data-theme='dark'] .text-stone-800,
 :root[data-theme='dark'] .text-navy-900,
 :root[data-theme='dark'] .text-navy-800 {
+  color: var(--text-primary);
+}
+
+:root[data-theme='dark'] .site-header nav a:hover:not(.bg-primary-600),
+:root[data-theme='dark'] .site-header nav a[aria-current='page']:not(.bg-primary-600),
+:root[data-theme='dark'] .site-header #mobile-navigation a:hover:not(.btn),
+:root[data-theme='dark'] .site-header #mobile-navigation a[aria-current='page']:not(.btn),
+:root[data-theme='dark'] .site-header summary:hover,
+:root[data-theme='dark'] .site-header > .container-custom > div > div > button:hover,
+:root[data-theme='dark'] .site-header button[aria-label='باز کردن منوی حساب کاربری']:hover {
+  background-color: var(--surface-raised);
+  color: var(--text-primary);
+}
+
+:root[data-theme='dark'] .dark-theme-control button:hover:not([aria-pressed='true']) {
+  background-color: var(--surface-raised);
   color: var(--text-primary);
 }
 

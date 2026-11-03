@@ -1,5 +1,17 @@
 import { renderWithProviders, screen } from '@/test-utils';
+import type { ImgHTMLAttributes } from 'react';
 import AboutPage from '@/pages/about';
+
+vi.mock('next/image', () => ({
+  default: ({
+    src,
+    alt,
+    ...props
+  }: ImgHTMLAttributes<HTMLImageElement> & { src: string }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} {...props} />
+  ),
+}));
 
 vi.mock('@/components/Layout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -17,7 +29,10 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-const pageProps = (aboutContent: unknown[]) =>
+const pageProps = (
+  aboutContent: unknown[],
+  overrides: Record<string, unknown> = {},
+) =>
   ({
     academyInfo: null,
     aboutContent,
@@ -26,6 +41,7 @@ const pageProps = (aboutContent: unknown[]) =>
     staffMembers: [],
     facilities: [],
     site: null,
+    ...overrides,
   }) as never;
 
 describe('academy history section', () => {
@@ -77,5 +93,53 @@ describe('academy history section', () => {
     expect(
       screen.queryByText('کیفیت در آموزش'),
     ).not.toBeInTheDocument();
+  });
+
+  it('limits the academy overview to four statistics', () => {
+    renderWithProviders(
+      <AboutPage
+        {...pageProps([], {
+          statistics: Object.fromEntries(
+            Array.from({ length: 6 }, (_, index) => [
+              `stat-${index + 1}`,
+              {
+                key: `stat-${index + 1}`,
+                label: `شاخص ${index + 1}`,
+                value: `${index + 1}`,
+                description: null,
+              },
+            ]),
+          ),
+        })}
+      />,
+    );
+
+    expect(screen.getByText('شاخص 1')).toBeInTheDocument();
+    expect(screen.getByText('شاخص 4')).toBeInTheDocument();
+    expect(screen.queryByText('شاخص 5')).not.toBeInTheDocument();
+    expect(screen.queryByText('شاخص 6')).not.toBeInTheDocument();
+  });
+
+  it('renders staff photos on the About page when an image is configured', () => {
+    const { container } = renderWithProviders(
+      <AboutPage
+        {...pageProps([], {
+          staffMembers: [
+            {
+              id: 'staff-1',
+              name: 'عضو تیم',
+              role: 'مدیر',
+              bio: 'معرفی',
+              initials: 'م',
+              image: '/api/uploads/staff-photo.png',
+            },
+          ],
+        })}
+      />,
+    );
+
+    expect(
+      container.querySelector('img[src="/api/uploads/staff-photo.png"]'),
+    ).toBeInTheDocument();
   });
 });

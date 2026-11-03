@@ -108,7 +108,7 @@ const ContactPage: React.FC = () => {
 
       <div className="section-padding bg-linear-to-br from-gray-50 to-gray-100">
         <div className="container-custom">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)] lg:gap-8">
             {/* Contact Form */}
             <div className="card-glass p-8 rounded-4xl">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -267,7 +267,7 @@ const ContactPage: React.FC = () => {
                 </div>
                 <div
                   aria-hidden="true"
-                  className="absolute -left-[10000px] h-px w-px overflow-hidden"
+                  className="visually-hidden"
                 >
                   <label htmlFor="company">نام شرکت</label>
                   <input

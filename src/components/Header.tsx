@@ -20,6 +20,7 @@ import { readShopCart } from '@/lib/shop-cart';
 import { SiteInfoViewModel } from '@/types/viewModels/site';
 import ThemePreferenceControl from '@/components/ui/ThemePreferenceControl';
 import { useThemePreference } from '@/hooks/useThemePreference';
+import ProfileAvatar from '@/components/ProfileAvatar';
 
 interface HeaderProps {
   site?: SiteInfoViewModel | null;
@@ -84,6 +85,11 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
 
   const handleLogout = async () => {
     await logout();
+    setIsProfileMenuOpen(false);
+  };
+
+  const closeMenus = () => {
+    setIsMenuOpen(false);
     setIsProfileMenuOpen(false);
   };
 
@@ -158,7 +164,7 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
                 <p className="mb-2 px-1 text-xs font-semibold text-slate-500">
                   پوسته سایت
                 </p>
-                <ThemePreferenceControl />
+                <ThemePreferenceControl onSelection={closeMenus} />
               </div>
             </details>
             <Link
@@ -192,10 +198,11 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
                   aria-expanded={isProfileMenuOpen}
                   aria-controls="profile-menu"
                 >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-primary-600 to-primary-800 text-sm font-bold text-white">
-                    {user.firstName.charAt(0)}
-                    {user.lastName.charAt(0)}
-                  </span>
+                  <ProfileAvatar
+                    image={user.image}
+                    initials={`${user.firstName.charAt(0)}${user.lastName.charAt(0)}`}
+                    size={36}
+                  />
                   <span className="hidden max-w-28 truncate text-sm font-semibold 2xl:inline">
                     {user.firstName}
                   </span>
@@ -241,7 +248,7 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
                         <p className="mb-2 px-1 text-xs font-semibold text-slate-500">
                           پوسته سایت
                         </p>
-                        <ThemePreferenceControl />
+                        <ThemePreferenceControl onSelection={closeMenus} />
                       </div>
                       <button
                         type="button"
@@ -328,7 +335,7 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
                   <p className="mb-2 text-xs font-semibold text-slate-500">
                     پوسته سایت
                   </p>
-                  <ThemePreferenceControl />
+                  <ThemePreferenceControl onSelection={closeMenus} />
                 </div>
                 {!loading && !user ? (
                   <>

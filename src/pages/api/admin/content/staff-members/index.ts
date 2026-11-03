@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
 import { authorizeAdmin } from '@/lib/auth';
+import { isValidImageReference } from '@/lib/uploads';
 
 export default async function handler(
   req: NextApiRequest,
@@ -21,9 +22,15 @@ export default async function handler(
       return res.status(200).json(staff);
     }
     case 'POST': {
-      const { name, role, bio, initials, isActive, displayOrder } = req.body;
+      const { name, role, bio, initials, image, isActive, displayOrder } =
+        req.body;
       if (!name || !role || !bio || !initials) {
         return res.status(400).json({ error: 'فیلدهای الزامی: name, role, bio, initials' });
+      }
+      const profileImage =
+        typeof image === 'string' && image.length > 0 ? image : null;
+      if (!(await isValidImageReference(prisma, profileImage))) {
+        return res.status(400).json({ error: 'تصویر عضو تیم معتبر نیست' });
       }
       const member = await prisma.staffMember.create({
         data: {
@@ -31,6 +38,7 @@ export default async function handler(
           role,
           bio,
           initials,
+          image: profileImage,
           isActive: isActive ?? true,
           displayOrder: displayOrder ?? 0,
         },

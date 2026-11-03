@@ -61,47 +61,59 @@ const Footer: React.FC<FooterProps> = ({ site }) => {
 
               {/* Enhanced Contact Info */}
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary-600/20 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
-                    <PhoneIcon className="w-6 h-6 text-primary-400" />
+                {site?.phone?.trim() && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary-600/20 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
+                      <PhoneIcon className="w-6 h-6 text-primary-400" />
+                    </div>
+                    <div>
+                      <a
+                        href={`tel:${site.phone.replace(/[^\d+]/g, '')}`}
+                        className="text-white font-medium hover:underline"
+                      >
+                        {site.phone}
+                      </a>
+                      <p className="text-gray-300 text-sm">
+                        24 ساعته در دسترس
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <a
-                      href={`tel:${site?.phone?.replace(/[^\d+]/g, '') ?? ''}`}
-                      className="text-white font-medium hover:underline"
-                    >
-                      {site?.phone ?? ''}
-                    </a>
-                    <p className="text-gray-300 text-sm">24 ساعته در دسترس</p>
-                  </div>
-                </div>
+                )}
 
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-secondary-600/20 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
-                    <EnvelopeIcon className="w-6 h-6 text-secondary-400" />
+                {site?.email?.trim() && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-secondary-600/20 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
+                      <EnvelopeIcon className="w-6 h-6 text-secondary-400" />
+                    </div>
+                    <div>
+                      <a
+                        href={`mailto:${site.email}`}
+                        className="text-white font-medium hover:underline"
+                      >
+                        {site.email}
+                      </a>
+                      <p className="text-gray-300 text-sm">
+                        پاسخ سریع تضمینی
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <a
-                      href={`mailto:${site?.email ?? ''}`}
-                      className="text-white font-medium hover:underline"
-                    >
-                      {site?.email ?? ''}
-                    </a>
-                    <p className="text-gray-300 text-sm">پاسخ سریع تضمینی</p>
-                  </div>
-                </div>
+                )}
 
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-accent-600/20 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
-                    <MapPinIcon className="w-6 h-6 text-accent-400" />
+                {(site?.address?.trim() || site?.city?.trim()) && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-accent-600/20 rounded-xl flex items-center justify-center backdrop-blur-sm shrink-0">
+                      <MapPinIcon className="w-6 h-6 text-accent-400" />
+                    </div>
+                    <div>
+                      {site?.address?.trim() && (
+                        <p className="text-white font-medium">{site.address}</p>
+                      )}
+                      {site?.city?.trim() && (
+                        <p className="text-gray-300 text-sm">{site.city}</p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-white font-medium">
-                      {site?.address ?? ''}
-                    </p>
-                    <p className="text-gray-300 text-sm">{site?.city ?? ''}</p>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Enhanced Social Links */}
@@ -159,22 +171,24 @@ const Footer: React.FC<FooterProps> = ({ site }) => {
               </ul>
 
               {/* Enhanced Training Hours */}
-              <div className="mt-8 p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
-                <h5 className="text-white font-semibold mb-4 flex items-center">
-                  <ClockIcon className="w-5 h-5 mr-2 text-accent-400" />
-                  ساعات تمرین
-                </h5>
-                <div className="space-y-3 text-sm">
-                  {trainingHours.map((hour, index) => (
-                    <div key={index} className="flex justify-between">
-                      <span className="text-gray-400">{hour.days}</span>
-                      <span className="text-white font-medium">
-                        {hour.hours}
-                      </span>
-                    </div>
-                  ))}
+              {trainingHours.length > 0 && (
+                <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+                  <h5 className="mb-4 flex items-center font-semibold text-white">
+                    <ClockIcon className="mr-2 h-5 w-5 text-accent-400" />
+                    ساعات تمرین
+                  </h5>
+                  <div className="space-y-3 text-sm">
+                    {trainingHours.map((hour, index) => (
+                      <div key={index} className="flex justify-between">
+                        <span className="text-gray-400">{hour.days}</span>
+                        <span className="font-medium text-white">
+                          {hour.hours}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

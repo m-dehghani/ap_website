@@ -101,6 +101,7 @@ describe('uploaded image storage', () => {
     const store = {
       user: { findFirst },
       coach: { findFirst },
+      staffMember: { findFirst },
       successStory: { findFirst },
       testimonial: { findFirst },
       newsArticle: { findFirst },

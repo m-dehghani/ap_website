@@ -10,6 +10,7 @@ export const imageUploadScopeSchema = z.enum([
   'success-story',
   'testimonial',
   'coach',
+  'staff-member',
   'news-article',
   'shop-product',
 ]);
@@ -34,7 +35,13 @@ export const imageAssetUrlSchema = z
 
 type ImageStore = Pick<
   Awaited<ReturnType<typeof getPrisma>>,
-  'user' | 'coach' | 'successStory' | 'testimonial' | 'newsArticle' | 'shopProduct'
+  | 'user'
+  | 'coach'
+  | 'staffMember'
+  | 'successStory'
+  | 'testimonial'
+  | 'newsArticle'
+  | 'shopProduct'
 >;
 
 function getUploadsDirectory() {
@@ -216,18 +223,20 @@ export async function deleteUnreferencedImage(
 ): Promise<void> {
   if (!image || !getImageFilename(image)) return;
 
-  const [user, coach, story, testimonial, article, product] = await Promise.all([
-    store.user.findFirst({ where: { image }, select: { id: true } }),
-    store.coach.findFirst({ where: { image }, select: { id: true } }),
-    store.successStory.findFirst({ where: { image }, select: { id: true } }),
-    store.testimonial.findFirst({ where: { image }, select: { id: true } }),
-    store.newsArticle.findFirst({ where: { image }, select: { id: true } }),
-    store.shopProduct.findFirst({
-      where: { images: { has: image } },
-      select: { id: true },
-    }),
-  ]);
-  if (user || coach || story || testimonial || article || product) return;
+  const [user, coach, staff, story, testimonial, article, product] =
+    await Promise.all([
+      store.user.findFirst({ where: { image }, select: { id: true } }),
+      store.coach.findFirst({ where: { image }, select: { id: true } }),
+      store.staffMember.findFirst({ where: { image }, select: { id: true } }),
+      store.successStory.findFirst({ where: { image }, select: { id: true } }),
+      store.testimonial.findFirst({ where: { image }, select: { id: true } }),
+      store.newsArticle.findFirst({ where: { image }, select: { id: true } }),
+      store.shopProduct.findFirst({
+        where: { images: { has: image } },
+        select: { id: true },
+      }),
+    ]);
+  if (user || coach || staff || story || testimonial || article || product) return;
 
   await removeImageFile(image);
 }

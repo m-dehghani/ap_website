@@ -5,6 +5,7 @@ import { fetchJson, putJson, deleteResource } from '@/lib/api-client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
+import ImageUploadField from '@/components/ImageUploadField';
 
 interface StaffMember {
   id: string;
@@ -12,6 +13,7 @@ interface StaffMember {
   role: string;
   bio: string;
   initials: string;
+  image: string | null;
   isActive: boolean;
   displayOrder: number;
 }
@@ -21,6 +23,7 @@ interface FormData {
   role: string;
   bio: string;
   initials: string;
+  image: string;
   isActive: boolean;
   displayOrder: number;
 }
@@ -37,6 +40,7 @@ export default function StaffMemberEditPage() {
     role: '',
     bio: '',
     initials: '',
+    image: '',
     isActive: true,
     displayOrder: 0,
   });
@@ -50,11 +54,12 @@ export default function StaffMemberEditPage() {
           role: data.role,
           bio: data.bio,
           initials: data.initials,
+          image: data.image ?? '',
           isActive: data.isActive,
           displayOrder: data.displayOrder,
         });
       }
-    } catch (err) {
+    } catch {
       setError('خطا در بارگذاری داده‌ها');
     } finally {
       setLoading(false);
@@ -160,6 +165,19 @@ export default function StaffMemberEditPage() {
                 required
                 maxLength={3}
                 placeholder="مثال: AP"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <ImageUploadField
+                label="تصویر عضو تیم"
+                scope="staff-member"
+                value={formData.image}
+                onChange={(value) => {
+                  if (typeof value === 'string') {
+                    setFormData((previous) => ({ ...previous, image: value }));
+                  }
+                }}
               />
             </div>
 

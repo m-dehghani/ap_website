@@ -28,6 +28,7 @@ export interface ProgramViewModel {
     id: string;
     fullName: string;
     title: string | null;
+    image: string | null;
     experience: number;
     rating: number;
     studentsCount: number;
@@ -59,6 +60,15 @@ export interface ProgramDetailViewModel extends ProgramViewModel {
   formattedStudentsEnrolled: string;
 }
 
+function getProgramLevelLabel(level: string): string {
+  const labels: Record<string, string> = {
+    BEGINNER: 'مبتدی',
+    INTERMEDIATE: 'متوسط',
+    ADVANCED: 'پیشرفته',
+  };
+  return labels[level.trim().toUpperCase()] ?? level;
+}
+
 export function toProgramViewModel(program: any): ProgramViewModel {
   return {
     id: program.id,
@@ -78,11 +88,12 @@ export function toProgramViewModel(program: any): ProgramViewModel {
     rating: program.rating,
     studentsEnrolled: program.studentsEnrolled,
     features: program.features || [],
-    level: program.level,
+    level: getProgramLevelLabel(program.level),
     coach: program.coach ? {
       id: program.coach.id || '',
       fullName: program.coach.fullName || `${program.coach.firstName || ''} ${program.coach.lastName || ''}`.trim() || 'نامشخص',
       title: program.coach.title || null,
+      image: program.coach.image || null,
       experience: program.coach.experience || 0,
       rating: program.coach.rating || 0,
       studentsCount: program.coach.studentsCount || 0,
@@ -104,7 +115,7 @@ export function toProgramCardViewModel(
     period: program.period,
     rating: program.rating,
     studentsEnrolled: program.studentsEnrolled,
-    level: program.level,
+    level: getProgramLevelLabel(program.level),
     popular: program.popular,
     color: program.color,
     isSelected,

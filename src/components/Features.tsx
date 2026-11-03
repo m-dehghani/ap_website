@@ -480,7 +480,7 @@ const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
             </div>
 
             <div className="relative z-10">
-              <h3 className="text-3xl font-bold text-gray-200 mb-4">
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">
                 آماده شروع سفر فوتبال خود هستید؟
               </h3>
               <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">

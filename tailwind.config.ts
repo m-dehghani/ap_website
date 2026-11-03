@@ -8,8 +8,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
-        body: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Poppins', 'Vazirmatn', 'Inter', 'system-ui', 'sans-serif'],
+        body: ['Vazirmatn', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         // Primary - Club red

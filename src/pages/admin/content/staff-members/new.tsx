@@ -5,12 +5,14 @@ import { postJson } from '@/lib/api-client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
+import ImageUploadField from '@/components/ImageUploadField';
 
 interface FormData {
   name: string;
   role: string;
   bio: string;
   initials: string;
+  image: string;
   isActive: boolean;
   displayOrder: number;
 }
@@ -24,6 +26,7 @@ export default function StaffMemberNewPage() {
     role: '',
     bio: '',
     initials: '',
+    image: '',
     isActive: true,
     displayOrder: 0,
   });
@@ -96,6 +99,19 @@ export default function StaffMemberNewPage() {
                 required
                 maxLength={3}
                 placeholder="مثال: AP"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <ImageUploadField
+                label="تصویر عضو تیم"
+                scope="staff-member"
+                value={formData.image}
+                onChange={(value) => {
+                  if (typeof value === 'string') {
+                    setFormData((previous) => ({ ...previous, image: value }));
+                  }
+                }}
               />
             </div>
 

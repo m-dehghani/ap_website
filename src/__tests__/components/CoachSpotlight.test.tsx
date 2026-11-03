@@ -1,7 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderWithProviders, screen, fireEvent, waitFor } from '@/test-utils';
+import type { ImgHTMLAttributes } from 'react';
+import { renderWithProviders, screen, fireEvent } from '@/test-utils';
 import CoachSpotlight from '@/components/CoachSpotlight';
 import { createMockCoach } from '@/test-utils';
+
+vi.mock('next/image', () => ({
+  default: ({
+    src,
+    alt,
+    ...props
+  }: ImgHTMLAttributes<HTMLImageElement> & { src: string }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} {...props} />
+  ),
+}));
 
 describe('CoachSpotlight', () => {
   const mockCoaches = [
@@ -57,6 +69,21 @@ describe('CoachSpotlight', () => {
     const titleElements = screen.getAllByText('مربی ارشد');
     expect(titleElements.length).toBeGreaterThan(0);
     expect(screen.getByText('مربی فیفا، تخصص در نوجوانان')).toBeInTheDocument();
+  });
+
+  it('shows saved coach photos in the spotlight and coach grid', () => {
+    const coachesWithDistinctImages = [
+      createMockCoach({ id: '1', image: '/images/spotlight.jpg' }),
+      createMockCoach({ id: '2', image: '/images/grid.jpg' }),
+    ];
+    const { container } = renderWithProviders(
+      <CoachSpotlight coaches={coachesWithDistinctImages} />,
+    );
+
+    expect(
+      container.querySelectorAll('img[src="/images/spotlight.jpg"]'),
+    ).toHaveLength(2);
+    expect(container.querySelector('img[src="/images/grid.jpg"]')).toBeTruthy();
   });
 
   it('navigates to next coach when next button clicked', () => {

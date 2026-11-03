@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import Image from 'next/image';
 import ImageUploadField from '@/components/ImageUploadField';
+import ProfileAvatar from '@/components/ProfileAvatar';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -87,7 +87,12 @@ export default function AdminLayout({
             <div className="flex items-center justify-between gap-4">
               <h1 className="text-xl font-bold text-slate-900">{title}</h1>
               <details className="relative">
-                <summary className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700">
+                <summary className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700">
+                  <ProfileAvatar
+                    image={user?.image}
+                    initials={`${user?.firstName?.charAt(0) ?? ''}${user?.lastName?.charAt(0) ?? ''}`}
+                    size={32}
+                  />
                   تصویر پروفایل
                 </summary>
                 <div className="absolute left-0 z-50 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
@@ -460,20 +465,11 @@ export default function AdminLayout({
               <details className="relative">
                 <summary className="cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700">
                   <span className="sr-only">تغییر تصویر پروفایل</span>
-                  {user?.image?.startsWith('/api/uploads/') ? (
-                    <Image
-                      src={user.image}
-                      alt=""
-                      width={32}
-                      height={32}
-                      unoptimized
-                      className="h-8 w-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-700">
-                      {user?.firstName?.slice(0, 1) ?? 'م'}
-                    </span>
-                  )}
+                  <ProfileAvatar
+                    image={user?.image}
+                    initials={`${user?.firstName?.charAt(0) ?? ''}${user?.lastName?.charAt(0) ?? ''}`}
+                    size={32}
+                  />
                 </summary>
                 <div className="absolute left-0 z-50 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
                   <ImageUploadField

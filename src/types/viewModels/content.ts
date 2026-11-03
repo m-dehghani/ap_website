@@ -96,6 +96,7 @@ export interface StaffMemberViewModel {
   role: string;
   bio: string;
   initials: string;
+  image?: string | null;
 }
 
 export interface FacilityViewModel {

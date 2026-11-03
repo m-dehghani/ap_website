@@ -8,6 +8,7 @@ import AttendanceRoster from '@/components/AttendanceRoster';
 import CoachEvaluationsPanel from '@/components/CoachEvaluationsPanel';
 import { attendanceEligibleRegistrationStatuses } from '@/lib/attendance';
 import ImageUploadField from '@/components/ImageUploadField';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CoachDashboardProps {
   coach: any;
@@ -22,6 +23,7 @@ type CoachProgramRoster = {
 
 const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [profileImage, setProfileImage] = React.useState(coach.image ?? '');
 
   useEffect(() => {
@@ -110,7 +112,10 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
                   value={profileImage}
                   removable={false}
                   onChange={(value) => {
-                    if (typeof value === 'string') setProfileImage(value);
+                    if (typeof value === 'string') {
+                      setProfileImage(value);
+                      void refreshUser();
+                    }
                   }}
                 />
               </div>
