@@ -17,6 +17,7 @@ import {
   AcademyInfoViewModel,
 } from '@/types/viewModels/content';
 import { OpeningHourViewModel } from '@/types/viewModels/site';
+import ProfileAvatar from '@/components/ProfileAvatar';
 
 interface AboutPageProps extends SiteProps {
   academyInfo: AcademyInfoViewModel | null;
@@ -57,6 +58,14 @@ function AboutPage({
       ? value.filter((item): item is string => typeof item === 'string')
       : [];
 
+  const historyData = sectionData('history');
+  const historyContent = sections.history?.content;
+  const history = Array.isArray(historyContent)
+    ? stringList(historyContent)
+    : stringList(
+        historyData.paragraphs ?? historyData.history ?? historyData.story,
+      );
+
   const storyData = sectionData('story');
   const storyContent = sections.story?.content;
   const story = Array.isArray(storyContent)
@@ -70,7 +79,7 @@ function AboutPage({
     title: text(missionData.title, sections.mission?.title ?? 'ماموریت ما'),
     description: text(
       missionData.description,
-      'آموزش حرفه‌ای فوتبال و پرورش نسل آینده فوتبال ایران با تأکید بر ارزش‌های اخلاقی و انسانی',
+      'اطلاعات مأموریت آکادمی هنوز در پنل مدیریت ثبت نشده است.',
     ),
   };
   const visionData = sectionData('vision');
@@ -78,7 +87,7 @@ function AboutPage({
     title: text(visionData.title, sections.vision?.title ?? 'چشم‌انداز ما'),
     description: text(
       visionData.description,
-      'تبدیل شدن به برترین آکادمی فوتبال خاورمیانه و تربیت بازیکنانی که در سطح بین‌المللی بدرخشند',
+      'اطلاعات چشم‌انداز آکادمی هنوز در پنل مدیریت ثبت نشده است.',
     ),
   };
   const valuesData = sectionData('values');
@@ -86,21 +95,14 @@ function AboutPage({
   const configuredValues = stringList(valuesData.items);
   const values = {
     title: text(valuesData.title, sections.values?.title ?? 'ارزش‌های ما'),
-    items: hasConfiguredValues
-      ? configuredValues
-      : [
-          'کیفیت در آموزش',
-          'احترام و صداقت',
-          'کار تیمی و همکاری',
-          'تعهد و پشتکار',
-        ],
+    items: hasConfiguredValues ? configuredValues : [],
   };
   const ctaData = sectionData('cta');
   const aboutCTA = {
     title: text(ctaData.title, 'آماده پیوستن به ما هستید؟'),
     description: text(
       ctaData.description,
-      'همین امروز ثبت نام کنید و سفر فوتبالی خود را با بهترین مربیان آغاز کنید.',
+      'برای اطلاعات بیشتر یا پیگیری ثبت‌نام، با آکادمی تماس بگیرید.',
     ),
   };
   const facilitiesData = sectionData('facilities');
@@ -138,6 +140,7 @@ function AboutPage({
             name,
             role: text(member.role, ''),
             bio: text(member.bio, ''),
+            image: text(member.image, '') || null,
             initials: text(
               member.initials,
               name
@@ -165,7 +168,7 @@ function AboutPage({
       }
       description={
         academyInfo?.description ??
-        'آکادمی فوتبال AP با هدف آموزش حرفه‌ای فوتبال و پرورش نسل آینده فوتبال ایران تأسیس شده است.'
+        'اطلاعات، تاریخچه و بخش‌های مختلف آکادمی فوتبال AP.'
       }
       canonical="https://ap-football.com/about"
       openGraph={{
@@ -174,7 +177,7 @@ function AboutPage({
           : 'درباره ما - آکادمی فوتبال AP',
         description:
           academyInfo?.description ??
-          'آکادمی فوتبال AP با هدف آموزش حرفه‌ای فوتبال و پرورش نسل آینده فوتبال ایران تأسیس شده است',
+          'اطلاعات، تاریخچه و بخش‌های مختلف آکادمی فوتبال AP.',
         images: [
           {
             url: 'https://ap-football.com/images/about-og.jpg',
@@ -191,13 +194,36 @@ function AboutPage({
         }
         description={
           academyInfo?.tagline ??
-          'بیش از یک دهه تجربه در آموزش حرفه‌ای فوتبال و پرورش نسل آینده فوتبال ایران'
+          'با تاریخچه و بخش‌های مختلف آکادمی آشنا شوید.'
         }
         badge="درباره ما"
       />
 
       <div className="section-padding bg-linear-to-br from-gray-50 to-gray-100">
         <div className="container-custom">
+          <section
+            aria-labelledby="academy-history-heading"
+            className="mb-16 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8"
+          >
+            <h2
+              id="academy-history-heading"
+              className="text-2xl font-bold text-gray-900 sm:text-3xl"
+            >
+              {sections.history?.title ?? 'تاریخچه آکادمی'}
+            </h2>
+            <div className="mt-5 max-w-4xl space-y-4 leading-relaxed text-gray-700">
+              {history.length > 0 ? (
+                history.map((paragraph, index) => (
+                  <p key={`${index}-${paragraph}`}>{paragraph}</p>
+                ))
+              ) : (
+                <p className="text-gray-600">
+                  تاریخچه آکادمی هنوز در پنل مدیریت ثبت نشده است.
+                </p>
+              )}
+            </div>
+          </section>
+
           {/* Story Section */}
           <div className="grid lg:grid-cols-2 gap-12 mb-20">
             <div className="card-glass p-8 rounded-4xl">
@@ -244,32 +270,55 @@ function AboutPage({
                     {values.title}
                   </h3>
                 </div>
-                <ul className="text-gray-700 space-y-2 mr-4">
-                  {values.items.map((item, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent-500 shrink-0"></span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                {values.items.length > 0 ? (
+                  <ul className="text-gray-700 space-y-2 mr-4">
+                    {values.items.map((item, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent-500 shrink-0"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-600">
+                    ارزش‌های آکادمی هنوز در پنل مدیریت ثبت نشده است.
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Statistics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-            {Object.values(statistics).map((stat, index) => (
-              <div
-                key={stat.key ?? index}
-                className="card-glass p-8 rounded-4xl text-center"
-              >
-                <div className="text-4xl font-bold text-primary-600 mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-gray-900 font-semibold">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+          <section
+            aria-labelledby="academy-statistics-heading"
+            className="mb-20 rounded-3xl bg-navy-800 px-6 py-7 text-white sm:px-8"
+          >
+            <h2
+              id="academy-statistics-heading"
+              className="text-xl font-bold sm:text-2xl"
+            >
+              آمار آکادمی در یک نگاه
+            </h2>
+            <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+              {Object.values(statistics)
+                .slice(0, 4)
+                .map((stat, index) => (
+                  <div
+                    key={stat.key ?? index}
+                    className="flex min-w-0 flex-col gap-1 border-b border-white/20 pb-3 last:border-0 sm:border-0 sm:pb-0"
+                  >
+                    <dt className="text-sm font-medium text-white/85">
+                      {stat.label}
+                    </dt>
+                    <dd
+                      dir="auto"
+                      className="text-2xl font-extrabold tabular-nums sm:text-3xl"
+                    >
+                      {stat.value}
+                    </dd>
+                  </div>
+                ))}
+            </dl>
+          </section>
 
           {/* Team Section */}
           <div className="card-glass p-8 rounded-4xl mb-20">
@@ -279,10 +328,12 @@ function AboutPage({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {displayedTeam.map((member, index) => (
                 <div key={member.id ?? index} className="text-center">
-                  <div
-                    className={`w-32 h-32 bg-linear-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4`}
-                  >
-                    {member.initials}
+                  <div className="mx-auto mb-4 h-32 w-32">
+                    <ProfileAvatar
+                      image={member.image}
+                      initials={member.initials}
+                      size={128}
+                    />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
                     {member.name}

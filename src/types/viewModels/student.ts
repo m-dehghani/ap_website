@@ -32,9 +32,12 @@ export interface StudentDashboardStudentViewModel {
   firstName: string;
   lastName: string;
   phone: string | null;
+  image?: string | null;
   birthDate: string | null;
   marketingOptIn: boolean;
   registrations: StudentRegistrationViewModel[];
+  attendance: StudentAttendanceViewModel[];
+  evaluations: StudentEvaluationViewModel[];
 }
 
 export interface StudentDashboardProgramViewModel {
@@ -43,6 +46,30 @@ export interface StudentDashboardProgramViewModel {
   price: number;
   minAge: number;
   maxAge: number;
+}
+
+export interface StudentAttendanceViewModel {
+  id: string;
+  status: string;
+  createdAt: string;
+  session: {
+    id: string;
+    name: string;
+    date: string;
+    program: { name: string };
+  };
+}
+
+export interface StudentEvaluationViewModel {
+  id: string;
+  technical: number;
+  physical: number;
+  mental: number;
+  teamwork: number;
+  overall: number;
+  notes: string | null;
+  createdAt: string;
+  coach: { firstName: string; lastName: string };
 }
 
 export interface StudentDashboardViewModel {

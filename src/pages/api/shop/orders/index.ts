@@ -1,10 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { randomBytes } from 'node:crypto';
-import { jwtVerify } from 'jose';
 import { z } from 'zod';
 import { getPrisma } from '@/lib/db';
-import { getJwtSecret, normalizePhone } from '@/lib/auth';
-import { getAvailableStock, getVariantPrice, isValidTomanAmount } from '@/lib/shop';
+import { CHECKOUT_TTL_MS } from '@/lib/payments';
+import { getOptionalSession, normalizePhone } from '@/lib/auth';
+import {
+  getAvailableStock,
+  getVariantPrice,
+  isValidTomanAmount,
+  releaseOrderReservation,
+} from '@/lib/shop';
 import { getZarinpalConfig, requestPayment } from '@/lib/zarinpal';
 
 const checkoutSchema = z.object({
@@ -24,25 +29,6 @@ const checkoutSchema = z.object({
     }),
   ).min(1).max(30),
 });
-
-async function getOptionalStudentId(
-  req: NextApiRequest,
-): Promise<string | null> {
-  const token = req.cookies.auth_token;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, getJwtSecret());
-    if (typeof payload.userId !== 'string') return null;
-    const db = await getPrisma();
-    const user = await db.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, role: true },
-    });
-    return user?.role === 'STUDENT' ? user.id : null;
-  } catch {
-    return null;
-  }
-}
 
 export default async function handler(
   req: NextApiRequest,
@@ -84,7 +70,11 @@ export default async function handler(
   }
 
   const db = await getPrisma();
-  const userId = await getOptionalStudentId(req);
+  const session = await getOptionalSession(req);
+  const userId =
+    session?.source === 'user' && session.role === 'STUDENT'
+      ? session.id
+      : null;
   const now = new Date();
   let orderId: string | undefined;
 
@@ -99,18 +89,16 @@ export default async function handler(
           },
         });
         for (const staleOrder of expired) {
-          for (const item of staleOrder.items) {
-            if (item.variantId) {
-              await tx.shopVariant.update({
-                where: { id: item.variantId },
-                data: { reserved: { decrement: item.quantity } },
-              });
-            }
-          }
-          await tx.shopOrder.update({
-            where: { id: staleOrder.id },
+          const canceled = await tx.shopOrder.updateMany({
+            where: {
+              id: staleOrder.id,
+              status: 'PENDING_PAYMENT',
+              expiresAt: { lte: now },
+            },
             data: { status: 'CANCELLED' },
           });
+          if (!canceled.count) continue;
+          await releaseOrderReservation(tx, staleOrder);
         }
 
         const settings = await tx.shopSettings.findUnique({
@@ -196,7 +184,7 @@ export default async function handler(
             shippingFee,
             totalAmount,
             userId,
-            expiresAt: new Date(now.getTime() + 15 * 60 * 1000),
+            expiresAt: new Date(now.getTime() + CHECKOUT_TTL_MS),
             items: {
               create: lines.map(({ variant, quantity, unitPrice, lineTotal }) => ({
                 productId: variant.productId,
@@ -258,14 +246,10 @@ export default async function handler(
           },
         });
         if (pending?.status === 'PENDING_PAYMENT') {
-          for (const item of pending.items) {
-            if (item.variantId) {
-              await tx.shopVariant.update({
-                where: { id: item.variantId },
-                data: { reserved: { decrement: item.quantity } },
-              });
-            }
-          }
+          await releaseOrderReservation(tx, {
+            id: order.id,
+            items: pending.items,
+          });
           await tx.shopOrder.update({
             where: { id: order.id },
             data: { status: 'PAYMENT_FAILED' },

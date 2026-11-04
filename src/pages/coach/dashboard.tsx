@@ -4,13 +4,27 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import AttendanceRoster from '@/components/AttendanceRoster';
+import CoachEvaluationsPanel from '@/components/CoachEvaluationsPanel';
+import { attendanceEligibleRegistrationStatuses } from '@/lib/attendance';
+import ImageUploadField from '@/components/ImageUploadField';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CoachDashboardProps {
   coach: any;
 }
 
+type CoachProgramRoster = {
+  registrations?: {
+    userId: string;
+    user: { firstName: string; lastName: string };
+  }[];
+};
+
 const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
   const router = useRouter();
+  const { refreshUser } = useAuth();
+  const [profileImage, setProfileImage] = React.useState(coach.image ?? '');
 
   useEffect(() => {
     // Check auth on client side
@@ -34,6 +48,23 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
 
   const programs = coach.programs || [];
   const sessions = coach.sessions || [];
+  const evaluationStudents = Array.from(
+    new Map<
+      string,
+      { id: string; firstName: string; lastName: string }
+    >(
+      programs.flatMap((program: CoachProgramRoster) =>
+        (program.registrations ?? []).map((registration) => [
+          registration.userId,
+          {
+            id: registration.userId,
+            firstName: registration.user.firstName,
+            lastName: registration.user.lastName,
+          },
+        ]),
+      ),
+    ).values(),
+  );
 
   return (
     <Layout
@@ -74,6 +105,20 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
               </h2>
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="md:col-span-2 lg:col-span-4 max-w-sm">
+                <ImageUploadField
+                  label="تصویر پروفایل"
+                  scope="profile"
+                  value={profileImage}
+                  removable={false}
+                  onChange={(value) => {
+                    if (typeof value === 'string') {
+                      setProfileImage(value);
+                      void refreshUser();
+                    }
+                  }}
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-500">
                   نام
@@ -350,6 +395,25 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
                             </p>
                           </div>
                         </div>
+                        <AttendanceRoster
+                          sessionId={session.id}
+                          endpoint={`/api/coach/sessions/${session.id}/attendance`}
+                          roster={(session.program?.registrations ?? []).map(
+                            (registration: {
+                              userId: string;
+                              user: { firstName: string; lastName: string };
+                            }) => ({
+                              userId: registration.userId,
+                              firstName: registration.user.firstName,
+                              lastName: registration.user.lastName,
+                              status:
+                                session.attendance?.find(
+                                  (entry: { userId: string }) =>
+                                    entry.userId === registration.userId,
+                                )?.status ?? null,
+                            }),
+                          )}
+                        />
                       </div>
                     ))}
                 </div>
@@ -357,15 +421,23 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
             </div>
           </div>
         </div>
+        <CoachEvaluationsPanel
+          students={evaluationStudents}
+          evaluations={coach.evaluations ?? []}
+        />
       </div>
     </Layout>
   );
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const token = context.req.cookies.auth_token;
-
-  if (!token) {
+  const { getSession } = await import('@/lib/auth');
+  const session = await getSession(context.req);
+  if (
+    !session ||
+    session.role !== 'COACH' ||
+    session.source !== 'coach'
+  ) {
     return {
       redirect: {
         destination: '/login',
@@ -374,54 +446,92 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  try {
-    const { jwtVerify } = await import('jose');
-    const { getJwtSecret } = await import('@/lib/auth');
-    const { payload } = await jwtVerify(token, getJwtSecret());
-
-    if (payload.role !== 'COACH') {
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
-        },
-      };
-    }
-
-    const { getPrisma } = await import('@/lib/db');
-    const db = await getPrisma();
-
-    const coach = await db.coach.findUnique({
-      where: { id: payload.userId as string },
-      include: {
-        programs: {
-          where: { isActive: true },
-          orderBy: { displayOrder: 'asc' },
-        },
-        sessions: {
-          where: { status: 'SCHEDULED' },
-          orderBy: { date: 'asc' },
-          take: 10,
+  const { getPrisma } = await import('@/lib/db');
+  const db = await getPrisma();
+  const coach = await db.coach.findUnique({
+    where: { id: session.id },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      image: true,
+      email: true,
+      phone: true,
+      specialization: true,
+      title: true,
+      experience: true,
+      studentsCount: true,
+      rating: true,
+      programs: {
+        where: { isActive: true },
+        orderBy: { displayOrder: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          sessionCount: true,
+          duration: true,
+          price: true,
+          maxStudents: true,
+          isActive: true,
+          registrations: {
+            select: {
+              userId: true,
+              user: { select: { firstName: true, lastName: true } },
+            },
+          },
         },
       },
-    });
-
-    if (!coach) {
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
+      evaluations: {
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+        select: {
+          id: true,
+          technical: true,
+          physical: true,
+          mental: true,
+          teamwork: true,
+          overall: true,
+          notes: true,
+          createdAt: true,
+          user: { select: { firstName: true, lastName: true } },
         },
-      };
-    }
-
-    return {
-      props: {
-        coach,
       },
-    };
-  } catch (error) {
-    console.error('Auth error:', error);
+      sessions: {
+        where: { status: 'SCHEDULED' },
+        orderBy: { date: 'asc' },
+        take: 10,
+        select: {
+          id: true,
+          name: true,
+          date: true,
+          duration: true,
+          location: true,
+          maxCapacity: true,
+          status: true,
+          program: {
+            select: {
+              registrations: {
+                where: {
+                  status: { in: [...attendanceEligibleRegistrationStatuses] },
+                },
+                select: {
+                  userId: true,
+                  user: {
+                    select: { firstName: true, lastName: true },
+                  },
+                },
+              },
+            },
+          },
+          attendance: {
+            select: { userId: true, status: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!coach) {
     return {
       redirect: {
         destination: '/login',
@@ -429,6 +539,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+
+  return {
+    props: {
+      coach: {
+        ...coach,
+        evaluations: (coach.evaluations ?? []).map((evaluation) => ({
+          ...evaluation,
+          createdAt: evaluation.createdAt.toISOString(),
+        })),
+        sessions: coach.sessions.map((session) => ({
+          ...session,
+          date: session.date.toISOString(),
+        })),
+      },
+    },
+  };
 };
 
 export default CoachDashboardPage;

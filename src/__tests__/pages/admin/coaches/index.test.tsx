@@ -1,7 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { ImgHTMLAttributes } from 'react';
 import { renderWithProviders, screen, fireEvent, waitFor } from '@/test-utils';
 import CoachesPage from '@/pages/admin/coaches/index';
 import { createMockCoach } from '@/test-utils';
+
+vi.mock('next/image', () => ({
+  default: ({
+    src,
+    alt,
+    ...props
+  }: ImgHTMLAttributes<HTMLImageElement> & { src: string }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} {...props} />
+  ),
+}));
 
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({
@@ -52,6 +64,16 @@ describe('Admin Coaches Page', () => {
     await waitFor(() => {
       expect(screen.getByText('علی محمدی')).toBeInTheDocument();
       expect(screen.getByText('رضا احمدی')).toBeInTheDocument();
+    });
+  });
+
+  it('shows coach profile photos in the table', async () => {
+    const { container } = renderWithProviders(<CoachesPage />);
+
+    await waitFor(() => {
+      expect(
+        container.querySelectorAll('img[src="/images/coach1.jpg"]'),
+      ).toHaveLength(2);
     });
   });
 

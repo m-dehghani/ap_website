@@ -16,10 +16,22 @@ Standalone Next.js Pages Router application using PostgreSQL and Prisma.
 5. Seed demo data: `npx prisma db seed`
 6. Start the development server: `npm run dev`
 
+Uploaded images are stored on disk in `uploads/` by default. Set `UPLOADS_DIR`
+to a durable directory when the default is not persistent. When upgrading an
+existing database with uploaded images, run `npm run migrate:uploads` before
+`npx prisma migrate deploy`; see [application storage notes](./docs/application.md#academy-shop).
+
 The seed script requires `SEED_DEMO_PASSWORD` to be at least 12 characters.
 It clears and replaces the seed-managed tables, so do not run it against a
 database whose data you want to preserve. Production seeding is blocked unless
 `ALLOW_DEMO_SEED_USERS=true` is explicitly set.
+
+## Production deployments
+
+Before promoting an application deployment that uses new Prisma models, run
+`npx prisma migrate deploy` in a trusted deployment environment configured with
+the production `DATABASE_URL`. This applies pending migrations without
+deleting existing data.
 
 ## Checks
 

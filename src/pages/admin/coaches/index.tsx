@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import { deleteResource, fetchJson } from '@/lib/api-client';
 import type { AdminCoachListItem } from '@/types/viewModels/admin';
 import type { TableColumn } from '@/components/ui/Table';
+import ProfileAvatar from '@/components/ProfileAvatar';
 
 const columns: TableColumn<AdminCoachListItem>[] = [
   {
@@ -11,8 +12,12 @@ const columns: TableColumn<AdminCoachListItem>[] = [
     header: 'مربی',
     render: (coach) => (
       <div className="flex items-center">
-        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold mr-3">
-          {`${coach.firstName.charAt(0)}${coach.lastName.charAt(0)}`.toUpperCase()}
+        <div className="mr-3">
+          <ProfileAvatar
+            image={coach.image}
+            initials={`${coach.firstName.charAt(0)}${coach.lastName.charAt(0)}`.toUpperCase()}
+            size={40}
+          />
         </div>
         <div>
           <div className="font-medium text-gray-900">

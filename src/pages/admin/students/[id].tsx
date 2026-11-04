@@ -14,6 +14,7 @@ const StudentDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [statusReason, setStatusReason] = useState('');
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, string> = {
@@ -82,10 +83,16 @@ const StudentDetailPage: React.FC = () => {
       const res = await fetch(`/api/admin/students/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registration),
+        body: JSON.stringify({
+          ...registration,
+          ...(statusReason.trim() ? { reason: statusReason } : {}),
+        }),
       });
 
-      if (!res.ok) throw new Error('خطا در ذخیره');
+      if (!res.ok) {
+        const result = await res.json().catch(() => null);
+        throw new Error(result?.error || 'خطا در ذخیره');
+      }
       router.push('/admin/students');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'خطا در ذخیره');
@@ -455,6 +462,29 @@ const StudentDetailPage: React.FC = () => {
                 <option value="CANCELLED">لغو شده</option>
                 <option value="COMPLETED">تکمیل شده</option>
               </select>
+            </div>
+            <div className="mt-5">
+              <label
+                htmlFor="registration-status-reason"
+                className="mb-2 block text-sm font-medium text-gray-700"
+              >
+                دلیل تغییر خارج از روند معمول (در صورت نیاز)
+              </label>
+              <textarea
+                id="registration-status-reason"
+                value={statusReason}
+                onChange={(event) => setStatusReason(event.target.value)}
+                maxLength={500}
+                rows={2}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-amber-500 focus:ring-2 focus:ring-amber-500"
+                aria-describedby="registration-status-reason-help"
+              />
+              <p
+                id="registration-status-reason-help"
+                className="mt-1 text-sm text-gray-600"
+              >
+                برای تغییرهایی مانند تکمیل یا بازگشت وضعیت ثبت‌نام، وارد کردن دلیل الزامی است.
+              </p>
             </div>
           </section>
 

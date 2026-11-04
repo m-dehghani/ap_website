@@ -14,7 +14,7 @@ const contentSections = [
   { href: '/admin/content/statistics', label: 'آمار و ارقام', icon: '📈', description: 'شمارنده‌های کلیدی سایت' },
   { href: '/admin/content/testimonials', label: 'نظرات کاربران', icon: '💬', description: 'نظرات و توصیه‌های کاربران' },
   { href: '/admin/content/success-stories', label: 'داستان‌های موفقیت', icon: '🌟', description: 'داستان‌های پیشرفت بازیکنان' },
-  { href: '/admin/content/milestones', label: 'مراحل مهم', icon: '📅', description: 'رویدادهای کلیدی تاریخچه' },
+  { href: '/admin/content/milestones', label: 'افتخارات آکادمی', icon: '📅', description: 'مدیریت افتخارات بررسی و تأییدشده آکادمی' },
   { href: '/admin/content/staff-members', label: 'اعضای تیم', icon: '👥', description: 'اعضای تیم مدیریت' },
   { href: '/admin/content/facilities', label: 'امکانات', icon: '🏟️', description: 'زمین‌های تمرین و تجهیزات' },
   { href: '/admin/content/news-categories', label: 'دسته‌بندی اخبار', icon: '📂', description: 'دسته‌بندی‌های اخبار و رویدادها' },

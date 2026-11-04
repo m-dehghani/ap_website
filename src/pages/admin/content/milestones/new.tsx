@@ -10,6 +10,7 @@ interface FormData {
   year: number;
   title: string;
   description: string;
+  isVerified: boolean;
   displayOrder: number;
 }
 
@@ -21,6 +22,7 @@ export default function MilestoneNewPage() {
     year: new Date().getFullYear() - 621, // approximate solar year
     title: '',
     description: '',
+    isVerified: false,
     displayOrder: 0,
   });
 
@@ -28,7 +30,12 @@ export default function MilestoneNewPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'year' || name === 'displayOrder' ? parseInt(value, 10) || 0 : value,
+      [name]:
+        e.target instanceof HTMLInputElement && e.target.type === 'checkbox'
+          ? e.target.checked
+          : name === 'year' || name === 'displayOrder'
+            ? parseInt(value, 10) || 0
+            : value,
     }));
   };
 
@@ -47,11 +54,13 @@ export default function MilestoneNewPage() {
   };
 
   return (
-    <AdminLayout title="افزودن رویداد">
+    <AdminLayout title="افزودن افتخار آکادمی">
       <div className="max-w-2xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">افزودن رویداد جدید</h1>
-          <p className="text-gray-600 mt-1">ثبت رویداد کلیدی در تاریخچه آکادمی</p>
+          <h1 className="text-3xl font-bold text-gray-900">افزودن افتخار آکادمی</h1>
+          <p className="text-gray-600 mt-1">
+            فقط رویدادها و افتخارات تأییدشده آکادمی را برای نمایش عمومی تأیید کنید.
+          </p>
         </div>
 
         {error && (
@@ -88,9 +97,20 @@ export default function MilestoneNewPage() {
               value={formData.title}
               onChange={handleChange}
               required
-              placeholder="مثال: تأسیس آکادمی"
+              placeholder="عنوان افتخار ثبت‌شده"
             />
           </div>
+
+          <label className="flex items-start gap-3 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              name="isVerified"
+              checked={formData.isVerified}
+              onChange={handleChange}
+              className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+            <span>این افتخار بررسی و تأیید شده است و می‌تواند عمومی شود.</span>
+          </label>
 
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">

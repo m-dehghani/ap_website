@@ -13,6 +13,7 @@ interface AboutContent {
 }
 
 const sectionLabels: Record<string, string> = {
+  history: 'تاریخچه آکادمی',
   story: 'داستان ما',
   mission: 'ماموریت',
   vision: 'چشم‌انداز',

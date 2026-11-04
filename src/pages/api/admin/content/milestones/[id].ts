@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
 import { authorizeAdmin } from '@/lib/auth';
+import { milestoneUpdateSchema } from '@/lib/validation/cmsContent';
 
 export default async function handler(
   req: NextApiRequest,
@@ -25,15 +26,13 @@ export default async function handler(
       return res.status(200).json(milestone);
     }
     case 'PUT': {
-      const { year, title, description, displayOrder } = req.body;
+      const parsed = milestoneUpdateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: 'اطلاعات افتخار معتبر نیست' });
+      }
       const milestone = await prisma.milestone.update({
         where: { id },
-        data: {
-          year,
-          title,
-          description,
-          displayOrder,
-        },
+        data: parsed.data,
       });
       return res.status(200).json(milestone);
     }

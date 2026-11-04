@@ -1,5 +1,38 @@
 import { z } from 'zod';
+import { imageAssetUrlSchema } from '@/lib/uploads';
 import type { PrismaClient } from '../../prisma/generated/client';
+
+type ShopOrderReservation = {
+  id: string;
+  items: Array<{ variantId: string | null; quantity: number }>;
+};
+type ReservationTx = {
+  shopVariant: {
+    updateMany: (args: {
+      where: { id: string; reserved: { gte: number } };
+      data: { reserved: { decrement: number } };
+    }) => Promise<{ count: number }>;
+  };
+};
+
+export async function releaseOrderReservation(
+  tx: ReservationTx,
+  order: ShopOrderReservation,
+) {
+  for (const item of order.items) {
+    if (!item.variantId) {
+      throw new Error(`Reservation count mismatch for order ${order.id}`);
+    }
+
+    const released = await tx.shopVariant.updateMany({
+      where: { id: item.variantId, reserved: { gte: item.quantity } },
+      data: { reserved: { decrement: item.quantity } },
+    });
+    if (!released.count) {
+      throw new Error(`Reservation count mismatch for order ${order.id}`);
+    }
+  }
+}
 
 export async function releaseExpiredShopOrders(
   db: PrismaClient,
@@ -29,16 +62,8 @@ export async function releaseExpiredShopOrders(
         data: { status: 'CANCELLED' },
       });
       if (!canceled.count) continue;
-      for (const item of order.items) {
-        if (!item.variantId) continue;
-        const released = await tx.shopVariant.updateMany({
-          where: { id: item.variantId, reserved: { gte: item.quantity } },
-          data: { reserved: { decrement: item.quantity } },
-        });
-        if (!released.count) {
-          throw new Error(`Reservation count mismatch for expired order ${order.id}`);
-        }
-      }
+
+      await releaseOrderReservation(tx, order);
     }
   });
 }
@@ -65,7 +90,7 @@ export const shopProductInputSchema = z.object({
   category: z.string().trim().min(1).max(80),
   description: z.string().trim().min(1).max(10_000),
   shortDescription: z.string().trim().max(500).nullable().optional(),
-  images: z.array(httpUrlSchema).max(12),
+  images: z.array(z.union([httpUrlSchema, imageAssetUrlSchema])).max(12),
   price: z.number().int().positive(),
   salePrice: z.number().int().positive().nullable().optional(),
   saleStartsAt: z.coerce.date().nullable().optional(),

@@ -136,7 +136,7 @@ describe('/api/admin/coaches', () => {
       achievements: ['قهرمان'],
       rating: 4.8,
       studentsCount: 150,
-      image: '/coach1.jpg',
+      image: '',
       instagram: '@ali',
       twitter: '@ali',
       isActive: true,

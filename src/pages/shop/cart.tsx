@@ -65,10 +65,18 @@ export default function ShopCartPage() {
 
   // Load provinces on mount
   useEffect(() => {
-    void fetch('/api/admin/content/provinces')
+    void fetch('/api/shipping/provinces')
       .then(async (response) => {
+        if (
+          !response.ok ||
+          !response.headers.get('content-type')?.includes('application/json')
+        ) {
+          throw new Error('دریافت استان‌ها ناموفق بود');
+        }
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'دریافت استان‌ها ناموفق بود');
+        if (!Array.isArray(data)) {
+          throw new Error('پاسخ فهرست استان‌ها معتبر نیست');
+        }
         setProvinces(data);
       })
       .catch((provinceError: unknown) => {
@@ -82,10 +90,18 @@ export default function ShopCartPage() {
     if (!values.province) {
       return;
     }
-    void fetch(`/api/admin/content/cities?province=${encodeURIComponent(values.province)}`)
+    void fetch(`/api/shipping/cities?province=${encodeURIComponent(values.province)}`)
       .then(async (response) => {
+        if (
+          !response.ok ||
+          !response.headers.get('content-type')?.includes('application/json')
+        ) {
+          throw new Error('دریافت شهرها ناموفق بود');
+        }
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'دریافت شهرها ناموفق بود');
+        if (!Array.isArray(data)) {
+          throw new Error('پاسخ فهرست شهرها معتبر نیست');
+        }
         setCities(data);
         // Reset city if it's not in the new list
         if (values.city && !data.some((c: City) => c.name === values.city)) {

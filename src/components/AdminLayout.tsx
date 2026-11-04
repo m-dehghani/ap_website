@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import ImageUploadField from '@/components/ImageUploadField';
+import ProfileAvatar from '@/components/ProfileAvatar';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -16,7 +18,7 @@ export default function AdminLayout({
   const router = useRouter();
   const isAdminRoute = router.pathname.startsWith('/admin');
   const isShopRoute = router.pathname.startsWith('/admin/shop');
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
 
   useEffect(() => {
     const canOpenRoute =
@@ -82,7 +84,28 @@ export default function AdminLayout({
         </aside>
         <div className="lg:mr-64">
           <header className="border-b border-gray-200 bg-white px-6 py-4">
-            <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+            <div className="flex items-center justify-between gap-4">
+              <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+              <details className="relative">
+                <summary className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700">
+                  <ProfileAvatar
+                    image={user?.image}
+                    initials={`${user?.firstName?.charAt(0) ?? ''}${user?.lastName?.charAt(0) ?? ''}`}
+                    size={32}
+                  />
+                  تصویر پروفایل
+                </summary>
+                <div className="absolute left-0 z-50 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
+                  <ImageUploadField
+                    label="انتخاب تصویر پروفایل"
+                    scope="profile"
+                    value={user?.image ?? ''}
+                    removable={false}
+                    onChange={() => void refreshUser()}
+                  />
+                </div>
+              </details>
+            </div>
           </header>
           <main className="p-5 lg:p-8">{children}</main>
         </div>
@@ -199,6 +222,25 @@ export default function AdminLayout({
                 ⚽
               </span>
               فروشگاه
+            </Link>
+
+            <Link
+              href="/admin/messages"
+              aria-current={
+                router.pathname.startsWith('/admin/messages')
+                  ? 'page'
+                  : undefined
+              }
+              className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                router.pathname.startsWith('/admin/messages')
+                  ? 'bg-cyan-50 text-cyan-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <span className="ml-3" aria-hidden="true">
+                ✉
+              </span>
+              صندوق پیام‌ها
             </Link>
 
             <Link
@@ -420,9 +462,25 @@ export default function AdminLayout({
               >
                 مشاهده سایت
               </Link>
-              <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-primary-700">مد</span>
-              </div>
+              <details className="relative">
+                <summary className="cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700">
+                  <span className="sr-only">تغییر تصویر پروفایل</span>
+                  <ProfileAvatar
+                    image={user?.image}
+                    initials={`${user?.firstName?.charAt(0) ?? ''}${user?.lastName?.charAt(0) ?? ''}`}
+                    size={32}
+                  />
+                </summary>
+                <div className="absolute left-0 z-50 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
+                  <ImageUploadField
+                    label="تصویر پروفایل"
+                    scope="profile"
+                    value={user?.image ?? ''}
+                    removable={false}
+                    onChange={() => void refreshUser()}
+                  />
+                </div>
+              </details>
             </div>
           </div>
         </header>

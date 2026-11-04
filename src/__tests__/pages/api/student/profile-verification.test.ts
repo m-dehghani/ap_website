@@ -109,4 +109,37 @@ describe('/api/student/profile/verification', () => {
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(400);
   });
+
+  it('rejects password changes shorter than 12 characters', async () => {
+    const res = response();
+
+    await handler(
+      request({
+        action: 'request-password',
+        channel: 'email',
+        password: '12345678901',
+      }),
+      res as never,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(getPrisma).not.toHaveBeenCalled();
+  });
+
+  it('accepts a 12-character password for a verified password change', async () => {
+    const res = response();
+
+    await handler(
+      request({
+        action: 'request-password',
+        channel: 'email',
+        password: 'securepass12',
+      }),
+      res as never,
+    );
+
+    expect(mockPrisma.verificationChallenge.create).toHaveBeenCalled();
+    expect(sendEmail).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
 });

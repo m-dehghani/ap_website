@@ -1,5 +1,6 @@
 import React from 'react';
 import { GetServerSideProps } from 'next';
+import Link from 'next/link';
 import { NextSeo } from 'next-seo';
 import Layout from '@/components/Layout';
 import Hero from '@/components/Hero';
@@ -17,18 +18,15 @@ import {
   getHeroAchievements,
   getFeaturesContent,
   getFeatureStats,
-  getStatistics,
   getTestimonials,
-  getSuccessStories,
   getMilestones,
   getNewsCategories,
   getNewsArticles,
   getCTAContent,
 } from '@/services/content';
-import { HeroContentViewModel, HeroAchievementViewModel, FeaturesContentViewModel, FeatureStatItemViewModel, StatisticViewModel, CTAContentViewModel } from '@/types/viewModels/content';
+import { HeroContentViewModel, HeroAchievementViewModel, FeaturesContentViewModel, FeatureStatItemViewModel, CTAContentViewModel } from '@/types/viewModels/content';
 import { withSite, SiteProps } from '@/lib/page-props';
 import { normalizeClubColorClasses } from '@/lib/brand-colors';
-import { SuccessAchievementViewModel, SuccessTestimonialViewModel, AnimatedStatisticViewModel, SuccessMilestoneViewModel } from '@/types/viewModels/content';
 
 interface HomePageProps extends SiteProps {
   coaches: CoachViewModel[];
@@ -36,9 +34,7 @@ interface HomePageProps extends SiteProps {
   heroAchievements: HeroAchievementViewModel[];
   featuresContent: FeaturesContentViewModel[];
   featureStats: FeatureStatItemViewModel[];
-  statistics: Record<string, StatisticViewModel>;
   testimonials: Awaited<ReturnType<typeof getTestimonials>>;
-  successStories: Awaited<ReturnType<typeof getSuccessStories>>;
   milestones: Awaited<ReturnType<typeof getMilestones>>;
   recentNews: Awaited<ReturnType<typeof getNewsArticles>>;
   newsCategories: Awaited<ReturnType<typeof getNewsCategories>>;
@@ -51,9 +47,7 @@ const HomePage: React.FC<HomePageProps> = ({
   heroAchievements,
   featuresContent,
   featureStats,
-  statistics,
   testimonials,
-  successStories,
   milestones,
   recentNews,
   newsCategories,
@@ -115,47 +109,6 @@ const HomePage: React.FC<HomePageProps> = ({
     secondaryCTA: { label: 'رزرو بازدید', href: '/contact' },
   };
 
-  // Convert success stories to the expected format
-  const stories: SuccessAchievementViewModel[] = successStories.map(s => ({
-    id: s.id,
-    playerName: s.playerName,
-    age: s.age,
-    date: s.date,
-    program: s.programName ?? '',
-    achievement: s.achievement,
-    description: s.description,
-    quote: s.quote ?? '',
-    stats: s.stats,
-    coach: s.coachName ?? '',
-  }));
-
-  // Convert testimonials to the expected format
-  const successTestimonials: SuccessTestimonialViewModel[] = testimonials.map(t => ({
-    id: t.id,
-    name: t.name,
-    role: t.role,
-    program: t.programName ?? '',
-    rating: t.rating,
-    text: t.content,
-    date: t.date ?? '',
-    improvement: t.improvement ?? '',
-  }));
-
-  // Convert statistics to animated stats
-  const stats: AnimatedStatisticViewModel[] = Object.values(statistics).map(s => ({
-    number: s.value,
-    label: s.label,
-    description: s.description ?? '',
-    icon: 'TrophyIcon',
-    color: 'text-primary-600',
-  }));
-
-  const successMilestones: SuccessMilestoneViewModel[] = milestones.map((milestone) => ({
-    year: String(milestone.year),
-    event: milestone.title,
-    description: milestone.description,
-  }));
-
   return (
     <Layout site={site}>
       <NextSeo
@@ -193,20 +146,84 @@ const HomePage: React.FC<HomePageProps> = ({
         ]}
       />
 
-      <div>
+      <div className="home-page">
         <Hero
           slides={slides}
           achievements={achievements}
           statLabels={statLabels}
           recentNews={recentNews.slice(0, 3)}
         />
-        <ShopSpotlight />
-        <NewsUpdates categories={newsCategories} articles={recentNews} />
-        <Features features={features} stats={featureStatsData} />
-        <CoachSpotlight coaches={coaches} />
-        <SuccessStories stories={stories} testimonials={successTestimonials} statistics={stats} milestones={successMilestones} />
-        <Testimonials testimonials={testimonials} stats={stats} />
-        <CTA content={ctaData} />
+        <nav
+          aria-label="دسترسی سریع به بخش‌های آکادمی"
+          className="border-t border-slate-200 bg-slate-50 py-8 md:hidden"
+        >
+          <div className="container-custom">
+            <h2 className="mb-4 text-xl font-bold text-slate-900">
+              دسترسی سریع
+            </h2>
+            <ul className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white px-4">
+              {[
+                {
+                  label: 'برنامه‌ها',
+                  summary: 'جزئیات دوره‌ها و برنامه‌های آموزشی',
+                  href: '/programs',
+                },
+                {
+                  label: 'مربیان',
+                  summary: 'معرفی مربیان آکادمی',
+                  href: '/coaches',
+                },
+                {
+                  label: 'اخبار',
+                  summary: 'تازه‌های آکادمی',
+                  href: '/news',
+                },
+                {
+                  label: 'درباره آکادمی',
+                  summary: 'اطلاعات بیشتر درباره آکادمی',
+                  href: '/about',
+                },
+                {
+                  label: 'ثبت‌نام',
+                  summary: 'فرم درخواست عضویت',
+                  href: '/register',
+                  primary: true,
+                },
+              ].map(({ label, summary, href, primary }) => (
+                <li key={href} className="py-2">
+                  <Link
+                    href={href}
+                    className={
+                      primary
+                        ? 'btn btn-primary min-h-11 w-full flex-col gap-0'
+                        : 'flex min-h-11 flex-col items-start justify-center font-semibold text-slate-700 hover:text-primary-700 focus-visible:underline'
+                    }
+                  >
+                    <span>{label}</span>
+                    <span
+                      className={
+                        primary
+                          ? 'text-xs font-normal text-white/85'
+                          : 'text-xs font-normal text-slate-500'
+                      }
+                    >
+                      {summary}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
+        <div className="hidden md:block">
+          <ShopSpotlight />
+          <NewsUpdates categories={newsCategories} articles={recentNews} />
+          <Features features={features} stats={featureStatsData} />
+          <CoachSpotlight coaches={coaches} />
+          <SuccessStories honors={milestones} />
+          <Testimonials testimonials={testimonials} />
+          <CTA content={ctaData} />
+        </div>
       </div>
     </Layout>
   );
@@ -219,9 +236,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async () =>
     heroAchievements,
     featuresContent,
     featureStats,
-    statistics,
     testimonials,
-    successStories,
     milestones,
     recentNews,
     newsCategories,
@@ -232,9 +247,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async () =>
     getHeroAchievements(),
     getFeaturesContent(),
     getFeatureStats(),
-    getStatistics(),
     getTestimonials('GENERAL'),
-    getSuccessStories(),
     getMilestones(),
     getNewsArticles(6),
     getNewsCategories(),
@@ -248,9 +261,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> = async () =>
       heroAchievements,
       featuresContent,
       featureStats,
-      statistics,
       testimonials,
-      successStories,
       milestones,
       recentNews,
       newsCategories,

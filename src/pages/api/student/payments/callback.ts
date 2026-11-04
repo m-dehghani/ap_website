@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
+import { CHECKOUT_TTL_MS } from '@/lib/payments';
 import { getZarinpalConfig, verifyPayment } from '@/lib/zarinpal';
 
 function redirectToDashboard(res: NextApiResponse, result: string) {
@@ -55,15 +56,17 @@ export default async function handler(
       console.error('Zarinpal callback received without payment configuration');
       return redirectToDashboard(res, 'verification-error');
     }
-    const pendingPayments = payments.filter(({ status }) => status === 'PENDING');
-    const amountInRial = pendingPayments.reduce(
+    const verifiablePayments = payments.filter(({ status }) =>
+      ['PENDING', 'FAILED'].includes(status),
+    );
+    const amountInRial = verifiablePayments.reduce(
       (total, payment) => total + payment.amount,
       0,
     );
     if (
-      pendingPayments.length === 0 ||
+      verifiablePayments.length === 0 ||
       !Number.isSafeInteger(amountInRial) ||
-      pendingPayments.some(({ amount }) => amount % 10 !== 0)
+      verifiablePayments.some(({ amount }) => amount % 10 !== 0)
     ) {
       return redirectToDashboard(res, 'verification-error');
     }
@@ -100,6 +103,8 @@ export default async function handler(
           id: true,
           amount: true,
           status: true,
+          createdAt: true,
+          expiresAt: true,
           registrationId: true,
           registration: {
             select: {
@@ -113,6 +118,7 @@ export default async function handler(
       let refundRequired = currentPayments.some(
         ({ status }) => status === 'REFUND_REQUIRED',
       );
+      const now = new Date();
 
       for (const payment of currentPayments) {
         if (payment.status !== 'PENDING' && payment.status !== 'FAILED') {
@@ -120,7 +126,11 @@ export default async function handler(
         }
         const amountInToman = payment.amount / 10;
         const registration = payment.registration;
+        const expiresAt =
+          payment.expiresAt ??
+          new Date(payment.createdAt.getTime() + CHECKOUT_TTL_MS);
         if (
+          expiresAt <= now ||
           registration.status === 'CANCELLED' ||
           amountInToman > registration.totalAmount - registration.paidAmount
         ) {

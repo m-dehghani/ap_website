@@ -25,6 +25,7 @@ import { ProgramViewModel } from '@/types/viewModels/program';
 import { Schedule } from '@/types/domain/program';
 import { formatToman, toPersianDigits } from '@/lib/format';
 import { normalizeClubColorClasses } from '@/lib/brand-colors';
+import ProfileAvatar from '@/components/ProfileAvatar';
 
 type ViewMode = 'detail' | 'compare';
 
@@ -111,14 +112,16 @@ function StatCard({
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className={`p-6 rounded-2xl border ${colorClasses[color]} text-center`}
+      className={`min-w-0 p-6 rounded-2xl border ${colorClasses[color]} text-center`}
     >
       <motion.div
         className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4"
       >
         {icon}
       </motion.div>
-      <div className="text-3xl font-bold text-gray-900 mb-1 persian-numbers">{value}</div>
+      <div className="program-stat-value min-w-0 text-2xl font-bold text-gray-900 mb-1 persian-numbers sm:text-3xl">
+        {value}
+      </div>
       <div className="text-sm text-gray-600">{label}</div>
     </motion.div>
   );
@@ -170,10 +173,12 @@ function CoachCard({ coach, program }: { coach: ProgramViewModel['coach']; progr
         مربی شما
       </h3>
       <div className="flex items-center space-x-6">
-        <motion.div
-          className="w-20 h-20 bg-linear-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold"
-        >
-          {coach.fullName.charAt(0)}
+        <motion.div className="h-20 w-20 shrink-0 rounded-2xl">
+          <ProfileAvatar
+            image={coach.image}
+            initials={coach.fullName.trim().charAt(0)}
+            size={80}
+          />
         </motion.div>
         <div>
           <h4 className="text-xl font-semibold text-gray-900 mb-2">{coach.fullName}</h4>
@@ -533,16 +538,16 @@ export default function Programs({ programs }: { programs: ProgramViewModel[] })
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="absolute top-6 right-6 bg-accent-500 text-white px-3 py-1 rounded-full text-sm font-medium"
+                      className="mb-5 inline-flex rounded-full bg-accent-500 px-3 py-1 text-sm font-medium text-white"
                     >
                       محبوب‌ترین
                     </motion.div>
                   )}
 
                   <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className="text-3xl font-bold mb-2">{currentProgram.name}</h3>
+                    <div className="mb-6 flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <h3 className="mb-2 break-words text-3xl font-bold">{currentProgram.name}</h3>
                         <p className="text-lg opacity-90">{currentProgram.ageRange}</p>
                       </div>
                       <motion.div

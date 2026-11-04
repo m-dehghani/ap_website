@@ -15,11 +15,16 @@ const mockPrisma = {
   coach: { findFirst: vi.fn() },
 };
 
-const createRequest = (body: Record<string, unknown>) =>
+let requestId = 0;
+const createRequest = (
+  body: Record<string, unknown>,
+  remoteAddress = `192.0.2.${++requestId}`,
+) =>
   ({
     method: 'POST',
     body,
     cookies: {},
+    socket: { remoteAddress },
   }) as never;
 
 const createResponse = () => {
@@ -78,6 +83,7 @@ describe('/api/auth/login', () => {
         firstName: 'Student',
         lastName: 'User',
         role: 'STUDENT',
+        themePreference: 'system',
       },
     });
   });
@@ -116,6 +122,58 @@ describe('/api/auth/login', () => {
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(mockPrisma.user.findFirst).not.toHaveBeenCalled();
+  });
+
+  it('returns an explicit 429 after five login requests from one address', async () => {
+    const responses = Array.from({ length: 6 }, () => createResponse());
+
+    for (const res of responses) {
+      await handler(
+        createRequest(
+          { identifier: 'student@example.com', password: 'bad-password' },
+          '192.0.2.200',
+        ),
+        res as never,
+      );
+    }
+
+    expect(responses.slice(0, 5).map((res) => res.status.mock.calls.at(-1)?.[0]))
+      .toEqual([401, 401, 401, 401, 401]);
+    expect(responses[5].status).toHaveBeenCalledWith(429);
+    expect(responses[5].setHeader).toHaveBeenCalledWith(
+      'Retry-After',
+      expect.any(String),
+    );
+    expect(
+      Number(responses[5].setHeader.mock.calls[0][1]),
+    ).toBeGreaterThan(0);
+    expect(responses[5].json).toHaveBeenCalledWith({
+      message: 'تعداد درخواست‌ها بیش از حد مجاز است؛ کمی بعد دوباره تلاش کنید',
+    });
+  });
+
+  it('allows a normal login request below the rate limit', async () => {
+    mockPrisma.user.findFirst.mockResolvedValue({
+      id: 'student-1',
+      email: 'student@example.com',
+      phone: null,
+      password: passwordHash,
+      firstName: 'Student',
+      lastName: 'User',
+      role: 'STUDENT',
+    });
+    const res = createResponse();
+
+    await handler(
+      createRequest({
+        identifier: 'student@example.com',
+        password: 'secret123',
+      }),
+      res as never,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).not.toHaveBeenCalledWith(429);
   });
 
   it('normalizes Persian phone digits for matching', () => {

@@ -10,6 +10,7 @@ import {
   CheckCircleIcon,
   CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
+import ProfileAvatar from '@/components/ProfileAvatar';
 import { CoachViewModel } from '@/types/viewModels/coach';
 
 interface CoachSpotlightProps {
@@ -131,9 +132,13 @@ export default function CoachSpotlight({ coaches = [] }: CoachSpotlightProps) {
                         damping: 15,
                         delay: 0.2,
                       }}
-                      className="w-48 h-48 bg-linear-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white text-6xl font-bold mx-auto mb-6 shadow-elegant-xl"
+                      className="coach-portrait mx-auto mb-6 h-48 w-48 rounded-full shadow-elegant-xl"
                     >
-                      {coach.firstName.split(' ')[0].charAt(0)}
+                      <ProfileAvatar
+                        image={coach.image}
+                        initials={coach.firstName.trim().charAt(0)}
+                        size={192}
+                      />
                     </motion.div>
                     <motion.h3
                       initial={{ opacity: 0, y: 10 }}
@@ -420,7 +425,7 @@ export default function CoachSpotlight({ coaches = [] }: CoachSpotlightProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 onClick={() => setCurrentCoach(index)}
-                className={`w-full bg-white rounded-2xl p-6 shadow-lg cursor-pointer text-center transition-all hover:shadow-xl ${
+                className={`coach-card w-full bg-white rounded-2xl p-6 shadow-lg cursor-pointer text-center transition-all hover:shadow-xl ${
                   index === currentCoach ? 'ring-2 ring-primary-600' : ''
                 }`}
                 whileHover={{ y: -8, scale: 1.02 }}
@@ -429,13 +434,13 @@ export default function CoachSpotlight({ coaches = [] }: CoachSpotlightProps) {
                 aria-label={`انتخاب مربی ${coachItem.firstName} ${coachItem.lastName}`}
               >
                 <div className="text-center">
-                  <motion.div
-                    className="w-20 h-20 bg-linear-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4"
-                    whileHover={{ rotate: 180, scale: 1.1 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {coachItem.firstName.split(' ')[0].charAt(0)}
-                  </motion.div>
+                  <div className="coach-portrait mx-auto mb-4 h-20 w-20 rounded-full">
+                    <ProfileAvatar
+                      image={coachItem.image}
+                      initials={coachItem.firstName.trim().charAt(0)}
+                      size={80}
+                    />
+                  </div>
                   <h4 className="text-lg font-bold text-gray-900 mb-2">
                     {coachItem.firstName} {coachItem.lastName}
                   </h4>

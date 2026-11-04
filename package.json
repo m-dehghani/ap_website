@@ -17,7 +17,6 @@
     "dotenv": "^17.4.2",
     "framer-motion": "^12.42.2",
     "jose": "^6.2.12",
-    "micro": "^10.0.1",
     "next": "^16.4.2",
     "next-seo": "^6.8.0",
     "pg": "^8.22.0",
@@ -28,7 +27,6 @@
     "react-hook-form": "^7.81.0",
     "react-hot-toast": "^2.6.0",
     "react-multi-date-picker": "^4.5.2",
-    "stripe": "^22.3.1",
     "tailwindcss": "^4.3.2",
     "zod": "^4.4.3"
   },
@@ -39,6 +37,7 @@
     "prebuild": "prisma generate",
     "build": "next build --webpack",
     "start": "next start",
+    "migrate:uploads": "tsx scripts/migrate-image-assets-to-disk.ts",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit -p tsconfig.json",
     "test": "vitest run",

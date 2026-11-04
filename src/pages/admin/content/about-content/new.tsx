@@ -65,6 +65,7 @@ export default function AboutContentNewPage() {
   };
 
   const sectionOptions = [
+    { value: 'history', label: 'تاریخچه آکادمی' },
     { value: 'story', label: 'داستان ما' },
     { value: 'mission', label: 'ماموریت' },
     { value: 'vision', label: 'چشم‌انداز' },
@@ -130,6 +131,10 @@ export default function AboutContentNewPage() {
                 required
                 rows={8}
                 placeholder={JSON.stringify({
+                  paragraphs:
+                    formData.section === 'history'
+                      ? ['متن مورد تأیید درباره تاریخچه آکادمی']
+                      : undefined,
                   story: 'story' === 'story' ? [
                     'پاراگراف اول داستان ما...',
                     'پاراگراف دوم داستان ما...',

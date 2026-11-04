@@ -496,8 +496,12 @@ export default function EnhancedNewsUpdates() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4 space-x-reverse text-sm text-gray-500">
-                        <span>👍 {item.likes}</span>
-                        <span>💬 {item.comments}</span>
+                        {typeof item.likes === 'number' && (
+                          <span>👍 {item.likes}</span>
+                        )}
+                        {typeof item.comments === 'number' && (
+                          <span>💬 {item.comments}</span>
+                        )}
                         <span>⏱️ {item.readTime}</span>
                         {item.sentiment && (
                           <span>{getSentimentIcon(item.sentiment)}</span>
@@ -582,8 +586,12 @@ export default function EnhancedNewsUpdates() {
 
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div className="flex items-center space-x-3 space-x-reverse text-sm text-gray-500">
-                    <span>👍 {item.likes}</span>
-                    <span>💬 {item.comments}</span>
+                    {typeof item.likes === 'number' && (
+                      <span>👍 {item.likes}</span>
+                    )}
+                    {typeof item.comments === 'number' && (
+                      <span>💬 {item.comments}</span>
+                    )}
                   </div>
                   <NewsAction article={item} compact />
                 </div>

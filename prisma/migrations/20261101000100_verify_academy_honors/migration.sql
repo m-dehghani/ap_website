@@ -1,0 +1,2 @@
+ALTER TABLE "milestones"
+ADD COLUMN "isVerified" BOOLEAN NOT NULL DEFAULT false;

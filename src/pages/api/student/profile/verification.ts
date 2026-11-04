@@ -7,6 +7,7 @@ import {
 import bcrypt from 'bcryptjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
+import { FORM_VALIDATION } from '@/constants/app';
 import { authorizeStudent, normalizePhone } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
 import { sendEmail, sendSms } from '@/lib/notifications';
@@ -24,7 +25,11 @@ const requestSchema = z.object({
     .string()
     .regex(/^\d{6}$/)
     .optional(),
-  password: z.string().min(8).max(128).optional(),
+  password: z
+    .string()
+    .min(FORM_VALIDATION.password.minLength, FORM_VALIDATION.password.message)
+    .max(128)
+    .optional(),
 });
 
 const purposeFor = (action: string, channel: 'email' | 'phone') =>

@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import toast from 'react-hot-toast';
 import AdminLayout from '@/components/AdminLayout';
 import { formatPersianDate, formatToman } from '@/lib/format';
+import ImageUploadField from '@/components/ImageUploadField';
 
 interface ShopVariantForm {
   sku: string;
@@ -108,6 +109,7 @@ const orderStatusLabels: Record<string, string> = {
   CANCELLED: 'لغوشده',
   PAYMENT_FAILED: 'پرداخت ناموفق',
   REFUND_REQUIRED: 'نیازمند پیگیری بازپرداخت',
+  REFUNDED: 'بازپرداخت‌شده',
 };
 
 function toDateInput(value: string | null | undefined) {
@@ -385,7 +387,19 @@ export default function ShopAdminPage() {
               <label className="block"><span className="mb-1 block font-semibold">دسته‌بندی</span><input required value={form.category} onChange={(event) => changeText('category', event.target.value)} className="w-full rounded-lg border px-3 py-2" placeholder="کفش، لباس، توپ..." /></label>
               <label className="block"><span className="mb-1 block font-semibold">معرفی کوتاه</span><input value={form.shortDescription} onChange={(event) => changeText('shortDescription', event.target.value)} className="w-full rounded-lg border px-3 py-2" /></label>
               <label className="block"><span className="mb-1 block font-semibold">توضیحات کامل</span><textarea required rows={4} value={form.description} onChange={(event) => changeText('description', event.target.value)} className="w-full rounded-lg border px-3 py-2" /></label>
-              <label className="block"><span className="mb-1 block font-semibold">پیوند تصاویر (هر پیوند در یک خط)</span><textarea rows={3} value={form.images} onChange={(event) => changeText('images', event.target.value)} className="w-full rounded-lg border px-3 py-2" /></label>
+              <ImageUploadField
+                label="تصاویر محصول (حداکثر ۱۲ تصویر)"
+                scope="shop-product"
+                value={form.images.split(/\r?\n/).filter(Boolean)}
+                multiple
+                maxFiles={12}
+                onChange={(images) =>
+                  changeText(
+                    'images',
+                    (Array.isArray(images) ? images : [images]).join('\n'),
+                  )
+                }
+              />
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block"><span className="mb-1 block font-semibold">قیمت (تومان)</span><input required type="number" min={1} value={form.price} onChange={(event) => changeText('price', event.target.value)} className="w-full rounded-lg border px-3 py-2" /></label>
                 <label className="block"><span className="mb-1 block font-semibold">قیمت تخفیفی (اختیاری)</span><input type="number" min={1} value={form.salePrice} onChange={(event) => changeText('salePrice', event.target.value)} className="w-full rounded-lg border px-3 py-2" /></label>

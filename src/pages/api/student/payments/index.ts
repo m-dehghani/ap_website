@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { randomUUID } from 'node:crypto';
 import { authorizeStudent } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
+import { CHECKOUT_TTL_MS } from '@/lib/payments';
 import { getZarinpalConfig, requestPayment } from '@/lib/zarinpal';
 
 export default async function handler(
@@ -25,13 +26,33 @@ export default async function handler(
 
     const db = await getPrisma();
     const checkoutReference = `pending:${randomUUID()}`;
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + CHECKOUT_TTL_MS);
+    const expiredBefore = new Date(now.getTime() - CHECKOUT_TTL_MS);
     const result = await db.$transaction(
       async (tx) => {
+        await tx.payment.updateMany({
+          where: {
+            userId,
+            method: 'ZARINPAL',
+            status: 'PENDING',
+            OR: [
+              { expiresAt: { lte: now } },
+              { expiresAt: null, createdAt: { lte: expiredBefore } },
+            ],
+          },
+          data: { status: 'FAILED' },
+        });
+
         const pendingPayment = await tx.payment.findFirst({
           where: {
             userId,
             method: 'ZARINPAL',
             status: 'PENDING',
+            OR: [
+              { expiresAt: { gt: now } },
+              { expiresAt: null, createdAt: { gt: expiredBefore } },
+            ],
           },
           select: { id: true },
         });
@@ -80,6 +101,7 @@ export default async function handler(
                 method: 'ZARINPAL',
                 status: 'PENDING',
                 providerReference: checkoutReference,
+                expiresAt,
               },
             }),
           ),

@@ -281,7 +281,9 @@ export default function StaffNotificationsPage() {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  if (!req.cookies.auth_token) {
+  const { getSession } = await import('@/lib/auth');
+  const session = await getSession(req);
+  if (!session || !['ADMIN', 'COACH'].includes(session.role)) {
     return { redirect: { destination: '/login', permanent: false } };
   }
   return { props: {} };

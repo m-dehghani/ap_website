@@ -1,0 +1,42 @@
+# Product
+
+<!-- impeccable:product-schema 1 -->
+
+## Platform
+
+web
+
+## Users
+
+*Inferred from the documented features; not confirmed by a product owner:* prospective students and their families use the public site to explore the academy and register; enrolled students use the student dashboard; academy staff manage content and student operations.
+
+## Product Purpose
+
+*Documented in `docs/application.md`:* the website represents AP Football Academy in Shiraz, Iran. It supports academy discovery, program browsing and online registration, student self-service, and access to football news. The intended measure of success has not been confirmed.
+
+## Positioning
+
+No distinctive positioning or competitive claim has been confirmed. Do not invent one.
+
+## Operating Context
+
+*Documented or inferred from the current application:* the service is web-based and Persian-only. Public routes use ordinary paths without locale prefixes (for example, `/about`, not `/en/about`). Public visitors browse academy information; registered students use account features for schedules, attendance, evaluations, and payment history. Staff have content-management and refund-queue capabilities.
+
+## Capabilities and Constraints
+
+The documented product includes public academy and program information, online registration, coach content, CMS-managed academy history, verified academy honors, published testimonials, news, a student dashboard, and an academy shop. Individual player stories remain in the CMS and are not presented as academy-wide honors. Tuition and shop checkout use Zarinpal. Shop amounts and registration balances are stored in toman; tuition `Payment.amount` remains in rial. Students, admins, and shop managers use the `users` table; coaches use the separate `coaches` table. Refunds are queued as `REFUND_REQUIRED` for staff to handle outside the application; the app does not call Zarinpal refund APIs. The application stores attendance and coach evaluations for student self-service. The existing application is a Next.js Pages Router web app backed by PostgreSQL and Prisma.
+
+The truth and approval status of individual claims, stories, credentials, prices, and product availability have not been confirmed. Preserve the existing functionality and Persian-only experience; do not fabricate or imply unverified details.
+
+## Evidence on Hand
+
+The repository contains implementation and content surfaces for programs, coaches, individual success stories, academy milestones, testimonials, news, and shop products. Only academy milestone entries explicitly reviewed and verified by an admin are shown on `/success`; testimonials use the separate `/testimonials` route. Whether individual entries are approved, current, or suitable as promotional proof has not been confirmed. No new academy history, honors, testimonials, student outcomes, coach credentials, pricing, or availability claims should be invented.
+
+## Product Principles
+
+*Inferred from documented capabilities; not confirmed by a product owner:*
+
+- Keep discovery and registration tied to accurate, current academy program information.
+- Make student self-service workflows for schedules, attendance, evaluations, and payments clear.
+- Keep core information and user-facing API responses in Persian.
+- Treat promotional proof and commercial details as factual content that requires verification.

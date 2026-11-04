@@ -86,6 +86,7 @@ export async function getSuccessStories(): Promise<SuccessStoryViewModel[]> {
 export async function getMilestones(): Promise<MilestoneViewModel[]> {
   const prisma = await getPrisma();
   const rows = await prisma.milestone.findMany({
+    where: { isVerified: true },
     select: { id: true, year: true, title: true, description: true },
     orderBy: { displayOrder: 'asc' },
   });

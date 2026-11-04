@@ -10,6 +10,7 @@ import { ProgramViewModel } from '@/types/viewModels/program';
 import { calculateAge, parsePersianBirthDate } from '@/lib/age';
 import { toPersianDigits } from '@/lib/format';
 import PersianDatePicker from '@/components/PersianDatePicker';
+import { FORM_VALIDATION } from '@/constants/app';
 
 const registrationSchema = z
   .object({
@@ -26,7 +27,9 @@ const registrationSchema = z
         z.literal(''),
       ])
       .optional(),
-    password: z.string().min(6, 'رمز عبور باید حداقل ۶ کاراکتر باشد'),
+    password: z
+      .string()
+      .min(FORM_VALIDATION.password.minLength, FORM_VALIDATION.password.message),
     dateOfBirth: z
       .string()
       .min(1, 'تاریخ تولد الزامی است')
@@ -306,7 +309,7 @@ const RegisterPage: React.FC = () => {
                       {...register('password')}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                      placeholder="حداقل ۶ کاراکتر"
+                      placeholder="حداقل ۱۲ کاراکتر"
                     />
                     {errors.password && (
                       <p className="mt-1 text-sm text-red-600">

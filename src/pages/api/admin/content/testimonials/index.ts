@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
 import { authorizeAdmin } from '@/lib/auth';
+import { testimonialCreateSchema } from '@/lib/validation/cmsContent';
+import { isValidImageReference } from '@/lib/uploads';
 
 export default async function handler(
   req: NextApiRequest,
@@ -25,6 +27,16 @@ export default async function handler(
       return res.status(200).json(testimonials);
     }
     case 'POST': {
+      const parsed = testimonialCreateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          error: 'داده‌های ورودی نامعتبر است',
+          issues: parsed.error.issues,
+        });
+      }
+      if (!(await isValidImageReference(prisma, parsed.data.image))) {
+        return res.status(400).json({ error: 'تصویر باید از بخش بارگذاری انتخاب شود' });
+      }
       const {
         name,
         role,
@@ -37,10 +49,7 @@ export default async function handler(
         isPublished,
         programId,
         displayOrder,
-      } = req.body;
-      if (!name || !role || !content) {
-        return res.status(400).json({ error: 'فیلدهای الزامی: name, role, content' });
-      }
+      } = parsed.data;
       const testimonial = await prisma.testimonial.create({
         data: {
           name,

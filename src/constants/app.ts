@@ -38,7 +38,8 @@ export const NAVIGATION = {
     { label: 'مربیان', href: '/coaches' },
     { label: 'درباره ما', href: '/about' },
     { label: 'اخبار', href: '/news' },
-    { label: 'داستان‌های موفقیت', href: '/success' },
+    { label: 'افتخارات آکادمی', href: '/success' },
+    { label: 'نظرات و تجربه‌ها', href: '/testimonials' },
     { label: 'تماس', href: '/contact' },
   ],
   footer: {
@@ -47,7 +48,8 @@ export const NAVIGATION = {
       { label: 'فروشگاه', href: '/shop' },
       { label: 'برنامه‌های آموزشی', href: '/programs' },
       { label: 'مربیان ما', href: '/coaches' },
-      { label: 'داستان‌های موفقیت', href: '/success' },
+      { label: 'افتخارات آکادمی', href: '/success' },
+      { label: 'نظرات و تجربه‌ها', href: '/testimonials' },
       { label: 'اخبار و رویدادها', href: '/news' },
       { label: 'تماس با ما', href: '/contact' },
     ],
@@ -94,8 +96,8 @@ export const FORM_VALIDATION = {
     message: 'شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود',
   },
   password: {
-    minLength: 8,
-    message: 'رمز عبور باید حداقل ۸ کاراکتر باشد',
+    minLength: 12,
+    message: 'رمز عبور باید حداقل ۱۲ کاراکتر باشد',
   },
 } as const;
 

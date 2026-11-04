@@ -96,6 +96,7 @@ export interface StaffMemberViewModel {
   role: string;
   bio: string;
   initials: string;
+  image?: string | null;
 }
 
 export interface FacilityViewModel {
@@ -123,8 +124,8 @@ export interface NewsArticleViewModel {
   videoUrl: string | null;
   tags: string[];
   readTimeMinutes: number;
-  likes: number;
-  comments: number;
+  likes?: number;
+  comments?: number;
   featured: boolean;
   publishedAt: string;
 }

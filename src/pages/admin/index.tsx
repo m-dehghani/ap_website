@@ -54,6 +54,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin }) => {
                 </div>
               </div>
             </Link>
+            <Link href="/admin/refunds" className="block">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-l-4 border-red-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      صف بازپرداخت
+                    </h3>
+                    <p className="text-gray-600">
+                      پیگیری بازپرداخت شهریه و سفارش‌ها
+                    </p>
+                  </div>
+                  <div
+                    className="flex h-16 w-16 items-center justify-center rounded-xl bg-red-100"
+                    aria-hidden="true"
+                  >
+                    <svg
+                      className="h-8 w-8 text-red-700"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 10h11a4 4 0 010 8H8m0 0l3-3m-3 3l3 3M21 6h-8a4 4 0 000 8"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </Link>
             <Link href="/admin/programs" className="block">
               <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-l-4 border-primary-500">
                 <div className="flex items-center justify-between">
@@ -275,9 +307,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const token = context.req.cookies.auth_token;
-
-  if (!token) {
+  const { getSession } = await import('@/lib/auth');
+  const session = await getSession(context.req);
+  if (!session || session.role !== 'ADMIN' || session.source !== 'user') {
     return {
       redirect: {
         destination: '/login',
@@ -286,52 +318,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  try {
-    const [{ jwtVerify }, { getJwtSecret }] = await Promise.all([
-      import('jose'),
-      import('@/lib/auth'),
-    ]);
-    const { payload } = await jwtVerify(token, getJwtSecret());
+  const { getPrisma } = await import('@/lib/db');
+  const db = await getPrisma();
 
-    if (typeof payload.userId !== 'string') {
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
-        },
-      };
-    }
+  const admin = await db.user.findUnique({
+    where: { id: session.id },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+    },
+  });
 
-    const { getPrisma } = await import('@/lib/db');
-    const db = await getPrisma();
-
-    const admin = await db.user.findUnique({
-      where: { id: payload.userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-      },
-    });
-
-    if (!admin || admin.role !== 'ADMIN') {
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
-        },
-      };
-    }
-
-    return {
-      props: {
-        admin,
-      },
-    };
-  } catch (error) {
-    console.error('Auth error:', error);
+  if (!admin || admin.role !== 'ADMIN') {
     return {
       redirect: {
         destination: '/login',
@@ -339,6 +340,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
+
+  return {
+    props: {
+      admin,
+    },
+  };
 };
 
 export default AdminDashboard;

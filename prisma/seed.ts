@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { getPrisma } from '@/lib/db';
+import { clearStoredImageFiles } from '@/lib/uploads';
 
 const prisma = await getPrisma();
 
@@ -32,6 +33,7 @@ async function clearDatabase() {
   await prisma.facility.deleteMany({});
   await prisma.newsArticle.deleteMany({});
   await prisma.newsCategory.deleteMany({});
+  await clearStoredImageFiles();
 }
 
 async function seedAcademy() {
@@ -188,35 +190,6 @@ async function seedAcademy() {
         description: 'در تمام گروه‌های سنی',
       },
     ].map((stat, index) => ({ ...stat, displayOrder: index })),
-  });
-
-  await prisma.milestone.createMany({
-    data: [
-      {
-        year: 1399,
-        title: 'تأسیس آکادمی',
-        description: 'شروع فعالیت با 20 دانش‌آموز',
-        displayOrder: 1,
-      },
-      {
-        year: 1400,
-        title: 'اولین قهرمانی',
-        description: 'قهرمانی در لیگ جوانان منطقه',
-        displayOrder: 2,
-      },
-      {
-        year: 1401,
-        title: 'گسترش فعالیت',
-        description: 'افزایش ظرفیت به 200 دانش‌آموز',
-        displayOrder: 3,
-      },
-      {
-        year: 1402,
-        title: 'موفقیت‌های بزرگ',
-        description: 'انتقال اولین بازیکن به لیگ برتر',
-        displayOrder: 4,
-      },
-    ],
   });
 
   await prisma.staffMember.createMany({
