@@ -11,6 +11,20 @@ import {
   it,
   vi,
 } from 'vitest';
+
+const { mockPut, mockDel, mockList, mockFetch } = vi.hoisted(() => ({
+  mockPut: vi.fn(),
+  mockDel: vi.fn(),
+  mockList: vi.fn(),
+  mockFetch: vi.fn(),
+}));
+vi.mock('@vercel/blob', () => ({
+  put: mockPut,
+  del: mockDel,
+  list: mockList,
+}));
+vi.stubGlobal('fetch', mockFetch);
+
 import {
   areValidImageReferences,
   clearStoredImageFiles,
@@ -19,6 +33,7 @@ import {
   detectImageMimeType,
   isValidImageReference,
   readImageFile,
+  removeImageFile,
   saveUploadedImage,
 } from '@/lib/uploads';
 
@@ -31,8 +46,11 @@ describe('uploaded image storage', () => {
   let directory: string;
 
   beforeEach(async () => {
+    vi.resetAllMocks();
     directory = await mkdtemp(path.join(os.tmpdir(), 'ap-uploads-'));
     vi.stubEnv('UPLOADS_DIR', directory);
+    vi.stubEnv('BLOB_READ_WRITE_TOKEN', '');
+    vi.stubEnv('BLOB_STORE_ID', '');
   });
 
   afterEach(async () => {
@@ -129,4 +147,78 @@ describe('uploaded image storage', () => {
     ).resolves.toBe(false);
     await expect(areValidImageReferences(store, [validUrl])).resolves.toBe(true);
   });
-});
+
+  it('writes and reads images using configured Vercel Blob storage', async () => {
+      vi.stubEnv('BLOB_READ_WRITE_TOKEN', 'vercel_blob_rw_test');
+      vi.stubEnv('BLOB_STORE_ID', 'store_test');
+      mockPut.mockResolvedValueOnce({ url: 'https://store_test.public.blob.vercel-storage.com/uploads/test.png' });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: async () => png,
+      });
+
+      const url = await saveUploadedImage('image/png', png);
+      const [filename] = url.split('/').slice(-1);
+      const stored = await readImageFile(url);
+
+      expect(mockPut).toHaveBeenCalledWith(
+        filename,
+        png,
+        expect.objectContaining({
+          access: 'public',
+          token: 'vercel_blob_rw_test',
+          addRandomSuffix: false,
+        }),
+      );
+      expect(mockFetch).toHaveBeenCalledWith(
+        `https://store_test.public.blob.vercel-storage.com/${filename}`,
+      );
+      expect(stored).toEqual({ contentType: 'image/png', data: png });
+    });
+
+    it('returns missing Blob images as not found but surfaces other storage errors', async () => {
+      vi.stubEnv('BLOB_READ_WRITE_TOKEN', 'vercel_blob_rw_test');
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 404 });
+      await expect(
+        readImageFile('/api/uploads/550e8400-e29b-41d4-a716-446655440000.png'),
+      ).resolves.toBeNull();
+
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 500 });
+      await expect(
+        readImageFile('/api/uploads/550e8400-e29b-41d4-a716-446655440000.png'),
+      ).rejects.toThrow('BLOB_FETCH_FAILED: 500');
+    });
+
+    it('deletes only managed Blob images under the configured prefix', async () => {
+      vi.stubEnv('BLOB_READ_WRITE_TOKEN', 'vercel_blob_rw_test');
+      mockDel.mockResolvedValueOnce(undefined);
+      mockList.mockResolvedValueOnce({
+        blobs: [
+          { url: 'https://blob.vercel-storage.com/uploads/550e8400-e29b-41d4-a716-446655440000.png' },
+          { url: 'https://blob.vercel-storage.com/uploads/keep.txt' },
+          { url: 'https://blob.vercel-storage.com/other/660e8400-e29b-41d4-a716-446655440000.png' },
+        ],
+        cursor: undefined,
+      });
+      mockDel.mockResolvedValueOnce(undefined);
+
+      await removeImageFile(
+        '/api/uploads/550e8400-e29b-41d4-a716-446655440000.png',
+      );
+      await clearStoredImageFiles();
+
+      expect(mockDel).toHaveBeenNthCalledWith(
+        1,
+        'https://blob.vercel-storage.com/550e8400-e29b-41d4-a716-446655440000.png',
+        { token: 'vercel_blob_rw_test' },
+      );
+      expect(mockList).toHaveBeenCalledWith(
+        expect.objectContaining({ prefix: 'uploads/', token: 'vercel_blob_rw_test' }),
+      );
+      expect(mockDel).toHaveBeenNthCalledWith(
+        2,
+        ['https://blob.vercel-storage.com/uploads/550e8400-e29b-41d4-a716-446655440000.png'],
+        { token: 'vercel_blob_rw_test' },
+      );
+    });
+  });
