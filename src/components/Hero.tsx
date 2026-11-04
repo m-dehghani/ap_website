@@ -1,140 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
   TrophyIcon,
   ArrowLeftIcon,
-  PauseIcon,
-  PlayIcon,
 } from '@heroicons/react/24/outline';
 import { getIcon } from '@/lib/icons';
-import type { NewsArticleViewModel } from '@/types/viewModels/content';
-
-interface HeroSlide {
-  title: string;
-  subtitle: string;
-  description: string;
-  cta: { label: string; href: string };
-  ctaSecondary: { label: string; href: string };
-  bgGradient: string;
-  stats: Record<string, string>;
-  statLabels?: Record<string, string>;
-}
-
-interface HeroAchievement {
-  icon: string;
-  number: string;
-  label: string;
-  color: string;
-  bg: string;
-  position: string;
-}
-
-interface HeroProps {
-  slides: HeroSlide[];
-  achievements: HeroAchievement[];
-  statLabels: Record<string, string>;
-  recentNews: NewsArticleViewModel[];
-}
-
-const PARTICLE_COLORS = [
-  'rgba(239,68,68,0.6)',
-  'rgba(249,115,22,0.6)',
-  'rgba(255,255,255,0.45)',
-];
-
-function ParticleSystem({
-  particleCount = 30,
-  colors = PARTICLE_COLORS,
-  reducedMotion,
-}: {
-  particleCount?: number;
-  colors?: string[];
-  reducedMotion: boolean;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number | null>(null);
-  const particlesRef = useRef<
-    Array<{
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      radius: number;
-      color: string;
-      opacity: number;
-    }>
-  >([]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (
-      !canvas ||
-      reducedMotion ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    )
-      return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    particlesRef.current = Array.from({ length: particleCount }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
-      radius: Math.random() * 3 + 1,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      opacity: Math.random() * 0.5 + 0.1,
-    }));
-
-    const animate = () => {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particlesRef.current.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.opacity;
-        ctx.fill();
-      });
-      ctx.globalAlpha = 1;
-
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
-    return () => {
-      window.removeEventListener('resize', resize);
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    };
-  }, [particleCount, colors, reducedMotion]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 pointer-events-none"
-      aria-hidden="true"
-    />
-  );
-}
+import HeroNews from '@/components/hero/HeroNews';
+import HeroPagination from '@/components/hero/HeroPagination';
+import HeroParticleSystem from '@/components/hero/HeroParticleSystem';
+import HeroStats from '@/components/hero/HeroStats';
+import type { HeroProps } from '@/components/hero/types';
 
 export default function Hero({
   slides,
@@ -229,14 +105,12 @@ export default function Hero({
       <div
         className={`absolute inset-0 bg-linear-to-br ${
           currentSlideData?.bgGradient ?? 'from-primary-900 via-primary-800 to-navy-900'
-        } transition-all duration-1000`}
+        }`}
       >
-        <div className="absolute inset-0 bg-gradient-mesh opacity-40 animate-gradient-shift" />
-        <div className="absolute inset-0 bg-pattern-grid opacity-20" />
+        <div className="absolute inset-[-4%] bg-gradient-mesh opacity-40 animate-gradient-shift" />
         <div className="absolute inset-0 bg-black/25" />
-        <ParticleSystem
+        <HeroParticleSystem
           particleCount={40}
-          colors={PARTICLE_COLORS}
           reducedMotion={reducedMotion}
         />
       </div>
@@ -307,28 +181,11 @@ export default function Hero({
                 </Link>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="grid grid-cols-3 gap-4 pt-4 max-w-lg mx-auto lg:mx-0"
-              >
-                {Object.entries(currentSlideData.stats).map(([key, value]) => (
-                  <div
-                    key={key}
-                    className="rounded-2xl border border-white/15 bg-white/10 px-3 py-4 text-center backdrop-blur-sm"
-                  >
-                    <div className="text-2xl sm:text-3xl font-bold text-white persian-numbers mb-1">
-                      {statsAnimated ? value : '0'}
-                    </div>
-                    <div className="text-xs sm:text-sm text-white/75 font-medium">
-                      {currentSlideData.statLabels?.[key] ??
-                        statLabels[key] ??
-                        key}
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
+              <HeroStats
+                stats={currentSlideData.stats}
+                labels={{ ...statLabels, ...currentSlideData.statLabels }}
+                animated={statsAnimated}
+              />
             </div>
 
             <div className="hidden lg:block relative">
@@ -381,141 +238,26 @@ export default function Hero({
           </div>
           )}
 
-          {currentNews && (
-            <div className="mx-auto hidden max-w-6xl pb-8 md:block" aria-live="off">
-              <div className="mb-4 flex items-end justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-red-200">
-                    تازه از آکادمی
-                  </p>
-                  <h2 className="mt-1 text-xl font-bold text-white sm:text-2xl">
-                    آخرین خبرها و دستاوردها
-                  </h2>
-                </div>
-                <Link
-                  href="/news"
-                  className="shrink-0 text-sm font-semibold text-white underline-offset-4 hover:underline"
-                >
-                  همه خبرها
-                </Link>
-              </div>
-              <div className="mx-auto max-w-4xl">
-                <motion.div
-                    key={currentNews.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="group flex min-h-36 items-center gap-4 rounded-2xl border border-white/15 bg-white/95 p-4 text-right shadow-lg transition-transform hover:-translate-y-1 focus-visible:outline-white sm:gap-6 sm:p-6"
-                  >
-                  {currentNews.videoUrl ? (
-                    <video
-                      controls
-                      playsInline
-                      preload="none"
-                      poster={currentNews.image ?? undefined}
-                      aria-label={currentNews.title}
-                      className="h-28 w-28 shrink-0 rounded-xl bg-black object-cover sm:h-36 sm:w-48"
-                    >
-                      <source src={currentNews.videoUrl} />
-                      مرورگر شما از پخش ویدئو پشتیبانی نمی‌کند.
-                    </video>
-                  ) : currentNews.image &&
-                    !currentNews.image.startsWith('/api/placeholder/') ? (
-                    <Image
-                      src={currentNews.image}
-                      alt=""
-                      width={192}
-                      height={144}
-                      unoptimized
-                      loading="lazy"
-                      className="h-28 w-28 shrink-0 rounded-xl object-cover sm:h-36 sm:w-48"
-                    />
-                  ) : (
-                    <span
-                      aria-hidden="true"
-                      className="flex h-28 w-28 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-4xl sm:h-36 sm:w-48"
-                    >
-                      ⚽
-                    </span>
-                  )}
-                  <Link href="/news" className="min-w-0 focus-visible:underline">
-                    <span className="mb-1 block text-xs font-medium text-primary-700">
-                      {currentNews.type === 'VIDEO' ? 'ویدئو' : 'خبر'} ·{' '}
-                      {currentNews.publishedAt.slice(0, 10)}
-                    </span>
-                    <span className="line-clamp-2 block text-base font-bold leading-7 text-slate-900 group-hover:text-primary-700 sm:text-xl">
-                      {currentNews.title}
-                    </span>
-                    <span className="mt-2 line-clamp-2 block text-sm leading-6 text-slate-600 sm:text-base">
-                      {currentNews.excerpt}
-                    </span>
-                  </Link>
-                </motion.div>
-              </div>
-            </div>
-          )}
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-            className="flex justify-center items-center gap-3 pb-10"
-            role="group"
-            aria-label="اسلایدهای هیرو"
-          >
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                type="button"
-                aria-pressed={index === currentSlide}
-                aria-label={`برو به اسلاید ${index + 1}`}
-                onClick={() => setCurrentSlide(index)}
-                className={`transition-all duration-300 rounded-full ${
-                  index === currentSlide
-                    ? 'w-8 h-3 bg-white'
-                    : 'w-3 h-3 bg-white/40 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-navy-900'
-                }`}
-              />
-            ))}
-            {newsSlides.map((article, index) => (
-              <button
-                key={article.id}
-                type="button"
-                aria-pressed={index === currentNewsSlide}
-                aria-label={`نمایش خبر ${index + 1}: ${article.title}`}
-                onClick={() => setCurrentNewsSlide(index)}
-                className={`transition-all duration-300 rounded-full ${
-                  index === currentNewsSlide
-                    ? 'w-8 h-3 bg-white'
-                    : 'w-3 h-3 bg-white/40 hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-navy-900'
-                }`}
-              />
-            ))}
-            {canAutoplay && (
-              <button
-                type="button"
-                aria-label={
-                  isAutoplayRunning ? 'توقف نمایش خودکار' : 'شروع نمایش خودکار'
-                }
-                aria-pressed={isAutoplayRunning}
-                onClick={() => {
-                  if (reducedMotion && !motionOverride) {
-                    setMotionOverride(true);
-                    setAutoplayPaused(false);
-                  } else {
-                    setAutoplayPaused((paused) => !paused);
-                  }
-                }}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/40 text-white transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                {isAutoplayRunning ? (
-                  <PauseIcon className="h-5 w-5" aria-hidden="true" />
-                ) : (
-                  <PlayIcon className="h-5 w-5" aria-hidden="true" />
-                )}
-              </button>
-            )}
-          </motion.div>
+          {currentNews && <HeroNews article={currentNews} />}
+          <HeroPagination
+            slideCount={slides.length}
+            newsSlides={newsSlides}
+            currentSlide={currentSlide}
+            currentNewsSlide={currentNewsSlide}
+            onSlideChange={setCurrentSlide}
+            onNewsChange={setCurrentNewsSlide}
+            canAutoplay={canAutoplay}
+            isAutoplayRunning={isAutoplayRunning}
+            reducedMotion={reducedMotion}
+            motionOverride={motionOverride}
+            onMotionOverride={() => {
+              setMotionOverride(true);
+              setAutoplayPaused(false);
+            }}
+            onAutoplayPauseToggle={() =>
+              setAutoplayPaused((paused) => !paused)
+            }
+          />
         </div>
       </div>
     </section>

@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+import { DESIGN_TOKENS } from './src/lib/design-tokens';
+
+const config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -8,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Poppins', 'Vazirmatn', 'Inter', 'system-ui', 'sans-serif'],
-        body: ['Vazirmatn', 'Inter', 'system-ui', 'sans-serif'],
+        display: [DESIGN_TOKENS.fontFamily.display, 'system-ui', 'sans-serif'],
+        body: [DESIGN_TOKENS.fontFamily.body, 'system-ui', 'sans-serif'],
       },
       colors: {
         // Primary - Club red
@@ -19,9 +21,9 @@ export default {
           200: '#fecaca',
           300: '#fca5a5',
           400: '#f87171',
-          500: '#ef4444',
-          600: '#dc2626', // Main primary
-          700: '#b91c1c',
+          500: DESIGN_TOKENS.color.clubRed,
+          600: DESIGN_TOKENS.color.clubRed, // Main primary
+          700: DESIGN_TOKENS.color.clubRedDeep,
           800: '#991b1b',
           900: '#7f1d1d',
           950: '#450a0a',
@@ -33,8 +35,8 @@ export default {
           200: '#fed7aa',
           300: '#fdba74',
           400: '#fb923c',
-          500: '#f97316',
-          600: '#ea580c', // Main secondary
+          500: DESIGN_TOKENS.color.trainingOrange,
+          600: DESIGN_TOKENS.color.trainingOrange, // Main secondary
           700: '#c2410c',
           800: '#9a3412',
           900: '#7c2d12',
@@ -46,8 +48,8 @@ export default {
           200: '#bbf7d0',
           300: '#86efac',
           400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a', // Main accent
+          500: DESIGN_TOKENS.color.growthGreen,
+          600: DESIGN_TOKENS.color.growthGreen, // Main accent
           700: '#15803d',
           800: '#166534',
           900: '#14532d',
@@ -63,7 +65,7 @@ export default {
           600: '#704c56',
           700: '#573941',
           800: '#3b252b',
-          900: '#241519',
+          900: DESIGN_TOKENS.color.warmCharcoal,
           950: '#160f12',
         },
         // Gold - Premium highlights (excellence, achievement, premium)
@@ -74,7 +76,7 @@ export default {
           300: '#fde047',
           400: '#facc15',
           500: '#eab308',
-          600: '#ca8a04', // Main gold
+          600: DESIGN_TOKENS.color.achievementGold, // Main gold
           700: '#a16207',
           800: '#854d0e',
           900: '#713f12',
@@ -97,10 +99,10 @@ export default {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-        'gradient-primary': 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+        'gradient-primary': `linear-gradient(135deg, ${DESIGN_TOKENS.color.clubRed} 0%, ${DESIGN_TOKENS.color.clubRedDeep} 100%)`,
         'gradient-secondary':
-          'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
-        'gradient-accent': 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+          `linear-gradient(135deg, ${DESIGN_TOKENS.color.trainingOrange} 0%, #c2410c 100%)`,
+        'gradient-accent': `linear-gradient(135deg, ${DESIGN_TOKENS.color.growthGreen} 0%, #15803d 100%)`,
         'gradient-hero':
           'linear-gradient(135deg, #241519 0%, #3b252b 50%, #dc2626 100%)',
         'gradient-mesh':
@@ -205,3 +207,5 @@ export default {
   },
   plugins: [],
 };
+
+export default config;

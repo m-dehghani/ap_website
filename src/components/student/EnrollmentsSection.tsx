@@ -80,7 +80,7 @@ export default function EnrollmentsSection({
                       <h3 className="text-lg font-semibold text-gray-900">
                         {registration.program.name}
                       </h3>
-                      <p className="text-gray-600 mt-1">
+                      <p className="text-gray-600 mt-1 tabular-nums">
                         مربی:{' '}
                         {registration.program.coach
                           ? `${registration.program.coach.firstName} ${registration.program.coach.lastName}`
@@ -91,7 +91,7 @@ export default function EnrollmentsSection({
                         {registrationStatus[registration.status] ??
                           registration.status}
                       </p>
-                      <p className="text-gray-600 mt-1">
+                      <p className="text-gray-600 mt-1 tabular-nums">
                         شهریه: {formatToman(registration.totalAmount)} •
                         پرداخت‌شده: {formatToman(registration.paidAmount)} •
                         مانده: {formatToman(due)}

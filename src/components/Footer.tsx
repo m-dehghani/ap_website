@@ -226,7 +226,7 @@ const Footer: React.FC<FooterProps> = ({ site }) => {
                 </p>
                 <span className="text-gray-600">•</span>
                 <p className="text-gray-400 flex items-center">
-                  با <HeartIcon className="w-4 h-4 text-red-500 mx-1" /> برای
+                  با <HeartIcon className="w-4 h-4 text-primary-600 mx-1" /> برای
                   فوتبال ساخته شده
                 </p>
               </div>

@@ -242,7 +242,7 @@ export default function EnhancedNewsUpdates() {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'video': {
-        return 'bg-red-500';
+        return 'bg-primary-600';
       }
       case 'gallery': {
         return 'bg-purple-500';
@@ -251,7 +251,7 @@ export default function EnhancedNewsUpdates() {
         return 'bg-primary-500';
       }
       case 'academy': {
-        return 'bg-green-500';
+        return 'bg-accent-700';
       }
       default: {
         return 'bg-gray-500';
@@ -427,7 +427,7 @@ export default function EnhancedNewsUpdates() {
         {featuredNews.length > 0 && (
           <div className="mb-16">
             <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center">
-              <SparklesIcon className="w-6 h-6 mr-2 text-amber-500" />
+              <SparklesIcon className="w-6 h-6 mr-2 text-achievement-gold" />
               اخبار ویژه
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -447,7 +447,7 @@ export default function EnhancedNewsUpdates() {
                       <span className="mr-1">{getTypeName(item.type)}</span>
                     </div>
                     {item.isTransferNews && (
-                      <div className="absolute top-4 left-4 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      <div className="absolute top-4 left-4 bg-training-orange text-white px-3 py-1 rounded-full text-sm font-medium">
                         انتقال
                       </div>
                     )}
@@ -542,7 +542,7 @@ export default function EnhancedNewsUpdates() {
                   <span className="mr-1">{getTypeName(item.type)}</span>
                 </div>
                 {item.isTransferNews && (
-                  <div className="absolute top-4 left-4 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                  <div className="absolute top-4 left-4 bg-training-orange text-white px-2 py-1 rounded-full text-xs font-medium">
                     انتقال
                   </div>
                 )}

@@ -101,6 +101,7 @@ const LoginPage: React.FC = () => {
                     id="login-password"
                     type="password"
                     autoComplete="current-password"
+                    spellCheck={false}
                     {...register('password')}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"

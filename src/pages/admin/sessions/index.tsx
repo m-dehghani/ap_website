@@ -296,12 +296,12 @@ const SessionsPage: React.FC = () => {
                             key={a.id}
                             className={`w-2 h-2 rounded-full ${
                               a.status === 'PRESENT'
-                                ? 'bg-emerald-500'
+                                ? 'bg-accent-700'
                                 : a.status === 'LATE'
-                                  ? 'bg-amber-500'
+                                  ? 'bg-gold-700'
                                   : a.status === 'EXCUSED'
                                     ? 'bg-primary-500'
-                                    : 'bg-red-500'
+                                    : 'bg-primary-600'
                             }`}
                             title={`${a.user.firstName} ${a.user.lastName}: ${a.status}`}
                           />

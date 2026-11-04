@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
+import { imageOptimizationProps } from '@/lib/image-optimization';
 
 type ProfileAvatarProps = {
   image?: string | null;
@@ -38,7 +39,7 @@ export default function ProfileAvatar({
           alt=""
           fill
           sizes={`${size}px`}
-          unoptimized
+          {...imageOptimizationProps(imageSource)}
           className="object-cover"
           onError={() => setFailedSource(imageSource)}
         />

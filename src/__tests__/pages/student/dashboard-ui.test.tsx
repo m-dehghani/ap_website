@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import StudentDashboardPage from '@/pages/student/dashboard';
@@ -39,7 +39,22 @@ describe('student attendance history UI', () => {
               emergencyContactName: null,
               emergencyContactPhone: null,
               medicalConditions: null,
-              payments: [{ status: 'PENDING' }],
+              payments: [
+                {
+                  id: 'payment-1',
+                  amount: 1200000,
+                  currency: 'IRR',
+                  status: 'PENDING',
+                  createdAt: '2026-10-25T10:00:00.000Z',
+                },
+                {
+                  id: 'payment-2',
+                  amount: 300000,
+                  currency: 'IRR',
+                  status: 'PAID',
+                  createdAt: '2026-10-26T10:00:00.000Z',
+                },
+              ],
               program: {
                 id: 'program-1',
                 name: 'برنامه نوجوانان',
@@ -102,7 +117,25 @@ describe('student attendance history UI', () => {
     ).toBeEnabled();
     expect(screen.getByLabelText('نام')).toHaveValue('علی');
     expect(screen.getByText('تمرین پایه')).toBeInTheDocument();
-    expect(screen.getByText('با تأخیر')).toBeInTheDocument();
+    expect(screen.getAllByText('با تأخیر').length).toBeGreaterThan(0);
+    const attendanceCalendar = screen.getByRole('list', {
+      name: 'تقویم حضور و غیاب',
+    });
+    expect(
+      Array.from(attendanceCalendar.querySelectorAll('li')).some((day) =>
+        day.getAttribute('aria-label')?.includes('با تأخیر'),
+      ),
+    ).toBe(true);
+    const sectionLinks = screen
+      .getByRole('navigation', { name: 'بخش‌های داشبورد' })
+      .querySelectorAll('a');
+    (sectionLinks[0] as HTMLAnchorElement).focus();
+    fireEvent.keyDown(sectionLinks[0], { key: 'ArrowLeft' });
+    expect(sectionLinks[1]).toHaveFocus();
+    fireEvent.click(screen.getByText('برنامه نوجوانان · پرداخت‌شده'));
+    expect(
+      screen.getByRole('link', { name: 'دریافت جزئیات پرداخت' }),
+    ).toHaveAttribute('download', 'payment-payment-2.txt');
     const evaluationsHeading = screen.getByRole('heading', {
       name: 'ارزیابی‌های من',
     });

@@ -90,7 +90,7 @@ export default function FootballNewsDashboard() {
 
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
-      case 'positive': return 'text-green-600 bg-green-100';
+      case 'positive': return 'text-accent-700 bg-accent-100';
       case 'negative': return 'text-red-600 bg-red-100';
       case 'neutral': return 'text-gray-600 bg-gray-100';
       default: return 'text-gray-600 bg-gray-100';
@@ -107,7 +107,7 @@ export default function FootballNewsDashboard() {
   };
 
   const getImportanceLevel = (score: number) => {
-    if (score >= 0.8) return { level: 'بالا', color: 'bg-red-500' };
+    if (score >= 0.8) return { level: 'بالا', color: 'bg-primary-600' };
     if (score >= 0.6) return { level: 'متوسط', color: 'bg-yellow-500' };
     return { level: 'کم', color: 'bg-gray-500' };
   };
@@ -166,9 +166,9 @@ export default function FootballNewsDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">اخبار امروز</p>
-                  <p className="text-3xl font-bold text-green-600">{stats.today_articles}</p>
+                  <p className="text-3xl font-bold text-accent-700">{stats.today_articles}</p>
                 </div>
-                <ClockIcon className="w-12 h-12 text-green-500" />
+                <ClockIcon className="w-12 h-12 text-accent-700" />
               </div>
             </div>
             
@@ -188,7 +188,7 @@ export default function FootballNewsDashboard() {
                   <p className="text-sm font-medium text-gray-600">موضوعات ترند</p>
                   <p className="text-lg font-bold text-red-600">{stats.trending_topics.length}</p>
                 </div>
-                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white font-bold">↑</div>
+                <div className="w-12 h-12 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold">↑</div>
               </div>
             </div>
           </div>
@@ -386,7 +386,7 @@ export default function FootballNewsDashboard() {
             {/* Trending Topics */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <FireIcon className="w-5 h-5 text-red-500 mr-2" />
+                <FireIcon className="w-5 h-5 text-primary-600 mr-2" />
                 موضوعات ترند
               </h3>
               <div className="space-y-3">
@@ -427,7 +427,7 @@ export default function FootballNewsDashboard() {
             {stats && stats.trending_topics.length > 0 && (
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  <ChartBarIcon className="w-5 h-5 text-green-500 mr-2" />
+                  <ChartBarIcon className="w-5 h-5 text-accent-700 mr-2" />
                   کلیدواژه‌های پربازدید
                 </h3>
                 <div className="space-y-2">
@@ -436,7 +436,7 @@ export default function FootballNewsDashboard() {
                       <span className="text-sm text-gray-700">{topic}</span>
                       <div className="w-12 h-2 bg-gray-200 rounded-full">
                         <div 
-                          className="h-full bg-green-500 rounded-full"
+                          className="h-full bg-accent-700 rounded-full"
                           style={{ width: `${100 - (index * 10)}%` }}
                         ></div>
                       </div>

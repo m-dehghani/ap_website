@@ -7,10 +7,14 @@ import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { HandThumbDownIcon, HandThumbUpIcon } from '@heroicons/react/24/outline';
 import Layout from '@/components/Layout';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import ProductGallery from '@/components/shop/ProductGallery';
 import ProductCard, { type ShopProductCardData } from '@/components/shop/ProductCard';
 import SocialShare from '@/components/shop/SocialShare';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
-import { formatToman } from '@/lib/format';
+import { formatDate, formatToman } from '@/lib/format';
+import { imageOptimizationProps } from '@/lib/image-optimization';
 import { readShopCart, saveShopCart, type ShopCartLine } from '@/lib/shop-cart';
 import { getPrisma } from '@/lib/db';
 
@@ -117,6 +121,7 @@ export default function ShopProductPage({
   const [loadedSlug, setLoadedSlug] = useState('');
   const [error, setError] = useState('');
   const [reviewOrder, setReviewOrder] = useState('');
+  const [reviewSort, setReviewSort] = useState<'helpful' | 'newest'>('helpful');
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewBody, setReviewBody] = useState('');
   const [reviewMedia, setReviewMedia] = useState('');
@@ -163,6 +168,20 @@ export default function ShopProductPage({
   const available = selectedVariant
     ? Math.max(selectedVariant.stock - selectedVariant.reserved, 0)
     : 0;
+  const sortedReviews = useMemo(() => {
+    if (!product) return [];
+    return [...product.reviews].sort((first, second) =>
+      reviewSort === 'newest'
+        ? new Date(second.createdAt).getTime() -
+          new Date(first.createdAt).getTime()
+        : second.likes -
+            second.dislikes -
+            (first.likes - first.dislikes) ||
+          second.likes - first.likes ||
+          new Date(second.createdAt).getTime() -
+            new Date(first.createdAt).getTime(),
+    );
+  }, [product, reviewSort]);
 
   const addToCart = () => {
     if (!product || !selectedVariant || available < quantity) return;
@@ -311,9 +330,13 @@ export default function ShopProductPage({
       }}
     >
       <div className="container-custom py-10">
-        <Link href="/shop" className="text-sm font-semibold text-primary-700 hover:underline">
-          ← بازگشت به فروشگاه
-        </Link>
+        <Breadcrumbs
+          items={[
+            { label: 'خانه', href: '/' },
+            { label: 'فروشگاه', href: '/shop' },
+            { label: product?.name ?? 'جزئیات محصول' },
+          ]}
+        />
         {loading ? (
           <p role="status" className="py-16 text-center">در حال بارگذاری محصول...</p>
         ) : error || !product ? (
@@ -321,15 +344,7 @@ export default function ShopProductPage({
         ) : (
           <>
             <div className="mt-6 grid gap-8 lg:grid-cols-2">
-              <div className="grid content-start gap-3 sm:grid-cols-2">
-                {product.images.length ? product.images.map((image, index) => (
-                  <div key={`${image}-${index}`} className="relative aspect-square overflow-hidden rounded-2xl bg-slate-100">
-                    <Image src={image} alt={`${product.name} - تصویر ${index + 1}`} fill unoptimized sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
-                  </div>
-                )) : (
-                  <div className="flex aspect-square items-center justify-center rounded-2xl bg-slate-100 text-6xl">⚽</div>
-                )}
-              </div>
+              <ProductGallery name={product.name} images={product.images} />
               <div>
                 <p className="font-semibold text-primary-700">{product.category}</p>
                 <h1 className="mt-2 text-3xl font-extrabold text-slate-900">{product.name}</h1>
@@ -338,7 +353,7 @@ export default function ShopProductPage({
                   <span>★ {product.averageRating.toFixed(1)} از ۵</span>
                   <span className="text-slate-500">({product.reviewCount} دیدگاه)</span>
                 </div>
-                <p className="mt-5 text-2xl font-bold text-slate-900">
+                <p className="mt-5 text-2xl font-bold text-slate-900 tabular-nums">
                   {formatToman(selectedVariant ? unitPrice(product, selectedVariant) : product.displayPrice)}
                   {selectedVariant && unitPrice(product, selectedVariant) < (selectedVariant.priceOverride ?? product.price) && (
                     <del className="mr-3 text-base font-normal text-slate-500">
@@ -348,7 +363,7 @@ export default function ShopProductPage({
                 </p>
                 {product.isComingSoon ? (
                   <p className="mt-4 rounded-xl bg-amber-50 p-4 font-semibold text-amber-800">
-                    این محصول به‌زودی موجود می‌شود{product.availableAt ? ` (${new Date(product.availableAt).toLocaleDateString('fa-IR')})` : ''}
+                    این محصول به‌زودی موجود می‌شود{product.availableAt ? ` (${formatDate(product.availableAt)})` : ''}
                   </p>
                 ) : product.variants.length > 0 ? (
                   <div className="mt-5 space-y-4">
@@ -372,7 +387,85 @@ export default function ShopProductPage({
                       </select>
                     </label>
                     {available > 0 && available < 2 && (
-                      <p role="status" className="font-semibold text-rose-700">این گزینه رو به اتمام است؛ فقط {available} عدد باقی مانده.</p>
+                      <p role="status" className="animate-pulse font-semibold text-rose-700 motion-reduce:animate-none">این گزینه رو به اتمام است؛ فقط {available} عدد باقی مانده.</p>
+                    )}
+                    {Array.from(
+                      new Set(
+                        product.variants
+                          .map((variant) => variant.color?.trim())
+                          .filter((color): color is string => Boolean(color)),
+                      ),
+                    ).length > 0 && (
+                      <fieldset>
+                        <legend className="mb-2 text-sm font-semibold text-slate-800">
+                          انتخاب رنگ
+                        </legend>
+                        <div className="flex flex-wrap gap-2">
+                          {Array.from(
+                            new Set(
+                              product.variants
+                                .map((variant) => variant.color?.trim())
+                                .filter((color): color is string => Boolean(color)),
+                            ),
+                          ).map((color) => {
+                            const swatches: Record<string, string> = {
+                              'مشکی': '#171717',
+                              'سفید': '#ffffff',
+                              'قرمز': '#dc2626',
+                              'آبی': '#2563eb',
+                              'سبز': '#16a34a',
+                              'زرد': '#eab308',
+                              'سرمه‌ای': '#1e293b',
+                              'طوسی': '#94a3b8',
+                              black: '#171717',
+                              white: '#ffffff',
+                              red: '#dc2626',
+                              blue: '#2563eb',
+                              green: '#16a34a',
+                              yellow: '#eab308',
+                              navy: '#1e293b',
+                              gray: '#94a3b8',
+                            };
+                            const swatch =
+                              swatches[color.toLowerCase()] ??
+                              (/^#(?:[\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i.test(
+                                color,
+                              )
+                                ? color
+                                : '#cbd5e1');
+                            const isSelected = selectedVariant?.color === color;
+                            return (
+                              <button
+                                key={color}
+                                type="button"
+                                aria-label={`رنگ ${color}`}
+                                aria-pressed={isSelected}
+                                onClick={() => {
+                                  const matchingVariant = product.variants.find(
+                                    (variant) => variant.color?.trim() === color,
+                                  );
+                                  if (matchingVariant) {
+                                    setVariantId(matchingVariant.id);
+                                    setQuantity(1);
+                                  }
+                                }}
+                                className={`flex min-h-11 items-center gap-2 rounded-full border px-3 py-1 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 ${
+                                  isSelected
+                                    ? 'border-primary-700 ring-2 ring-primary-200'
+                                    : 'border-slate-300'
+                                }`}
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className="size-5 rounded-full border border-slate-300"
+                                  style={{ backgroundColor: swatch }}
+                                />
+                                {color}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </fieldset>
                     )}
                     {available > 0 ? (
                       <div className="flex flex-wrap items-end gap-3">
@@ -412,17 +505,30 @@ export default function ShopProductPage({
 
             <section className="mt-14" aria-labelledby="reviews-title">
               <h2 id="reviews-title" className="text-2xl font-bold text-slate-900">دیدگاه خریداران</h2>
-              <p className="mt-2 text-sm text-slate-600">
-                دیدگاه‌های مفیدتر و پربازخوردتر در ابتدای فهرست نمایش داده می‌شوند.
-              </p>
-              {product.reviews.length ? (
+              <label className="mt-4 inline-flex items-center gap-2 text-sm font-medium">
+                <span>مرتب‌سازی دیدگاه‌ها</span>
+                <select
+                  value={reviewSort}
+                  onChange={(event) =>
+                    setReviewSort(event.target.value as 'helpful' | 'newest')
+                  }
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-2"
+                >
+                  <option value="helpful">مفیدترین</option>
+                  <option value="newest">جدیدترین</option>
+                </select>
+              </label>
+              {sortedReviews.length ? (
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  {product.reviews.map((review) => (
+                  {sortedReviews.map((review) => (
                     <article key={review.id} className="rounded-2xl border border-slate-200 bg-white p-5">
                       <div className="flex justify-between gap-3">
                         <h3 className="font-bold">{review.user.firstName} {review.user.lastName}</h3>
                         <span className="text-amber-600" aria-label={`امتیاز ${review.rating} از ۵`}>{'★'.repeat(review.rating)}</span>
                       </div>
+                      <p className="mt-1 text-xs font-medium text-emerald-700">
+                        خرید تأییدشده
+                      </p>
                       <p className="mt-2 whitespace-pre-wrap text-slate-700">{review.body}</p>
                       <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
                         <span className="ml-auto text-xs text-slate-500">این دیدگاه مفید بود؟</span>
@@ -463,7 +569,7 @@ export default function ShopProductPage({
                             <video key={url} controls preload="metadata" className="max-h-64 max-w-full rounded-lg" src={url}>مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.</video>
                           ) : isImage(url) ? (
                             <a key={url} href={url} target="_blank" rel="noreferrer" className="relative h-40 w-40 overflow-hidden rounded-lg">
-                              <Image src={url} alt={`تصویر دیدگاه برای ${product.name}`} fill unoptimized sizes="160px" className="object-cover" />
+                              <Image src={url} alt={`تصویر دیدگاه برای ${product.name}`} fill {...imageOptimizationProps(url)} sizes="160px" className="object-cover" />
                             </a>
                           ) : (
                             <a key={url} href={url} target="_blank" rel="noreferrer" className="text-sm text-primary-700 underline">
@@ -500,8 +606,8 @@ export default function ShopProductPage({
                     <textarea value={reviewMedia} onChange={(event) => setReviewMedia(event.target.value)} rows={2} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
                   </label>
                   <p className="text-sm text-slate-600">دیدگاه‌ها پس از تأیید مدیر فروشگاه نمایش داده می‌شوند.</p>
-                  <button disabled={reviewBusy} type="submit" className="btn btn-primary px-5 py-3 disabled:opacity-50">
-                    {reviewBusy ? 'در حال ثبت...' : 'ثبت دیدگاه'}
+                  <button disabled={reviewBusy} type="submit" aria-busy={reviewBusy} className="btn btn-primary px-5 py-3 disabled:opacity-50">
+                    {reviewBusy ? <><LoadingSpinner />در حال ارسال…</> : 'ثبت دیدگاه'}
                   </button>
                 </form>
               ) : (

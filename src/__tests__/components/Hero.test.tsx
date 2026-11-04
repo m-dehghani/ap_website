@@ -4,6 +4,7 @@ import type { ImgHTMLAttributes } from 'react';
 import Hero from '@/components/Hero';
 import type { NewsArticleViewModel } from '@/types/viewModels/content';
 
+/* eslint-disable @next/next/no-img-element -- Native image mocks keep next/image behavior testable in jsdom. */
 vi.mock('next/image', () => ({
   default: ({
     src,
@@ -111,8 +112,65 @@ describe('Hero carousel', () => {
     act(() => {
       vi.advanceTimersByTime(6000);
     });
-
     expect(screen.getByRole('heading', { name: 'Hero One' })).toBeInTheDocument();
     expect(screen.getByText('News 1')).toBeInTheDocument();
+  });
+
+  it('does not autoplay when reduced motion is requested', () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn((media: string) => ({
+        matches: media === '(prefers-reduced-motion: reduce)',
+        media,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    );
+
+    render(
+      <Hero
+        slides={slides}
+        achievements={[]}
+        statLabels={{}}
+        recentNews={recentNews}
+      />,
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'شروع نمایش خودکار' }),
+    ).toHaveAttribute('aria-pressed', 'false');
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
+    expect(screen.getByRole('heading', { name: 'Hero One' })).toBeInTheDocument();
+  });
+
+  it('uses a single stats column at narrow phone widths before expanding', () => {
+    render(
+      <Hero
+        slides={[
+          {
+            ...slides[0],
+            stats: { players: '۱۰۰', programs: '۴', coaches: '۸' },
+            statLabels: {
+              players: 'بازیکن',
+              programs: 'برنامه',
+              coaches: 'مربی',
+            },
+          },
+        ]}
+        achievements={[]}
+        statLabels={{}}
+        recentNews={[]}
+      />,
+    );
+
+    expect(document.querySelector('.home-hero-stats')).toHaveClass(
+      'grid-cols-1',
+      'min-[375px]:grid-cols-2',
+      'sm:grid-cols-3',
+    );
   });
 });

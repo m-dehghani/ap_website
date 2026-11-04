@@ -2,6 +2,8 @@ import React, { FormEvent, useEffect, useState } from 'react';
 import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { NAVIGATION } from '@/constants/app';
 import ProfileSection from '@/components/student/ProfileSection';
 import EnrollmentsSection from '@/components/student/EnrollmentsSection';
 import PaymentsSection from '@/components/student/PaymentsSection';
@@ -134,6 +136,23 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
       : paymentOutcome && !['success', 'cancelled'].includes(paymentOutcome)
         ? 'تأیید پرداخت انجام نشد. وضعیت پرداخت را از پنل بررسی کنید یا با آکادمی تماس بگیرید.'
         : '';
+  const handleSectionNavigationKeyDown = (
+    event: React.KeyboardEvent<HTMLUListElement>,
+  ) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    const links = Array.from(
+      event.currentTarget.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'),
+    );
+    const currentIndex = links.indexOf(
+      document.activeElement as HTMLAnchorElement,
+    );
+    if (currentIndex < 0 || links.length < 2) return;
+
+    event.preventDefault();
+    const direction = event.key === 'ArrowLeft' ? 1 : -1;
+    const nextIndex = (currentIndex + direction + links.length) % links.length;
+    links[nextIndex].focus();
+  };
 
   const handleProfileSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -432,6 +451,11 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
       noindex={true}
     >
       <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8">
+          <Breadcrumbs
+            items={[NAVIGATION.main[0], { label: 'پنل دانش‌آموز' }]}
+          />
+        </div>
         <header className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
@@ -463,23 +487,52 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
             </p>
           )}
 
-          <EvaluationsSection evaluations={student.evaluations} />
+          <nav aria-label="بخش‌های داشبورد" className="overflow-x-auto">
+            <ul
+              onKeyDown={handleSectionNavigationKeyDown}
+              className="flex min-w-max gap-2"
+            >
+              {[
+                ['student-profile', 'پروفایل'],
+                ['student-registrations', 'ثبت‌نام‌ها'],
+                ['student-attendance', 'حضور و غیاب'],
+                ['student-evaluations', 'ارزیابی‌ها'],
+                ['student-payments', 'پرداخت‌ها'],
+              ].map(([id, label]) => (
+                <li key={id}>
+                  <a
+                    href={`#${id}`}
+                    aria-keyshortcuts="ArrowLeft ArrowRight"
+                    className="inline-flex min-h-11 items-center rounded-full border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 hover:border-primary-600 hover:text-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-          <ProfileSection
-            profile={profile}
-            setProfile={setProfile}
-            image={profileImage}
-            onImageChange={(image) => {
-              setProfileImage(image);
-              void refreshUser();
-            }}
-            verificationCodes={verificationCodes}
-            setVerificationCodes={setVerificationCodes}
-            busyAction={busyAction}
-            onSubmit={handleProfileSubmit}
-            onRequestVerification={(channel) => void requestContactVerification(channel)}
-            onConfirmVerification={(channel) => void confirmContactVerification(channel)}
-          />
+          <div id="student-evaluations" className="scroll-mt-24">
+            <EvaluationsSection evaluations={student.evaluations} />
+          </div>
+
+          <div id="student-profile" className="scroll-mt-24">
+            <ProfileSection
+              profile={profile}
+              setProfile={setProfile}
+              image={profileImage}
+              onImageChange={(image) => {
+                setProfileImage(image);
+                void refreshUser();
+              }}
+              verificationCodes={verificationCodes}
+              setVerificationCodes={setVerificationCodes}
+              busyAction={busyAction}
+              onSubmit={handleProfileSubmit}
+              onRequestVerification={(channel) => void requestContactVerification(channel)}
+              onConfirmVerification={(channel) => void confirmContactVerification(channel)}
+            />
+          </div>
 
           <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900">
@@ -597,32 +650,39 @@ const StudentDashboardPage: React.FC<StudentDashboardViewModel> = ({
             )}
           </section>
 
-          <EnrollmentsSection
-            registrations={student.registrations}
-            registrationProfiles={registrationProfiles}
-            availablePrograms={availablePrograms}
-            studentAge={studentAge}
-            busyAction={busyAction}
-            onCancel={(registrationId) => void handleCancellation(registrationId)}
-            onProfileSubmit={(event, registrationId) =>
-              void handleRegistrationProfileSubmit(event, registrationId)
-            }
-            onProfileChange={(registrationId, field, value) =>
-              setRegistrationProfiles((current) => ({
-                ...current,
-                [registrationId]: { ...current[registrationId], [field]: value },
-              }))
-            }
-            onEnroll={(programId) => void handleEnrollment(programId)}
-          />
+          <div id="student-registrations" className="scroll-mt-24">
+            <EnrollmentsSection
+              registrations={student.registrations}
+              registrationProfiles={registrationProfiles}
+              availablePrograms={availablePrograms}
+              studentAge={studentAge}
+              busyAction={busyAction}
+              onCancel={(registrationId) => void handleCancellation(registrationId)}
+              onProfileSubmit={(event, registrationId) =>
+                void handleRegistrationProfileSubmit(event, registrationId)
+              }
+              onProfileChange={(registrationId, field, value) =>
+                setRegistrationProfiles((current) => ({
+                  ...current,
+                  [registrationId]: { ...current[registrationId], [field]: value },
+                }))
+              }
+              onEnroll={(programId) => void handleEnrollment(programId)}
+            />
+          </div>
 
-          <AttendanceSection attendance={student.attendance} />
+          <div id="student-attendance" className="scroll-mt-24">
+            <AttendanceSection attendance={student.attendance} />
+          </div>
 
-          <PaymentsSection
-            totalDue={totalDue}
-            busyAction={busyAction}
-            onPay={() => void handlePayment()}
-          />
+          <div id="student-payments" className="scroll-mt-24">
+            <PaymentsSection
+              totalDue={totalDue}
+              busyAction={busyAction}
+              registrations={student.registrations}
+              onPay={() => void handlePayment()}
+            />
+          </div>
         </div>
       </div>
     </Layout>
@@ -669,7 +729,15 @@ export const getServerSideProps: GetServerSideProps<
             emergencyContactName: true,
             emergencyContactPhone: true,
             medicalConditions: true,
-            payments: { select: { status: true } },
+            payments: {
+              select: {
+                id: true,
+                amount: true,
+                currency: true,
+                status: true,
+                createdAt: true,
+              },
+            },
             program: {
               select: {
                 id: true,
@@ -736,6 +804,13 @@ export const getServerSideProps: GetServerSideProps<
       student: {
         ...student,
         birthDate: student.birthDate?.toISOString() ?? null,
+        registrations: student.registrations.map((registration) => ({
+          ...registration,
+          payments: registration.payments.map((payment) => ({
+            ...payment,
+            createdAt: payment.createdAt.toISOString(),
+          })),
+        })),
         attendance: student.attendance.map((entry) => ({
           ...entry,
           createdAt: entry.createdAt.toISOString(),

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
+import { formatDate } from '@/lib/format';
 
 type ContactMessage = {
   id: string;
@@ -148,7 +149,7 @@ export default function MessagesPage() {
                       className="mt-1 block text-sm text-gray-500"
                       dateTime={message.createdAt}
                     >
-                      {new Date(message.createdAt).toLocaleString('fa-IR')}
+                      {formatDate(message.createdAt, 'fa-IR', { dateStyle: 'short', timeStyle: 'short' })}
                     </time>
                   </div>
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-700">

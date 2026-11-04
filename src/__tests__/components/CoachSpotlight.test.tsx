@@ -42,6 +42,14 @@ describe('CoachSpotlight', () => {
     expect(screen.getAllByText('علی محمدی').length).toBeGreaterThan(0);
   });
 
+  it('keeps the portrait above coach details at tablet widths', () => {
+    renderWithProviders(<CoachSpotlight coaches={mockCoaches} />);
+
+    const showcase = screen.getByRole('tabpanel');
+    expect(showcase).toHaveClass('grid', 'xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]');
+    expect(showcase).not.toHaveClass('md:grid-cols-2', 'lg:grid-cols-2');
+  });
+
   it('renders null when no coaches provided', () => {
     const { queryByText } = renderWithProviders(
       <CoachSpotlight coaches={[]} />,

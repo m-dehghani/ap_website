@@ -5,10 +5,10 @@ export default function Document() {
   return (
     <Html lang="fa-IR" dir="rtl">
       <Head>
+        <meta name="theme-color" content="#f8fafc" />
         <Script id="theme-preference-init" strategy="beforeInteractive">
-          {`(function(){var preference=window.localStorage.getItem('ap-theme-preference');var dark=preference==='dark'||(preference!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';document.documentElement.style.colorScheme=dark?'dark':'light';})();`}
+          {`(function(){var preference=window.localStorage.getItem('ap-theme-preference');var dark=preference==='dark'||(preference!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';document.documentElement.style.colorScheme=dark?'dark':'light';var themeColor=document.querySelector('meta[name="theme-color"]');if(themeColor)themeColor.setAttribute('content',dark?'#160f12':'#f8fafc');})();`}
         </Script>
-        <meta name="theme-color" content="#b91c1c" />
         <meta name="color-scheme" content="light dark" />
         <meta
           name="description"
@@ -27,7 +27,7 @@ export default function Document() {
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
 

@@ -22,4 +22,35 @@ describe('PersianDatePicker', () => {
       expect(onChange).toHaveBeenCalledWith('۱۳۹۰/۰۲/۱۶');
     });
   });
+
+  it('exposes an accessible name, validation hint, and expanded calendar state', async () => {
+    render(
+      <label htmlFor="birth-date">
+        تاریخ تولد
+        <PersianDatePicker
+          id="birth-date"
+          value=""
+          onChange={vi.fn()}
+          ariaInvalid
+          ariaDescribedBy="birth-date-error"
+        />
+      </label>,
+    );
+
+    expect(screen.getByRole('textbox', { name: 'تاریخ تولد' })).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+    expect(screen.getByRole('textbox')).toHaveAttribute(
+      'aria-describedby',
+      'birth-date-error',
+    );
+
+    const openButton = screen.getByRole('button', {
+      name: 'باز کردن تقویم شمسی',
+    });
+    expect(openButton).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(openButton);
+    await waitFor(() => expect(openButton).toHaveAttribute('aria-expanded', 'true'));
+  });
 });

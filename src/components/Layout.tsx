@@ -82,7 +82,9 @@ const Layout: React.FC<LayoutProps> = ({
       />
       <div className="min-h-screen flex flex-col bg-slate-50">
         <Header site={site} />
-        <main id="main-content" className="flex-1">{children}</main>
+        <main id="main-content" tabIndex={-1} className="flex-1">
+          {children}
+        </main>
         <Footer site={site} />
       </div>
     </>

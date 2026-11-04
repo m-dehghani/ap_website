@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { imageOptimizationProps } from '@/lib/image-optimization';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { formatToman } from '@/lib/format';
 import {
   getShopCartSnapshot,
@@ -228,7 +230,7 @@ export default function ShopCartPage() {
                 <article key={item.variantId} className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-4">
                   {item.image ? (
                     <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl">
-                      <Image src={item.image} alt="" fill unoptimized sizes="96px" className="object-cover" />
+                      <Image src={item.image} alt="" fill {...imageOptimizationProps(item.image)} sizes="96px" className="object-cover" />
                     </div>
                   ) : (
                     <div aria-hidden="true" className="flex h-24 w-24 items-center justify-center rounded-xl bg-slate-100 text-3xl">⚽</div>
@@ -238,7 +240,7 @@ export default function ShopCartPage() {
                       {item.productName}
                     </Link>
                     <p className="mt-1 text-sm text-slate-600">{[item.size, item.color].filter(Boolean).join(' / ')}</p>
-                    <p className="mt-1 font-semibold">{formatToman(item.price)}</p>
+                    <p className="mt-1 font-semibold tabular-nums">{formatToman(item.price)}</p>
                     <div className="mt-2 flex items-center gap-2">
                       <label className="sr-only" htmlFor={`quantity-${item.variantId}`}>تعداد {item.productName}</label>
                       <input
@@ -262,13 +264,13 @@ export default function ShopCartPage() {
                       </button>
                     </div>
                   </div>
-                  <p className="text-left font-bold text-slate-800">
+                  <p className="text-left font-bold text-slate-800 tabular-nums">
                     {formatToman(item.price * item.quantity)}
                   </p>
                 </article>
               ))}
               <div className="rounded-xl bg-slate-100 p-4 text-sm text-slate-600">
-                جمع اقلام: <strong className="text-slate-900">{formatToman(subtotal)}</strong>
+                جمع اقلام: <strong className="text-slate-900 tabular-nums">{formatToman(subtotal)}</strong>
                 <p className="mt-1">هزینه ارسال: {shippingFee === null ? 'در حال دریافت...' : formatToman(shippingFee)}</p>
                 {shippingFee !== null && <p className="mt-1 font-semibold text-slate-900">جمع با ارسال (برآورد): {formatToman(subtotal + shippingFee)}</p>}
                 {shippingError && <p role="status" className="mt-1 text-amber-800">{shippingError}</p>}
@@ -285,11 +287,11 @@ export default function ShopCartPage() {
               </label>
               <label className="block">
                 <span className="mb-1 block font-semibold">شماره تماس</span>
-                <input required type="tel" autoComplete="tel" value={values.phone} onChange={(event) => setValues({ ...values, phone: event.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-3" />
+                <input required type="tel" autoComplete="tel" spellCheck={false} autoCorrect="off" value={values.phone} onChange={(event) => setValues({ ...values, phone: event.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-3" />
               </label>
               <label className="block">
                 <span className="mb-1 block font-semibold">ایمیل (اختیاری)</span>
-                <input type="email" autoComplete="email" value={values.email} onChange={(event) => setValues({ ...values, email: event.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-3" />
+                <input type="email" autoComplete="email" spellCheck={false} autoCapitalize="none" autoCorrect="off" value={values.email} onChange={(event) => setValues({ ...values, email: event.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-3" />
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block">
@@ -334,8 +336,8 @@ export default function ShopCartPage() {
                 <span className="mb-1 block font-semibold">کد پستی ۱۰ رقمی</span>
                 <input required inputMode="numeric" pattern="[0-9۰-۹٠-٩]{10}" autoComplete="postal-code" value={values.postalCode} onChange={(event) => setValues({ ...values, postalCode: event.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-3" />
               </label>
-              <button disabled={busy || cart.length === 0} type="submit" className="btn btn-primary w-full px-5 py-3 disabled:opacity-50">
-                {busy ? 'در حال انتقال به درگاه...' : 'پرداخت با زرین‌پال'}
+              <button disabled={busy || cart.length === 0} type="submit" aria-busy={busy} className="btn btn-primary w-full px-5 py-3 disabled:opacity-50">
+                {busy ? <><LoadingSpinner />در حال ارسال…</> : 'پرداخت با زرین‌پال'}
               </button>
               <p className="text-center text-xs text-slate-500">پرداخت امن از طریق درگاه زرین‌پال انجام می‌شود.</p>
             </form>
