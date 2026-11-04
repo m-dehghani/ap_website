@@ -156,19 +156,19 @@ function FeatureCard3D({
                   <h4 className="font-semibold text-gray-900">مزایای کلیدی:</h4>
                   <ul className="space-y-2 text-gray-600 text-sm">
                     <li className="flex items-center gap-2">
-                      <CheckCircleIcon className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <CheckCircleIcon className="w-4 h-4 text-growth-green flex-shrink-0" />
                       مربیان مجرب و متخصص
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircleIcon className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <CheckCircleIcon className="w-4 h-4 text-growth-green flex-shrink-0" />
                       برنامه‌های شخصی‌سازی‌شده
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircleIcon className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <CheckCircleIcon className="w-4 h-4 text-growth-green flex-shrink-0" />
                       امکانات و تجهیزات مدرن
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircleIcon className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <CheckCircleIcon className="w-4 h-4 text-growth-green flex-shrink-0" />
                       پیگیری پیشرفت مداوم
                     </li>
                   </ul>
@@ -265,7 +265,7 @@ const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gray-900 text-balance">
             چرا{' '}
-            <span className="gradient-text">آکادمی فوتبال افشین پیروانی</span>{' '}
+            <span className="text-club-red-deep">آکادمی فوتبال افشین پیروانی</span>{' '}
             را انتخاب کنیم؟
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto text-pretty">

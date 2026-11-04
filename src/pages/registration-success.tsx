@@ -10,7 +10,7 @@ const RegistrationSuccessPage: React.FC = () => (
     noindex
   >
     <section className="mx-auto my-12 max-w-3xl overflow-hidden rounded-lg bg-white shadow-lg">
-      <div className="bg-linear-to-r from-green-500 to-green-600 px-8 py-12 text-center">
+      <div className="bg-linear-to-r from-accent-700 to-accent-800 px-8 py-12 text-center">
         <CheckCircleIcon className="mx-auto mb-4 h-16 w-16 text-white" />
         <h1 className="mb-2 text-3xl font-bold text-white">
           ثبت‌نام با موفقیت انجام شد

@@ -42,7 +42,7 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Run tests
+      - name: Run unit and axe accessibility tests
         run: npm test
 
       - name: Build

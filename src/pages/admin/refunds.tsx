@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { formatToman } from '@/lib/format';
+import { formatDate, formatToman } from '@/lib/format';
 
 interface RefundQueueItem {
   id: string;
@@ -232,7 +232,7 @@ export default function RefundsPage() {
                         {formatToman(amountInToman)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-4">
-                        {new Date(item.createdAt).toLocaleString('fa-IR', {
+                        {formatDate(item.createdAt, 'fa-IR', {
                           dateStyle: 'short',
                           timeStyle: 'short',
                           timeZone: 'Asia/Tehran',

@@ -2,6 +2,8 @@ import React from 'react';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { NAVIGATION } from '@/constants/app';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import AttendanceRoster from '@/components/AttendanceRoster';
@@ -9,6 +11,7 @@ import CoachEvaluationsPanel from '@/components/CoachEvaluationsPanel';
 import { attendanceEligibleRegistrationStatuses } from '@/lib/attendance';
 import ImageUploadField from '@/components/ImageUploadField';
 import { useAuth } from '@/hooks/useAuth';
+import { formatDate, formatToman } from '@/lib/format';
 
 interface CoachDashboardProps {
   coach: any;
@@ -73,6 +76,9 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
       noindex={true}
     >
       <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8">
+          <Breadcrumbs items={[NAVIGATION.main[0], { label: 'پنل مربی' }]} />
+        </div>
         {/* Header */}
         <header className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -319,7 +325,7 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
                           </h3>
                           <p className="text-gray-600 mt-1">
                             {program.sessionCount} جلسه • {program.duration} ماه
-                            • {program.price.toLocaleString()} تومان
+                            • <span className="tabular-nums">{formatToman(program.price)}</span>
                           </p>
                           <p className="text-gray-500 text-sm mt-1">
                             حداکثر {program.maxStudents} دانش‌آموز
@@ -385,9 +391,7 @@ const CoachDashboardPage: React.FC<CoachDashboardProps> = ({ coach }) => {
                               {session.name}
                             </h3>
                             <p className="text-gray-600 mt-1">
-                              {new Date(session.date).toLocaleDateString(
-                                'fa-IR',
-                              )}{' '}
+                              {formatDate(session.date)}{' '}
                               • {session.duration} دقیقه
                             </p>
                             <p className="text-gray-500 text-sm mt-1">

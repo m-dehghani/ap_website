@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import Image from 'next/image';
+import { imageOptimizationProps } from '@/lib/image-optimization';
 
 export type ImageUploadScope =
   | 'profile'
@@ -212,7 +213,7 @@ export default function ImageUploadField({
                   alt={`پیش‌نمایش تصویر ${index + 1}`}
                   width={64}
                   height={64}
-                  unoptimized
+                  {...imageOptimizationProps(image)}
                   className="h-16 w-16 rounded-md object-cover"
                 />
               ) : (

@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
+import { imageOptimizationProps } from '@/lib/image-optimization';
 import type { TestimonialViewModel } from '@/types/viewModels/content';
 
 interface TestimonialsProps {
@@ -61,10 +63,14 @@ const TestimonialsComponent: React.FC<TestimonialsProps> = ({
               <div className="flex items-center">
                 {testimonial.image &&
                 !testimonial.image.startsWith('/api/placeholder/') ? (
-                  <img
+                  <Image
                     src={testimonial.image}
                     alt=""
-                    className="w-12 h-12 rounded-full object-cover ml-4"
+                    width={48}
+                    height={48}
+                    {...imageOptimizationProps(testimonial.image)}
+                    sizes="48px"
+                    className="ml-4 size-12 rounded-full object-cover"
                   />
                 ) : (
                   <div

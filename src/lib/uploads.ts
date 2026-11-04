@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { del, list, put } from '@vercel/blob';
 import { z } from 'zod';
 import { getPrisma } from '@/lib/db';
 
@@ -107,18 +108,27 @@ export async function writeImageFile(
   }
 
   const filename = `${id}.${imageExtensions[contentType]}`;
-  const filePath = path.join(getUploadsDirectory(), filename);
-  await mkdir(path.dirname(filePath), { recursive: true });
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  if (blobToken) {
+      await put(filename, Buffer.from(data), {
+      access: 'public',
+      token: blobToken,
+      addRandomSuffix: false,
+    });
+  } else {
+    const filePath = path.join(getUploadsDirectory(), filename);
+    await mkdir(path.dirname(filePath), { recursive: true });
 
-  try {
-    await writeFile(filePath, data, { flag: 'wx', mode: 0o640 });
-  } catch (error) {
-    if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) {
-      throw error;
-    }
-    const existing = await readFile(filePath);
-    if (!existing.equals(Buffer.from(data))) {
-      throw new Error('IMAGE_FILE_ALREADY_EXISTS');
+    try {
+      await writeFile(filePath, data, { flag: 'wx', mode: 0o640 });
+    } catch (error) {
+      if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) {
+        throw error;
+      }
+      const existing = await readFile(filePath);
+      if (!existing.equals(Buffer.from(data))) {
+        throw new Error('IMAGE_FILE_ALREADY_EXISTS');
+      }
     }
   }
 
@@ -139,6 +149,25 @@ export async function readImageFile(
   const contentType = getImageMimeTypeFromUrl(url);
   if (!filename || !contentType) return null;
 
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  if (blobToken) {
+    const blobUrl = `${process.env.BLOB_STORE_ID ? `https://${process.env.BLOB_STORE_ID}.public.blob.vercel-storage.com` : 'https://blob.vercel-storage.com'}/${filename}`;
+    try {
+      const response = await fetch(blobUrl);
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error(`BLOB_FETCH_FAILED: ${response.status}`);
+      }
+      return {
+        contentType,
+        data: Buffer.from(await response.arrayBuffer()),
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('404')) return null;
+      throw error;
+    }
+  }
+
   try {
     return {
       contentType,
@@ -154,12 +183,44 @@ export async function readImageFile(
 
 export async function removeImageFile(url: string): Promise<void> {
   const filename = getImageFilename(url);
-  if (filename) {
+  if (!filename) return;
+
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  if (blobToken) {
+    const blobUrl = `${process.env.BLOB_STORE_ID ? `https://${process.env.BLOB_STORE_ID}.public.blob.vercel-storage.com` : 'https://blob.vercel-storage.com'}/${filename}`;
+    await del(blobUrl, { token: blobToken });
+  } else {
     await rm(path.join(getUploadsDirectory(), filename), { force: true });
   }
 }
 
 export async function clearStoredImageFiles(): Promise<void> {
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  if (blobToken) {
+    const prefix = 'uploads/';
+    let cursor: string | undefined;
+    do {
+      const { blobs, cursor: nextCursor } = await list({
+        prefix,
+        token: blobToken,
+        ...(cursor ? { cursor } : {}),
+      });
+      const urls = blobs
+        .map((blob) => blob.url)
+        .filter((url): url is string => Boolean(url))
+        .filter((url) =>
+          /\/uploads\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|png|webp)$/i.test(
+            url,
+          ),
+        );
+      if (urls.length) {
+        await del(urls, { token: blobToken });
+      }
+      cursor = nextCursor;
+    } while (cursor);
+    return;
+  }
+
   const directory = getUploadsDirectory();
   let entries;
   try {

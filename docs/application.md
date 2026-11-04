@@ -140,23 +140,32 @@ database role, for example:
 UPDATE "users" SET "role" = 'SHOP_MANAGER' WHERE "email" = 'manager@example.com';
 ```
 
-Shop managers can manage products,
-orders, reviews, and the configurable shipping fee; regular academy admin users
-can also access the shop panel. Product images can be uploaded by admins and shop managers. Profile photos and
-CMS image uploads are written to the filesystem, while the database stores
-only their application paths (for example, `/api/uploads/<id>.webp`). The
-application accepts JPEG, PNG, and WebP files up to 5 MiB and serves them
-through `/api/uploads/<id>.<extension>`. Set `UPLOADS_DIR` to the upload
-directory; it defaults to `<application working directory>/uploads`. Production
-deployments must mount durable storage at this path, and every app instance
-that serves uploads must see the same files. Include this directory in file
-backups and restores; PostgreSQL backups contain paths only, not image bytes.
-An existing deployment must run `npm run migrate:uploads` with its existing
-database and intended persistent `UPLOADS_DIR` before `npx prisma migrate
-deploy`. The migration exports image bytes, updates their stored paths, then
-removes the legacy database asset rows. The migration fails if any legacy
-asset cannot be copied safely. User-submitted shop-review media is outside
-this CMS image-upload workflow.
+Shop managers can manage products, orders, reviews, and the configurable
+shipping fee; regular academy admin users can also access the shop panel.
+Product images can be uploaded by admins and shop managers. Profile photos and
+CMS image uploads are stored outside PostgreSQL; the database stores only
+application paths (for example, `/api/uploads/<id>.webp`). The application
+accepts JPEG, PNG, and WebP files up to 5 MiB and serves them through
+`/api/uploads/<id>.<extension>`.
+
+Local development uses the `uploads/` directory by default. Set `UPLOADS_DIR`
+to a durable directory when running a persistent Node.js server. Vercel
+deployments use Vercel Blob: set `BLOB_READ_WRITE_TOKEN` (and optionally
+`BLOB_STORE_ID` for a specific store). The object key prefix defaults to
+`uploads/`. Keep the store private; images are served through the application's
+upload API. Back up the Blob store alongside the database, since PostgreSQL
+backups contain paths only, not image bytes.
+
+Before switching an existing filesystem deployment to Vercel Blob, copy its
+existing `uploads/` files to the Blob store under the `uploads/` prefix (for
+example, using the Vercel CLI or dashboard). Preserve the image filenames
+because database paths reference them. An existing database with legacy
+image-asset rows must run `npm run migrate:uploads` with its database and
+target storage configuration before `npx prisma migrate deploy`. That migration
+copies image bytes to the configured storage, updates their stored paths, then
+removes the legacy database asset rows; it fails if any legacy asset cannot be
+copied safely. User-submitted shop-review media is outside this CMS
+image-upload workflow.
 User-submitted shop-review media is outside this CMS image-upload workflow.
 Ratings and reviews are accepted only from signed-in students whose account is
 attached to a paid order for that product; submissions remain unpublished until

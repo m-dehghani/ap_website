@@ -21,7 +21,7 @@ colors:
   dark-border: "#493239"
 typography:
   display:
-    fontFamily: "Poppins, Inter, system-ui, sans-serif"
+    fontFamily: "Vazirmatn, system-ui, sans-serif"
   headline:
     fontFamily: "Vazirmatn, system-ui, sans-serif"
     fontSize: "clamp(2rem, 5vw, 3.5rem)"
@@ -141,11 +141,11 @@ The palette is anchored by club red and warm charcoal, with orange, green, and g
 
 ## Typography
 
-**Display Font:** Poppins, Inter, system-ui, sans-serif (configured as a utility stack; Poppins and Inter are not imported by the global stylesheet)
+**Display Font:** Vazirmatn, system-ui, sans-serif
 **Body Font:** Vazirmatn, system-ui, sans-serif
 **Label/Mono Font:** Vazirmatn, system-ui, sans-serif
 
-**Character:** Vazirmatn is the loaded global face and carries Persian and English body copy and base headings. A small number of display headings request the configured Poppins/Inter stack, but those fonts are not loaded by the global stylesheet and may fall back to a system font.
+**Character:** Vazirmatn is the loaded global face and carries Persian and English body copy and headings.
 
 ### Hierarchy
 - **Display:** Large, fluid display styles are available for image-led feature headings; use the configured display stack only where the existing component does.
@@ -154,7 +154,7 @@ The palette is anchored by club red and warm charcoal, with orange, green, and g
 - **Body:** Regular Vazirmatn with generous paragraph leading for Persian and English reading.
 - **Label:** Medium Vazirmatn for buttons, navigation, badges, and form labels.
 
-**The Loaded-Font Rule.** Prefer the globally loaded Vazirmatn stack for new typography; do not assume the separately configured Poppins/Inter stacks are available at runtime.
+**The Loaded-Font Rule.** Use the globally loaded Vazirmatn stack for all typography; do not add a separately loaded display face.
 
 ## Layout
 
@@ -213,7 +213,7 @@ The form language is softly rounded throughout: buttons and fields use a medium 
 
 ### Don't:
 - **Don't** treat the unused blue-toned `--navy-color` property as the active warm `navy-*` palette.
-- **Don't** assume Poppins or Inter is loaded just because the Tailwind font stacks are configured.
+- **Don't** introduce a second display face that competes with Vazirmatn.
 - **Don't** assume the dark theme automatically recolors every hard-coded light section.
 - **Don't** add new accent hues or replace existing sports imagery without a surface-specific brief.
 - **Don't** present this inferred North Star or color naming as a user-confirmed brand decision.

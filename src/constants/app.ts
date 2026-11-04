@@ -30,30 +30,41 @@ export const APP_CONFIG = {
   },
 } as const;
 
+const MAIN_NAVIGATION = [
+  { label: 'خانه', href: '/' },
+  { label: 'فروشگاه', href: '/shop' },
+  { label: 'برنامه‌ها', href: '/programs' },
+  { label: 'مربیان', href: '/coaches' },
+  { label: 'درباره ما', href: '/about' },
+  { label: 'اخبار', href: '/news' },
+  { label: 'افتخارات آکادمی', href: '/success' },
+  { label: 'نظرات و تجربه‌ها', href: '/testimonials' },
+  { label: 'تماس', href: '/contact' },
+] as const;
+
+const FOOTER_QUICK_LINK_LABELS: Record<
+  (typeof MAIN_NAVIGATION)[number]['href'],
+  string
+> = {
+  '/': 'خانه',
+  '/shop': 'فروشگاه',
+  '/programs': 'برنامه‌های آموزشی',
+  '/coaches': 'مربیان ما',
+  '/about': 'درباره آکادمی',
+  '/news': 'اخبار و رویدادها',
+  '/success': 'افتخارات آکادمی',
+  '/testimonials': 'نظرات و تجربه‌ها',
+  '/contact': 'تماس با ما',
+};
+
 export const NAVIGATION = {
-  main: [
-    { label: 'خانه', href: '/' },
-    { label: 'فروشگاه', href: '/shop' },
-    { label: 'برنامه‌ها', href: '/programs' },
-    { label: 'مربیان', href: '/coaches' },
-    { label: 'درباره ما', href: '/about' },
-    { label: 'اخبار', href: '/news' },
-    { label: 'افتخارات آکادمی', href: '/success' },
-    { label: 'نظرات و تجربه‌ها', href: '/testimonials' },
-    { label: 'تماس', href: '/contact' },
-  ],
+  main: MAIN_NAVIGATION,
   footer: {
-    quickLinks: [
-      { label: 'درباره آکادمی', href: '/about' },
-      { label: 'فروشگاه', href: '/shop' },
-      { label: 'برنامه‌های آموزشی', href: '/programs' },
-      { label: 'مربیان ما', href: '/coaches' },
-      { label: 'افتخارات آکادمی', href: '/success' },
-      { label: 'نظرات و تجربه‌ها', href: '/testimonials' },
-      { label: 'اخبار و رویدادها', href: '/news' },
-      { label: 'تماس با ما', href: '/contact' },
-    ],
-    programs: [{ label: 'مشاهده همه برنامه‌ها', href: '/programs' }],
+    quickLinks: MAIN_NAVIGATION.slice(1).map((item) => ({
+      ...item,
+      label: FOOTER_QUICK_LINK_LABELS[item.href],
+    })),
+    programs: [{ label: 'مشاهده همه برنامه‌ها', href: MAIN_NAVIGATION[2].href }],
     legal: [
       { label: 'حریم خصوصی', href: '/privacy' },
       { label: 'قوانین و مقررات', href: '/terms' },

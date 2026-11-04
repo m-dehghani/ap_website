@@ -102,7 +102,7 @@ export default function CoachSpotlight({ coaches = [] }: CoachSpotlightProps) {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: -50, scale: 0.95 }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              className="grid lg:grid-cols-2 gap-12 items-center"
+              className="grid items-start gap-10 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:gap-12"
               id="coach-panel"
               role="tabpanel"
               aria-labelledby={`coach-tab-${currentCoach}`}
@@ -233,7 +233,7 @@ export default function CoachSpotlight({ coaches = [] }: CoachSpotlightProps) {
                         href={`https://instagram.com/${coach.instagram.replace('@', '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-linear-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition-shadow flex items-center gap-2"
+                        className="bg-linear-to-r from-primary-700 to-primary-800 text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition-shadow flex items-center gap-2"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >

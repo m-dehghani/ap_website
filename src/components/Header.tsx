@@ -31,6 +31,9 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreMobileMenuFocusRef = useRef(false);
   const router = useRouter();
   const { user, loading, logout } = useAuth();
   const { preference } = useThemePreference();
@@ -45,6 +48,61 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
     router.events.on('routeChangeStart', closeMenu);
     return () => router.events.off('routeChangeStart', closeMenu);
   }, [router.events]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const menu = mobileMenuRef.current;
+    if (!menu) return;
+
+    const getMenuControls = () =>
+      Array.from(
+        menu.querySelectorAll<HTMLElement>(
+          'a[href], button:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((control) => !control.closest('[hidden], [aria-hidden="true"]'));
+
+    getMenuControls()[0]?.focus();
+
+    const handleMenuKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        restoreMobileMenuFocusRef.current = true;
+        setIsMenuOpen(false);
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const controls = getMenuControls();
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (!first || !last) return;
+
+      if (
+        event.shiftKey &&
+        (document.activeElement === first || !menu.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last || !menu.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    menu.addEventListener('keydown', handleMenuKeyDown);
+    return () => menu.removeEventListener('keydown', handleMenuKeyDown);
+  }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (isMenuOpen || !restoreMobileMenuFocusRef.current) return;
+    restoreMobileMenuFocusRef.current = false;
+    mobileMenuButtonRef.current?.focus();
+  }, [isMenuOpen]);
 
   useEffect(() => {
     if (!isProfileMenuOpen) return;
@@ -283,6 +341,7 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
             </Link>
 
             <button
+              ref={mobileMenuButtonRef}
               type="button"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="rounded-xl border border-slate-200 p-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 lg:hidden"
@@ -302,6 +361,7 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
+              ref={mobileMenuRef}
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}

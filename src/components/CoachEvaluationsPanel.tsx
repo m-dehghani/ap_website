@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import { formatDate } from '@/lib/format';
 
 type CoachEvaluation = {
   id: string;
@@ -219,7 +220,7 @@ export default function CoachEvaluationsPanel({
                       className="text-sm text-gray-600"
                       dateTime={record.createdAt}
                     >
-                      {new Date(record.createdAt).toLocaleDateString('fa-IR')}
+                      {formatDate(record.createdAt)}
                     </time>
                   </div>
                   <dl className="mt-2 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">

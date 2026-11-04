@@ -24,7 +24,8 @@ describe('useThemePreference', () => {
   beforeEach(() => {
     localStorage.clear();
     delete document.documentElement.dataset.theme;
-    document.head.innerHTML = '<meta name="color-scheme" content="light dark">';
+    document.head.innerHTML =
+      '<meta name="color-scheme" content="light dark"><meta name="theme-color" content="#f8fafc">';
     mediaQuery.matches = false;
     mediaQueryListeners.clear();
     vi.stubGlobal('matchMedia', vi.fn(() => mediaQuery));
@@ -39,6 +40,9 @@ describe('useThemePreference', () => {
     expect(document.documentElement.dataset.theme).toBe('dark');
     expect(document.documentElement.style.colorScheme).toBe('dark');
     expect(
+      document.querySelector('meta[name="theme-color"]')?.getAttribute('content'),
+    ).toBe('#160f12');
+    expect(
       document.querySelector('meta[name="color-scheme"]')?.getAttribute('content'),
     ).toBe('dark');
     expect(result.current.preference).toBe('dark');
@@ -51,6 +55,9 @@ describe('useThemePreference', () => {
 
     expect(document.documentElement.dataset.theme).toBe('dark');
     expect(document.documentElement.style.colorScheme).toBe('dark');
+    expect(
+      document.querySelector('meta[name="theme-color"]')?.getAttribute('content'),
+    ).toBe('#160f12');
     expect(
       document.querySelector('meta[name="color-scheme"]')?.getAttribute('content'),
     ).toBe('light dark');
@@ -79,5 +86,8 @@ describe('useThemePreference', () => {
 
     expect(document.documentElement.dataset.theme).toBe('light');
     expect(document.documentElement.style.colorScheme).toBe('light');
+    expect(
+      document.querySelector('meta[name="theme-color"]')?.getAttribute('content'),
+    ).toBe('#f8fafc');
   });
 });

@@ -53,11 +53,11 @@ export default {
     },
     {
       name: 'theme-color',
-      content: '#0284c7',
+      content: '#dc2626',
     },
     {
       name: 'msapplication-TileColor',
-      content: '#0284c7',
+      content: '#dc2626',
     },
     {
       name: 'apple-mobile-web-app-capable',

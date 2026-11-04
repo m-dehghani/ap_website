@@ -35,38 +35,42 @@ function MyApp({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
           <SpeedInsights />
           <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-            background: 'var(--surface-background)',
-            color: 'var(--text-primary)',
-            border: '1px solid var(--border-subtle)',
-              borderRadius: '0.5rem',
-              fontSize: '14px',
-              fontWeight: '500',
-            },
-            success: {
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              ariaProps: {
+                role: 'status',
+                'aria-live': 'polite',
+              },
               style: {
-                borderColor: '#10b981',
-              backgroundColor: 'var(--surface-success)',
+                background: 'var(--surface-background)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '0.5rem',
+                fontSize: '14px',
+                fontWeight: '500',
               },
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
+              success: {
+                style: {
+                  borderColor: 'var(--accent-color)',
+                  backgroundColor: 'var(--surface-success)',
+                },
+                iconTheme: {
+                  primary: 'var(--accent-color)',
+                  secondary: '#fff',
+                },
               },
-            },
-            error: {
-              style: {
-                borderColor: '#ef4444',
-                backgroundColor: 'var(--surface-error)',
+              error: {
+                style: {
+                  borderColor: 'var(--primary-color)',
+                  backgroundColor: 'var(--surface-error)',
+                },
+                iconTheme: {
+                  primary: 'var(--primary-color)',
+                  secondary: '#fff',
+                },
               },
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
-              },
-            },
-          }}
+            }}
           />
         </MotionConfig>
       </AuthProvider>

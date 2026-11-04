@@ -420,3 +420,81 @@ Session waitlist when maxStudents is full.
 Strongly recommended future item (not included in Phases 11–13): add
 forgot-password on login, because verification SMS/email is already built for
 profile changes. Confirm before assigning it a phase.
+
+Phase 14 — Public UX trust, accessibility, navigation, and performance
+
+Why: The public-site audit found a test-named program visible at a misleading
+price, raw registration validation text, incomplete payment/registration
+outcome states, WCAG contrast and accessible-name findings, an overlong mobile
+menu, and empty homepage image sources.
+
+Spec-driven artifacts:
+
+- `specs/014-public-ux-hardening/spec.md`
+- `specs/014-public-ux-hardening/plan.md`
+- `specs/014-public-ux-hardening/tasks.md`
+
+Scope includes explicit program publication visibility, Persian form and
+transaction feedback, server-verified registration success, targeted
+accessibility and heading fixes, mobile navigation grouping, homepage image
+source validation, and measured production performance. Preserve all
+existing program visibility by default; explicitly unpublish only the
+audit-observed test record after confirming its identity. Do not change prices
+or invent content. Authenticated dashboard redesign remains out of scope.
+
+Done when: each phase passes its validation gate; the scoped public routes
+meet WCAG contrast/name/heading checks in both themes; mobile navigation
+preserves every destination; payment and registration outcomes cannot report
+unverified success; and production LCP/CLS/transfer measurements and any
+environment limitations are recorded in the convergence notes.
+
+Phase 15 — Security findings remediation
+
+Why: The security review confirmed an unauthenticated API exposing full
+student registration and family/medical data. Dependency auditing also found
+high advisories in the runtime and tooling dependency graph, and the installed
+Next.js guidance recommends CSP as defense-in-depth; the current headers do
+not include one.
+
+Spec-driven artifacts:
+
+- `specs/015-security-hardening/spec.md`
+- `specs/015-security-hardening/plan.md`
+- `specs/015-security-hardening/tasks.md`
+
+Scope: remove or tightly authorize and minimize the unused `/api/students`
+endpoint; remediate high/critical dependency advisories based on reachability;
+and stage a tested CSP using Next.js 16.4.2 guidance. Do not treat the CSP gap
+as a confirmed vulnerability, broadly expose data to authenticated users, or
+upgrade unrelated dependencies.
+
+Done when: no unauthenticated caller can retrieve student or family data;
+dependency audit results have no undocumented high/critical exposure; CSP is
+validated against the site's critical flows before enforcement; and tests,
+typecheck, lint, build, and convergence evidence pass.
+
+Phase 16 — Audit-driven correctness and quality hardening
+
+Why: A broad code review found card subcomponents dropping supported DOM
+attributes, a checkout city-loading effect that can act on stale location
+state, an unused repository layer, and persistent lint/test diagnostic debt.
+The installed Vercel React guidance and current Next.js Pages Router docs were
+used; App Router patterns were excluded.
+
+Spec-driven artifacts:
+
+- `specs/016-audit-quality-hardening/spec.md`
+- `specs/016-audit-quality-hardening/plan.md`
+- `specs/016-audit-quality-hardening/tasks.md`
+
+Scope: restore card attribute forwarding; make checkout city requests
+race-safe; remove the repository layer only if it remains unreferenced or
+type the required API; improve active form/view-model typing; and clean up
+lint/test diagnostics without suppressions. Existing Phase 14 public UX and
+Phase 15 security findings remain owned by those phases.
+
+Done when: card prop and out-of-order checkout regressions are covered;
+unused abstractions are removed or typed based on verified callers; tracked
+first-party lint warnings are resolved or documented; identified React/Vite
+test warnings are eliminated; and tests, typecheck, lint, build, and
+convergence evidence pass.

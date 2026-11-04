@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CalendarDaysIcon,
@@ -12,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import type { NewsCategoryViewModel } from '@/types/viewModels/content';
 import { NewsArticleViewModel } from '@/types/viewModels/content';
+import { imageOptimizationProps } from '@/lib/image-optimization';
 
 interface NewsUpdatesProps {
   categories: NewsCategoryViewModel[];
@@ -91,7 +93,7 @@ const getTypeColor = (type: string) => {
 const getTypeBgColor = (type: string) => {
   switch (type) {
     case 'VIDEO': {
-      return 'from-red-500 to-red-600';
+      return 'from-primary-600 to-primary-700';
     }
     case 'GALLERY': {
       return 'from-purple-500 to-purple-600';
@@ -133,10 +135,13 @@ function FeaturedNewsCard({
               مرورگر شما از پخش ویدئو پشتیبانی نمی‌کند.
             </video>
           ) : hasArticleImage(article.image) ? (
-            <img
+            <Image
               src={article.image}
               alt={article.title}
-              className="absolute inset-0 w-full h-full object-cover opacity-80"
+              fill
+              {...imageOptimizationProps(article.image)}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover opacity-80"
             />
           ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -153,7 +158,7 @@ function FeaturedNewsCard({
           <span>{getTypeLabel(article.type)}</span>
         </div>
         {article.featured && (
-          <div className="absolute top-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+          <div className="absolute top-4 left-4 bg-achievement-gold text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
             <StarIcon className="w-4 h-4 fill-current" />
             ویژه
           </div>
@@ -240,10 +245,13 @@ function NewsCard({
               مرورگر شما از پخش ویدئو پشتیبانی نمی‌کند.
             </video>
           ) : hasArticleImage(article.image) ? (
-            <img
+            <Image
               src={article.image}
               alt={article.title}
-              className="absolute inset-0 w-full h-full object-cover opacity-80"
+              fill
+              {...imageOptimizationProps(article.image)}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover opacity-80"
             />
           ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -467,7 +475,7 @@ export default function NewsUpdates({
         >
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-2xl font-bold text-gray-900">اخبار ویژه</h3>
-            <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+            <span className="bg-achievement-gold text-white px-3 py-1 rounded-full text-sm font-medium">
               {featuredNews.length} خبر ویژه
             </span>
           </div>

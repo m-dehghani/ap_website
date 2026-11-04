@@ -13,7 +13,10 @@ export type StudentRegistrationViewModel = Pick<
   | 'emergencyContactPhone'
   | 'medicalConditions'
 > & {
-  payments: Pick<AdminRegistrationViewModel['payments'][number], 'status'>[];
+  payments: Pick<
+    AdminRegistrationViewModel['payments'][number],
+    'id' | 'amount' | 'currency' | 'status' | 'createdAt'
+  >[];
   program: Pick<AdminRegistrationViewModel['program'], 'id' | 'name' | 'coach'>;
 };
 

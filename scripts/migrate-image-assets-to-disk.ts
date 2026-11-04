@@ -6,7 +6,7 @@ async function main() {
   const prisma = await getPrisma();
   try {
     const count = await migrateImageAssetsToDisk(prisma);
-    console.info(`Migrated ${count} legacy image assets to disk.`);
+    console.info(`Migrated ${count} legacy image assets to configured storage.`);
   } finally {
     await prisma.$disconnect();
   }

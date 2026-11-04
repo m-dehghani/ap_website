@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { APP_CONFIG } from '@/constants/app';
 import Layout from '../components/Layout';
 import PageHero from '../components/PageHero';
@@ -8,13 +8,29 @@ import {
   MapPinIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const ContactPage: React.FC = () => {
+  const formRef = useRef<HTMLFormElement>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [statusMessage, setStatusMessage] = useState('');
   const [failureMessage, setFailureMessage] = useState('');
   const [mailtoFallback, setMailtoFallback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const firstInvalidField = [
+      'firstName',
+      'lastName',
+      'email',
+      'phone',
+      'message',
+    ].find((name) => fieldErrors[name]?.length);
+    if (!firstInvalidField) return;
+
+    const field = formRef.current?.elements.namedItem(firstInvalidField);
+    if (field instanceof HTMLElement) field.focus();
+  }, [fieldErrors]);
 
   const handleContactSubmit = async (
     event: React.FormEvent<HTMLFormElement>,
@@ -115,12 +131,17 @@ const ContactPage: React.FC = () => {
                 پیام خود را ارسال کنید
               </h2>
               <form
+                ref={formRef}
                 className="space-y-6"
                 onSubmit={handleContactSubmit}
                 noValidate
               >
                 {statusMessage && (
-                  <p className="rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">
+                  <p
+                    className="rounded-lg bg-emerald-50 p-4 text-emerald-800"
+                    role="status"
+                    aria-live="polite"
+                  >
                     {statusMessage}
                   </p>
                 )}
@@ -201,6 +222,8 @@ const ContactPage: React.FC = () => {
                     name="email"
                     autoComplete="email"
                     spellCheck={false}
+                    autoCapitalize="none"
+                    autoCorrect="off"
                     required
                     aria-invalid={Boolean(fieldErrors.email?.length)}
                     aria-describedby={
@@ -227,6 +250,7 @@ const ContactPage: React.FC = () => {
                     id="phone"
                     name="phone"
                     autoComplete="tel"
+                    spellCheck={false}
                     aria-invalid={Boolean(fieldErrors.phone?.length)}
                     aria-describedby={
                       fieldErrors.phone?.length ? 'phone-error' : undefined
@@ -282,8 +306,16 @@ const ContactPage: React.FC = () => {
                   type="submit"
                   className="w-full btn btn-primary"
                   disabled={isSubmitting}
+                  aria-busy={isSubmitting}
                 >
-                  {isSubmitting ? 'در حال ارسال…' : 'ارسال پیام'}
+                  {isSubmitting ? (
+                    <>
+                      <LoadingSpinner />
+                      در حال ارسال…
+                    </>
+                  ) : (
+                    'ارسال پیام'
+                  )}
                 </button>
               </form>
             </div>
@@ -356,7 +388,7 @@ const ContactPage: React.FC = () => {
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
                   موقعیت مکانی
                 </h2>
-                <div className="bg-linear-to-br from-primary-50 to-primary-100 border border-primary-200 rounded-2xl min-h-64 p-6 flex flex-col items-center justify-center gap-3 text-center">
+                <div className="flex min-h-64 flex-col items-center justify-center gap-3 p-6 text-center">
                   <MapPinIcon
                     className="w-10 h-10 text-primary-700"
                     aria-hidden="true"

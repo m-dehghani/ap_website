@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import DatePicker, { DateObject } from 'react-multi-date-picker';
 import persian from 'react-date-object/calendars/persian';
 import persian_fa from 'react-date-object/locales/persian_fa';
@@ -27,6 +27,8 @@ const PersianDatePicker: React.FC<PersianDatePickerProps> = ({
   ariaDescribedBy,
   autoComplete,
 }) => {
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
   return (
     <DatePicker
       id={id}
@@ -37,6 +39,8 @@ const PersianDatePicker: React.FC<PersianDatePickerProps> = ({
       value={value}
       maxDate={new Date()}
       calendarPosition="bottom-right"
+      onOpen={() => setCalendarOpen(true)}
+      onClose={() => setCalendarOpen(false)}
       inputMode="numeric"
       placeholder="مثلاً ۱۳۹۰/۰۲/۱۵"
       required={required}
@@ -69,11 +73,15 @@ const PersianDatePicker: React.FC<PersianDatePickerProps> = ({
           <button
             type="button"
             onClick={openCalendar}
+            aria-expanded={calendarOpen}
             aria-label="باز کردن تقویم شمسی"
             className="absolute inset-y-0 left-0 flex items-center px-3 text-gray-500 hover:text-primary-600"
           >
             <CalendarDaysIcon className="h-5 w-5" />
           </button>
+          <span className="sr-only" aria-live="polite">
+            {calendarOpen ? 'تقویم شمسی باز است' : ''}
+          </span>
         </div>
       )}
     />

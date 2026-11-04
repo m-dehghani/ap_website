@@ -4,6 +4,7 @@ import { useCallback, useSyncExternalStore } from 'react';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { formatToman } from '@/lib/format';
+import { imageOptimizationProps } from '@/lib/image-optimization';
 import {
   getShopFavoritesSnapshot,
   parseShopFavoritesSnapshot,
@@ -31,8 +32,10 @@ export interface ShopProductCardData {
 
 export default function ProductCard({
   product,
+  eagerImage = false,
 }: {
   product: ShopProductCardData;
+  eagerImage?: boolean;
 }) {
   const image = product.images[0];
   const discounted = product.displayPrice < product.regularPrice;
@@ -73,7 +76,8 @@ export default function ProductCard({
               src={image}
               alt={product.name}
               fill
-              unoptimized
+              {...imageOptimizationProps(image)}
+              loading={eagerImage ? 'eager' : undefined}
               sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 25vw"
               className="object-cover transition-transform duration-300 group-hover:scale-105 group-focus-visible:scale-105"
             />
@@ -92,7 +96,7 @@ export default function ProductCard({
             </span>
           )}
           {product.isComingSoon && (
-            <span className="absolute bottom-3 right-3 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white">
+            <span className="absolute bottom-3 right-3 rounded-full bg-training-orange px-3 py-1 text-xs font-bold text-white">
               به‌زودی
             </span>
           )}
@@ -104,10 +108,10 @@ export default function ProductCard({
           </h3>
           <div className="mt-2 flex items-center gap-1 text-sm text-amber-600">
             <span aria-label={`امتیاز ${averageRating.toFixed(1)} از ۵`}>★</span>
-            <span>{averageRating.toFixed(1)}</span>
-            <span className="text-slate-500">({reviewCount} دیدگاه)</span>
+            <span className="tabular-nums">{averageRating.toFixed(1)}</span>
+            <span className="tabular-nums text-slate-500">({reviewCount} دیدگاه)</span>
           </div>
-          <p className="mt-2 text-lg font-bold leading-snug text-slate-900">
+          <p className="mt-2 text-lg font-bold leading-snug text-slate-900 tabular-nums">
             {formatToman(product.displayPrice)}
             {discounted && (
               <del className="mr-2 text-sm font-normal text-slate-600">
@@ -119,7 +123,7 @@ export default function ProductCard({
             {product.shortDescription || 'مشاهده توضیحات و انتخاب گزینه‌ها'}
           </p>
           {product.availableStock > 0 && product.availableStock < 2 && (
-            <p className="mt-2 text-sm font-semibold text-rose-700">
+            <p className="mt-2 animate-pulse text-sm font-semibold text-rose-700 motion-reduce:animate-none">
               فقط {product.availableStock} عدد باقی مانده
             </p>
           )}

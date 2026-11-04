@@ -16,7 +16,6 @@ const PageHero: React.FC<PageHeroProps> = ({
   return (
     <section className="relative overflow-hidden bg-linear-to-br from-navy-900 via-primary-900 to-primary-700 text-white">
       <div className="absolute inset-0 hero-pattern opacity-80" />
-      <div className="absolute inset-0 bg-pattern-grid opacity-30" />
       <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-primary-500/20 blur-3xl" />
       <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-secondary-500/20 blur-3xl" />
 
@@ -41,4 +40,3 @@ const PageHero: React.FC<PageHeroProps> = ({
 };
 
 export default PageHero;
-

@@ -22,6 +22,9 @@ function applyTheme(preference: ThemePreference) {
   document
     .querySelector<HTMLMetaElement>('meta[name="color-scheme"]')
     ?.setAttribute('content', preference === 'system' ? 'light dark' : preference);
+  document
+    .querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    ?.setAttribute('content', isDark ? '#160f12' : '#f8fafc');
 }
 
 export function useThemePreference() {

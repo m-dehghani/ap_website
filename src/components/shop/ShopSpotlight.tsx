@@ -41,9 +41,9 @@ export default function ShopSpotlight() {
         </div>
         {products.length > 0 && (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <div key={product.id} className="rounded-2xl bg-white text-slate-900 shadow-xl shadow-black/15">
-                <ProductCard product={product} />
+            {products.map((product, index) => (
+              <div key={product.id} className="text-slate-900">
+                <ProductCard product={product} eagerImage={index === 0} />
               </div>
             ))}
           </div>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { formatNumber } from '@/lib/format';
 
 const LOCALIZED_DIGITS = '۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩';
 const LOCALIZED_DIGIT_PATTERN = /[۰-۹٠-٩]/g;
@@ -41,7 +42,7 @@ export function useAnimatedStat(number: string) {
           const currentValue = Math.floor(targetValue * easedProgress);
 
           setDisplayValue(
-            `${currentValue.toLocaleString('fa-IR')}${suffix}`,
+            `${formatNumber(currentValue)}${suffix}`,
           );
 
           if (progress < 1) {

@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import ImageUploadField from '@/components/ImageUploadField';
 import ProfileAvatar from '@/components/ProfileAvatar';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { NAVIGATION } from '@/constants/app';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -36,6 +38,14 @@ export default function AdminLayout({
 
   const canOpenRoute =
     user?.role === 'ADMIN' || (isShopRoute && user?.role === 'SHOP_MANAGER');
+  const homeLink = NAVIGATION.main[0];
+  const adminBreadcrumbs = [
+    homeLink,
+    ...(router.pathname === '/admin'
+      ? []
+      : [{ label: 'پنل مدیریت', href: '/admin' }]),
+    { label: title },
+  ];
 
   if (loading || !canOpenRoute) {
     return (
@@ -107,7 +117,15 @@ export default function AdminLayout({
               </details>
             </div>
           </header>
-          <main className="p-5 lg:p-8">{children}</main>
+          <div className="px-6 pt-4">
+            <Breadcrumbs items={[homeLink, { label: title }]} />
+          </div>
+          <a href="#main-content" className="skip-to-content">
+            رفتن به محتوای اصلی
+          </a>
+          <main id="main-content" tabIndex={-1} className="p-5 lg:p-8">
+            {children}
+          </main>
         </div>
       </div>
     );
@@ -115,6 +133,9 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <a href="#main-content" className="skip-to-content">
+        رفتن به محتوای اصلی
+      </a>
       {/* Sidebar */}
       <aside className="relative z-50 w-full bg-white shadow-xl lg:fixed lg:inset-y-0 lg:right-0 lg:w-64">
         <div className="flex flex-col h-full">
@@ -485,8 +506,14 @@ export default function AdminLayout({
           </div>
         </header>
 
+        <div className="px-5 pt-4 lg:px-8">
+          <Breadcrumbs items={adminBreadcrumbs} />
+        </div>
+
         {/* Page Content */}
-        <main className="p-6 lg:p-8">{children}</main>
+        <main id="main-content" tabIndex={-1} className="p-6 lg:p-8">
+          {children}
+        </main>
       </div>
     </div>
   );

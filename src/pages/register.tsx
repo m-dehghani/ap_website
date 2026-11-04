@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
+import type { FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Layout from '@/components/Layout';
@@ -8,9 +9,16 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import { ProgramViewModel } from '@/types/viewModels/program';
 import { calculateAge, parsePersianBirthDate } from '@/lib/age';
-import { toPersianDigits } from '@/lib/format';
+import { formatCurrency, toPersianDigits } from '@/lib/format';
 import PersianDatePicker from '@/components/PersianDatePicker';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { FORM_VALIDATION } from '@/constants/app';
+import { getPasswordStrength } from '@/lib/password-strength';
+import {
+  clearRegistrationDraft,
+  readRegistrationDraft,
+  saveRegistrationDraft,
+} from '@/lib/registration-draft';
 
 const registrationSchema = z
   .object({
@@ -61,21 +69,65 @@ type RegistrationFormData = z.infer<typeof registrationSchema>;
 
 const RegisterPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const [programs, setPrograms] = useState<ProgramViewModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [savedDraftValues, setSavedDraftValues] = useState<string | null>(null);
   const router = useRouter();
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    watch,
+    control,
+    formState: { errors, isDirty },
     setValue,
+    trigger,
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
+    shouldFocusError: true,
   });
 
-  const watchedDateOfBirth = watch('dateOfBirth');
+  useEffect(() => {
+    let draft;
+    try {
+      draft = readRegistrationDraft(window.localStorage);
+    } catch {
+      return;
+    }
+    if (!draft) return;
+    Object.entries(draft).forEach(([field, value]) => {
+      setValue(field as keyof RegistrationFormData, value as never, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
+    });
+  }, [setValue]);
+
+  const formValues = useWatch({ control });
+  const serializedFormValues = JSON.stringify(formValues);
+
+  useEffect(() => {
+    if (!isDirty || isSubmitting) return;
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = saveRegistrationDraft(
+          window.localStorage,
+          JSON.parse(serializedFormValues) as Record<string, unknown>,
+        );
+        setSavedDraftValues(saved ? serializedFormValues : null);
+      } catch {
+        setSavedDraftValues(null);
+      }
+    }, 30_000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isDirty, isSubmitting, serializedFormValues]);
+
+  const watchedDateOfBirth = useWatch({ control, name: 'dateOfBirth' });
+  const watchedPassword = useWatch({ control, name: 'password' });
+  const passwordStrength = getPasswordStrength(watchedPassword ?? '');
   const birthDate = watchedDateOfBirth
     ? parsePersianBirthDate(watchedDateOfBirth)
     : null;
@@ -162,6 +214,11 @@ const RegisterPage: React.FC = () => {
       });
 
       if (response.ok) {
+        try {
+          clearRegistrationDraft(window.localStorage);
+        } catch {
+          // Browser storage is optional; successful registration takes priority.
+        }
         toast.success('ثبت نام با موفقیت انجام شد!');
         router.push('/registration-success');
       } else {
@@ -180,6 +237,26 @@ const RegisterPage: React.FC = () => {
   };
 
   const isMinor = age !== null && age < 18;
+  const stepValidationFields: FieldPath<RegistrationFormData>[][] = [
+    ['firstName', 'lastName', 'email', 'phone', 'password', 'dateOfBirth'],
+    ['program', 'experience'],
+    ['emergencyContactName', 'emergencyContact', 'terms'],
+  ];
+
+  const handleNextStep = async () => {
+    if (await trigger(stepValidationFields[currentStep])) {
+      setCurrentStep((step) => Math.min(step + 1, stepValidationFields.length - 1));
+    }
+  };
+
+  const handleStepSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    if (currentStep < stepValidationFields.length - 1) {
+      event.preventDefault();
+      void handleNextStep();
+      return;
+    }
+    void handleSubmit(onSubmit)(event);
+  };
 
   return (
     <Layout
@@ -202,42 +279,86 @@ const RegisterPage: React.FC = () => {
 
             {/* Form */}
             <div className="p-8">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+              <form
+                onSubmit={handleStepSubmit}
+                className="space-y-8"
+                noValidate
+              >
+                <p className="sr-only" aria-live="polite">
+                  {savedDraftValues === serializedFormValues
+                    ? 'پیش‌نویس این فرم در این دستگاه ذخیره شد.'
+                    : ''}
+                </p>
+                <p className="text-sm text-gray-500">
+                  پیش‌نویس پس از ۳۰ ثانیه ذخیره می‌شود؛ رمز عبور و اطلاعات
+                  پزشکی و تماس اضطراری ذخیره نمی‌شوند.
+                </p>
+                <nav aria-label="مراحل ثبت‌نام">
+                  <ol className="grid grid-cols-3 gap-2 text-center text-sm">
+                    {['اطلاعات شخصی', 'انتخاب برنامه', 'تکمیل ثبت‌نام'].map(
+                      (label, index) => (
+                        <li
+                          key={label}
+                          aria-current={currentStep === index ? 'step' : undefined}
+                          className={`rounded-lg px-2 py-3 ${
+                            currentStep === index
+                              ? 'bg-primary-700 font-semibold text-white'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          <span className="me-1">{toPersianDigits(index + 1)}.</span>
+                          {label}
+                        </li>
+                      ),
+                    )}
+                  </ol>
+                </nav>
                 {/* Personal Information */}
-                <div>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                <section
+                  hidden={currentStep !== 0}
+                  aria-labelledby="registration-personal-step"
+                >
+                  <h2 id="registration-personal-step" className="text-2xl font-semibold text-gray-900 mb-6">
                     اطلاعات شخصی
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="registration-first-name" className="block text-sm font-medium text-gray-700 mb-2">
                         نام *
                       </label>
                       <input
+                        id="registration-first-name"
                         type="text"
+                        autoComplete="given-name"
+                        aria-invalid={Boolean(errors.firstName)}
+                        aria-describedby={errors.firstName ? 'registration-first-name-error' : undefined}
                         {...register('firstName')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         placeholder="نام خود را وارد کنید"
                       />
                       {errors.firstName && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p id="registration-first-name-error" className="mt-1 text-sm text-red-600">
                           {errors.firstName.message}
                         </p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="registration-last-name" className="block text-sm font-medium text-gray-700 mb-2">
                         نام خانوادگی *
                       </label>
                       <input
+                        id="registration-last-name"
                         type="text"
+                        autoComplete="family-name"
+                        aria-invalid={Boolean(errors.lastName)}
+                        aria-describedby={errors.lastName ? 'registration-last-name-error' : undefined}
                         {...register('lastName')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         placeholder="نام خانوادگی خود را وارد کنید"
                       />
                       {errors.lastName && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p id="registration-last-name-error" className="mt-1 text-sm text-red-600">
                           {errors.lastName.message}
                         </p>
                       )}
@@ -257,12 +378,16 @@ const RegisterPage: React.FC = () => {
                         type="email"
                         autoComplete="email"
                         spellCheck={false}
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        aria-invalid={Boolean(errors.email)}
+                        aria-describedby={errors.email ? 'account-email-error' : undefined}
                         {...register('email')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         placeholder="ایمیل (اختیاری)"
                       />
                       {errors.email && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p id="account-email-error" className="mt-1 text-sm text-red-600">
                           {errors.email.message}
                         </p>
                       )}
@@ -279,12 +404,16 @@ const RegisterPage: React.FC = () => {
                         id="account-phone"
                         type="tel"
                         autoComplete="tel"
+                        spellCheck={false}
+                        autoCorrect="off"
+                        aria-invalid={Boolean(errors.phone)}
+                        aria-describedby={errors.phone ? 'account-phone-error' : undefined}
                         {...register('phone')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         placeholder="شماره تلفن (اختیاری)"
                       />
                       {errors.phone && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p id="account-phone-error" className="mt-1 text-sm text-red-600">
                           {errors.phone.message}
                         </p>
                       )}
@@ -306,13 +435,51 @@ const RegisterPage: React.FC = () => {
                       id="account-password"
                       type="password"
                       autoComplete="new-password"
+                      spellCheck={false}
+                      aria-invalid={Boolean(errors.password)}
+                      aria-describedby={[
+                        'password-strength',
+                        errors.password ? 'account-password-error' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
                       {...register('password')}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       placeholder="حداقل ۱۲ کاراکتر"
                     />
+                    <div className="mt-2" id="password-strength">
+                      <div
+                        role="meter"
+                        aria-label="قدرت رمز عبور"
+                        aria-valuemin={0}
+                        aria-valuemax={4}
+                        aria-valuenow={passwordStrength.score}
+                        aria-valuetext={passwordStrength.label}
+                        className="grid grid-cols-4 gap-1"
+                      >
+                        {Array.from({ length: 4 }, (_, index) => (
+                          <span
+                            key={index}
+                            aria-hidden="true"
+                            className={`h-1.5 rounded-full ${
+                              index < passwordStrength.score
+                                ? passwordStrength.score < 2
+                                  ? 'bg-red-600'
+                                  : passwordStrength.score < 4
+                                    ? 'bg-amber-500'
+                                    : 'bg-green-600'
+                                : 'bg-gray-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="mt-1 text-xs text-gray-600">
+                        قدرت رمز: {passwordStrength.label}
+                      </p>
+                    </div>
                     {errors.password && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p id="account-password-error" className="mt-1 text-sm text-red-600">
                         {errors.password.message}
                       </p>
                     )}
@@ -375,18 +542,19 @@ const RegisterPage: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                </div>
-
-                <hr className="border-gray-100" />
+                </section>
 
                 {/* Program Selection */}
-                <div>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                <section
+                  hidden={currentStep !== 1}
+                  aria-labelledby="registration-program-step"
+                >
+                  <h2 id="registration-program-step" className="text-2xl font-semibold text-gray-900 mb-6">
                     انتخاب برنامه
                   </h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="registration-program" className="block text-sm font-medium text-gray-700 mb-2">
                         برنامه آموزشی *
                       </label>
                       {age === null ? (
@@ -400,14 +568,17 @@ const RegisterPage: React.FC = () => {
                         </div>
                       ) : filteredPrograms.length > 0 ? (
                         <select
+                          id="registration-program"
+                          aria-invalid={Boolean(errors.program)}
+                          aria-describedby={errors.program ? 'registration-program-error' : undefined}
                           {...register('program')}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         >
                           <option value="">برنامه را انتخاب کنید</option>
                           {filteredPrograms.map((program) => (
                             <option key={program.id} value={program.id}>
-                              {program.name} - {program.price.toLocaleString()}{' '}
-                              تومان ({program.duration} ماه)
+                              {program.name} - {formatCurrency(program.price, 'TOMAN')}{' '}
+                              ({program.duration} ماه)
                             </option>
                           ))}
                         </select>
@@ -417,17 +588,20 @@ const RegisterPage: React.FC = () => {
                         </div>
                       )}
                       {errors.program && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p id="registration-program-error" className="mt-1 text-sm text-red-600">
                           {errors.program.message}
                         </p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="registration-experience" className="block text-sm font-medium text-gray-700 mb-2">
                         سطح تجربه *
                       </label>
                       <select
+                        id="registration-experience"
+                        aria-invalid={Boolean(errors.experience)}
+                        aria-describedby={errors.experience ? 'registration-experience-error' : undefined}
                         {...register('experience')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       >
@@ -443,15 +617,12 @@ const RegisterPage: React.FC = () => {
                         </option>
                       </select>
                       {errors.experience && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p id="registration-experience-error" className="mt-1 text-sm text-red-600">
                           {errors.experience.message}
                         </p>
                       )}
                     </div>
                   </div>
-                </div>
-
-                <hr className="border-gray-100" />
 
                 {/* Parent/Guardian Information (for minors) */}
                 {isMinor && (
@@ -462,34 +633,45 @@ const RegisterPage: React.FC = () => {
                       </h2>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label htmlFor="registration-parent-name" className="block text-sm font-medium text-gray-700 mb-2">
                             نام والدین / سرپرست *
                           </label>
                           <input
+                            id="registration-parent-name"
                             type="text"
+                            autoComplete="name"
+                            aria-invalid={Boolean(errors.parentName)}
+                            aria-describedby={errors.parentName ? 'registration-parent-name-error' : undefined}
                             {...register('parentName')}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                             placeholder="نام والدین را وارد کنید"
                           />
                           {errors.parentName && (
-                            <p className="mt-1 text-sm text-red-600">
+                            <p id="registration-parent-name-error" className="mt-1 text-sm text-red-600">
                               {errors.parentName.message}
                             </p>
                           )}
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label htmlFor="registration-parent-email" className="block text-sm font-medium text-gray-700 mb-2">
                             ایمیل والدین / سرپرست *
                           </label>
                           <input
+                            id="registration-parent-email"
                             type="email"
+                            autoComplete="email"
+                            spellCheck={false}
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            aria-invalid={Boolean(errors.parentEmail)}
+                            aria-describedby={errors.parentEmail ? 'registration-parent-email-error' : undefined}
                             {...register('parentEmail')}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                             placeholder="ایمیل والدین را وارد کنید"
                           />
                           {errors.parentEmail && (
-                            <p className="mt-1 text-sm text-red-600">
+                            <p id="registration-parent-email-error" className="mt-1 text-sm text-red-600">
                               {errors.parentEmail.message}
                             </p>
                           )}
@@ -500,42 +682,57 @@ const RegisterPage: React.FC = () => {
                     <hr className="border-gray-100" />
                   </>
                 )}
+                </section>
 
                 {/* Emergency Contact */}
+                <section
+                  hidden={currentStep !== 2}
+                  aria-labelledby="registration-emergency-step"
+                >
                 <div>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                  <h2 id="registration-emergency-step" className="text-2xl font-semibold text-gray-900 mb-6">
                     تماس اضطراری
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="registration-emergency-name" className="block text-sm font-medium text-gray-700 mb-2">
                         نام تماس اضطراری *
                       </label>
                       <input
+                        id="registration-emergency-name"
                         type="text"
+                        autoComplete="name"
+                        aria-invalid={Boolean(errors.emergencyContactName)}
+                        aria-describedby={errors.emergencyContactName ? 'registration-emergency-name-error' : undefined}
                         {...register('emergencyContactName')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         placeholder="نام را وارد کنید"
                       />
                       {errors.emergencyContactName && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p id="registration-emergency-name-error" className="mt-1 text-sm text-red-600">
                           {errors.emergencyContactName.message}
                         </p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="registration-emergency-phone" className="block text-sm font-medium text-gray-700 mb-2">
                         شماره تلفن اضطراری *
                       </label>
                       <input
+                        id="registration-emergency-phone"
                         type="tel"
+                        autoComplete="tel"
+                        spellCheck={false}
+                        autoCorrect="off"
+                        aria-invalid={Boolean(errors.emergencyContact)}
+                        aria-describedby={errors.emergencyContact ? 'registration-emergency-phone-error' : undefined}
                         {...register('emergencyContact')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         placeholder="شماره تلفن را وارد کنید"
                       />
                       {errors.emergencyContact && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p id="registration-emergency-phone-error" className="mt-1 text-sm text-red-600">
                           {errors.emergencyContact.message}
                         </p>
                       )}
@@ -551,10 +748,11 @@ const RegisterPage: React.FC = () => {
                     اطلاعات پزشکی
                   </h2>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="registration-medical-conditions" className="block text-sm font-medium text-gray-700 mb-2">
                       بیماری‌ها یا آلرژی‌ها
                     </label>
                     <textarea
+                      id="registration-medical-conditions"
                       {...register('medicalConditions')}
                       rows={4}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
@@ -574,11 +772,14 @@ const RegisterPage: React.FC = () => {
                   <div className="bg-gray-50 rounded-lg p-6">
                     <div className="flex items-start">
                       <input
+                        id="registration-terms"
                         type="checkbox"
+                        aria-invalid={Boolean(errors.terms)}
+                        aria-describedby={errors.terms ? 'registration-terms-error' : undefined}
                         {...register('terms')}
                         className="mt-1 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                       />
-                      <label className="mr-3 block text-sm text-gray-900">
+                      <label htmlFor="registration-terms" className="mr-3 block text-sm text-gray-900">
                         با{' '}
                         <Link
                           href="/terms"
@@ -597,24 +798,53 @@ const RegisterPage: React.FC = () => {
                       </label>
                     </div>
                     {errors.terms && (
-                      <p className="mt-2 text-sm text-red-600">
+                      <p id="registration-terms-error" className="mt-2 text-sm text-red-600">
                         {errors.terms.message}
                       </p>
                     )}
                   </div>
                 </div>
 
-                {/* Submit Button */}
+                </section>
+
+                {/* Step Controls */}
                 <div className="pt-6">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-primary-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-lg"
-                  >
-                    {isSubmitting
-                      ? 'در حال پردازش...'
-                      : 'تکمیل ثبت نام و پرداخت'}
-                  </button>
+                  <div className="flex gap-3">
+                    {currentStep > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep((step) => step - 1)}
+                        className="min-h-12 flex-1 rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50"
+                      >
+                        مرحله قبل
+                      </button>
+                    )}
+                    {currentStep < stepValidationFields.length - 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => void handleNextStep()}
+                        className="min-h-12 flex-1 rounded-lg bg-primary-700 px-6 py-3 text-lg font-semibold text-white hover:bg-primary-800"
+                      >
+                        مرحله بعد
+                      </button>
+                    ) : (
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        aria-busy={isSubmitting}
+                        className="min-h-12 flex-1 rounded-lg bg-primary-700 px-6 py-4 text-lg font-semibold text-white transition-colors duration-200 hover:bg-primary-800 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <LoadingSpinner />
+                            در حال ارسال…
+                          </>
+                        ) : (
+                          'تکمیل ثبت نام و پرداخت'
+                        )}
+                      </button>
+                    )}
+                  </div>
                   <p className="mt-3 text-center text-sm text-gray-500">
                     برای تکمیل ثبت نام به صفحه پرداخت امن هدایت می‌شوید.
                   </p>

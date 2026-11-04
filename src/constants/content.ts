@@ -105,9 +105,9 @@ export const FEATURES = [
     title: 'برنامه‌های تخصصی',
     description:
       'برنامه‌های آموزشی اختصاصی که نیازهای رشد جسمی و ذهنی خاص هر گروه سنی را پوشش می‌دهد.',
-    color: 'from-emerald-500 to-emerald-600',
-    bgColor: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
+    color: 'from-accent-700 to-accent-800',
+    bgColor: 'bg-accent-50',
+    iconColor: 'text-accent-700',
     stats: '۴ برنامه',
   },
   {
@@ -159,7 +159,7 @@ export const FEATURE_STATS = [
     number: '۱۰+',
     label: 'سال تجربه',
     icon: 'ClockIcon',
-    color: 'text-emerald-600',
+    color: 'text-accent-700',
   },
   {
     number: '۲۵+',
@@ -576,7 +576,7 @@ export const ABOUT_STATISTICS = [
   { number: '۵۰۰+', label: 'بازیکن فعال', color: 'text-primary-600' },
   { number: '۲۵+', label: 'قهرمانی', color: 'text-secondary-600' },
   { number: '۱۵+', label: 'بازیکن حرفه‌ای', color: 'text-accent-600' },
-  { number: '۱۰+', label: 'سال تجربه', color: 'text-emerald-600' },
+  { number: '۱۰+', label: 'سال تجربه', color: 'text-accent-700' },
 ] as const;
 
 export const ABOUT_TEAM = [
