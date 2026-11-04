@@ -507,10 +507,29 @@ listed decisions, then write its `plan.md` and atomic `tasks.md` under the
 matching `specs/NNN-short-name/` directory. Preserve the existing constitution
 and stop at each phase boundary.
 
+**Execution dependencies**
+
+- Phase 17 requires Phase 2 registration integrity and Phase 14's signed
+  registration-success proof. Do not close Phase 17 until its proof-flow
+  restoration, regression tests, and remaining quality gates pass.
+- Phase 18 requires the Phase 3–5 tuition-expiry, shop-reservation, and refund
+  invariants to be complete or explicitly revalidated before payment lifecycle
+  changes.
+- Phase 19 requires Phase 11 mobile behavior and Phase 14 navigation and
+  accessibility rules. Phase 20 consumes its news detail route and admin-shell
+  invariant.
+- Phase 20 requires Phase 12 durable upload/reference handling and Phase 19;
+  its storage docs and deployment persistence must be reconciled before media
+  implementation.
+- Phase 21 runs after Phases 17–20, but each feature phase must add its own
+  focused tests and quality gates rather than deferring tests to the audit.
+
 ### Phase 17 — Registration CAPTCHA and contact activation
 
-**Status:** Backlog; the provider and activation policy below are user-approved
-inputs for the future phase specification.
+**Status:** In progress; the Phase 14 signed registration-success proof is
+restored and focused proof/activation tests, typecheck, changed-file lint, and
+production build pass. Full-suite and browser/E2E validation remain open in
+`specs/017-registration-activation/converge.md`.
 
 **Why:** Public registration currently has no CAPTCHA or post-registration
 contact activation flow. Profile verification already supports email and phone
@@ -547,7 +566,8 @@ challenges, but it does not activate a newly registered account.
   Unverified users must not gain protected student access; they must retain a
   safe way to complete or resend verification. Preserve existing session,
   registration-capacity, duplicate-contact, and registration-success-proof
-  invariants.
+  invariants. The convergence report records restoration and focused tests of
+  the Phase 14 signed proof flow.
 - **FR-17.4 — Data compatibility:** Reuse `User.emailVerifiedAt` and
   `User.phoneVerifiedAt` where sufficient. Add schema changes only if the
   activation state cannot be represented safely by verified-contact fields.
@@ -569,50 +589,58 @@ challenges, but it does not activate a newly registered account.
 - Update the relevant registration/session authorization helper and
   `src/pages/api/auth/me.ts` only after defining the pre-activation access
   policy in the phase spec.
+- Preserve and test the Phase 14 proof flow in
+  `src/lib/registration-confirmation.ts`,
+  `src/pages/api/register/confirmation.ts`, and
+  `src/pages/registration-success.tsx` (or approved equivalent files); do not
+  represent activation guidance alone as preserving proof.
 - Add focused tests alongside `src/__tests__/pages/register.test.tsx`,
   `src/__tests__/pages/api/register.test.ts`, and
   `src/__tests__/pages/api/student/profile-verification.test.ts`.
 
-**Dependencies:** Phase 2 registration integrity; preserve Phase 14's
-server-verified registration-success flow. Treat reCAPTCHA credentials and
-email/SMS delivery configuration as deployment dependencies.
+**Dependencies:** Phase 2 registration integrity and Phase 14's
+server-verified registration-success flow (restored; focused tests pass).
+Treat reCAPTCHA credentials and email/SMS delivery configuration as deployment
+dependencies.
 
 **Done when:** Registration cannot create an account without a server-verified
 CAPTCHA; either verified contact activates the account exactly once; expired,
 replayed, wrong-account, wrong-channel, and over-limit challenges are rejected;
 unverified accounts cannot access protected student features; regression tests
-prove the Phase 2 capacity and duplicate-contact invariants remain intact; and
-mocked CAPTCHA tests and browser checks cover registration, activation,
-resend, and recovery states.
+prove the Phase 2 capacity and duplicate-contact invariants remain intact; the
+Phase 14 signed registration-success proof is restored and tested; and mocked
+CAPTCHA tests and browser checks cover registration, activation, resend, and
+recovery states.
 
 ### Phase 18 — Admin-configurable Iranian payment gateways
 
-**Status:** Backlog; providers are user-selected: existing Zarinpal plus Zibal
-and Pasargad Bank.
+**Status:** Implemented for the clarified scope: Zarinpal and Zibal are
+configurable providers; Pasargad is explicitly deferred because its official
+product/API contract could not be verified. Automated quality gates pass; the
+migration has not been applied to a live database. See
+`specs/018-admin-configurable-payment-gateways/converge.md`.
 
-**Why:** Payment routes are currently hard-coded to Zarinpal. The initial test
-inventory found Zarinpal mocked in student checkout and student/shop callback
-tests, with assertions for balance credit, cancellation, expiry, and
-`REFUND_REQUIRED`; no direct Zarinpal adapter test or Zibal/Pasargad test was
-found. Re-run this inventory at phase start before treating it as current.
+**Why:** Payment routes were hard-coded to Zarinpal. The clarified scope adds
+Zibal and provider-specific payment configuration while retaining Zarinpal
+and deferring unsupported Pasargad integration.
 
 **User stories**
 
 - As a shopper or student, I can pay through any enabled supported gateway.
 - As an administrator, I can configure, enable, disable, and choose the
-  default among Zarinpal, Zibal, and Pasargad Bank without exposing credentials
-  to users or browser payloads.
+  default between supported Zarinpal and Zibal gateways without exposing
+  credentials to users or browser payloads; Pasargad is clearly marked
+  deferred and cannot be configured.
 - As an operator, I can diagnose payment outcomes without losing or applying a
   payment twice.
 
 **Functional requirements**
 
-- **FR-18.1 — Gateway adapters:** Keep Zarinpal operational and add Zibal and
-  Pasargad Bank as separate typed adapters behind a shared application
-  contract for checkout creation and payment verification. Confirm the
-  Pasargad product/API contract and required credential fields from its
-  official provider documentation during spec clarification; do not infer an
-  API from the bank name alone.
+- **FR-18.1 — Gateway adapters:** Keep Zarinpal operational and add Zibal as
+  a separate typed adapter behind a shared application contract for checkout
+  creation and payment verification. Defer Pasargad until its official
+  product/API contract and credential requirements can be verified; do not
+  infer an API from the bank name alone.
 - **FR-18.2 — Admin configuration:** Add an admin-only gateway configuration
   surface for credentials, enablement, and the default gateway. Allow only
   enabled, fully configured providers at checkout. Encrypt persisted
@@ -620,8 +648,8 @@ found. Re-run this inventory at phase start before treating it as current.
   `PAYMENT_CONFIG_ENCRYPTION_KEY`; never return secret values in HTML, API
   responses, logs, or test output. Admin reads return configured/masked state;
   admins can replace or clear a credential without retrieving its current
-  value. Do not silently fall back to plaintext database storage if the
-  encryption key is missing.
+  value. Validate mutations with Zod. Do not silently fall back to plaintext
+  database storage if the encryption key is missing.
 - **FR-18.3 — Payment identity and migration:** Persist the selected provider
   unambiguously for each tuition payment and shop order; preserve existing
   Zarinpal references and pending transactions during migration. Do not
@@ -651,7 +679,7 @@ found. Re-run this inventory at phase start before treating it as current.
 **Plan / candidate files**
 
 - Refactor `src/lib/zarinpal.ts` behind a shared payment-provider contract;
-  add dedicated adapter modules for Zibal and Pasargad Bank.
+  add a dedicated Zibal adapter. Keep Pasargad explicitly unsupported.
 - Update `src/pages/api/student/payments/index.ts`,
   `src/pages/api/student/payments/callback.ts`,
   `src/pages/api/shop/orders/index.ts`, and
@@ -674,18 +702,20 @@ found. Re-run this inventory at phase start before treating it as current.
 queue invariants. Complete or explicitly re-validate those phases before
 changing shared payment state transitions.
 
-**Done when:** All three providers can be configured and selected according
-to admin settings; each has isolated mocked request/verify tests; the
-provider-by-provider lifecycle matrix covers checkout through settled
+**Done when:** Every supported provider can be configured and selected
+according to admin settings; each has isolated mocked request/verify tests;
+the provider-by-provider lifecycle matrix covers checkout through settled
 post-payment effects for tuition and shop; migrations preserve pending
 Zarinpal payments; all amount/currency and secret-handling rules are
 documented; and targeted tests plus typecheck, lint, and relevant E2E checks
-pass.
+pass. Unsupported Pasargad behavior remains disabled and is documented.
 
 ### Phase 19 — Mobile homepage cards, article details, and admin shell audit
 
-**Status:** Backlog; scope includes restoring the mobile cards and auditing
-all admin subroutes, not a visual redesign.
+**Status:** Implementation complete; the latest Chromium route sweep passed all
+68 authenticated admin routes. Mobile homepage and missing-article browser
+checks returned HTTP 500 because the configured database lacks Phase 20's
+media migration column; see `specs/019-news-navigation-admin/converge.md`.
 
 **Why:** Mobile visitors need the homepage store and news cards restored.
 News “more/read more” actions must lead to the selected article rather than a
@@ -744,10 +774,17 @@ unpublished and missing article routes do not leak content; every current
 admin route is accounted for and authenticated subroutes show both sidebar
 and top menu; and focused unit/API/browser checks pass.
 
-### Phase 20 — Product/news video uploads, Aparat embeds, and site logo
+### Phase 20 — Product/news video uploads, Aparat integration, and site logo
 
-**Status:** Backlog; Aparat is an embed-link workflow, not an automatic
-third-party upload integration.
+**Status:** Implementation and automated quality gates are complete. Owner
+clarifications limit Aparat support to URLs for videos already uploaded by the
+editor, approve the standard Aparat embed without guaranteed muted startup,
+and supersede Phase 12 storage with Vercel Blob on Vercel plus configured
+durable `UPLOADS_DIR` on other production hosts. Browser verification and
+real-deployment persistence/migration checks remain open. The admin payment
+browser journey passed; the homepage smoke check is blocked by the unapplied
+media migration, and a video-specific browser journey was not run. See
+`specs/020-video-media-and-site-logo/converge.md`.
 
 **Why:** Product and news forms need managed video media. News already has a
 `videoUrl` field, while products do not have a corresponding video field.
@@ -759,40 +796,45 @@ Administrators also need a managed website-logo upload.
   from the corresponding create/edit form.
 - As a visitor, I can play a video with visible controls, mute/unmute it, and
   enter full screen; uploaded videos start muted.
-- As an editor, I can save an Aparat video URL separately and show its embed
-  on the relevant product or news page.
+- As an editor, I can provide an existing Aparat video URL from the
+  product/news create/edit workflow. Aparat upload is performed outside this
+  application.
+- As a visitor, I can watch an Aparat video embedded on the relevant product
+  or news page.
 - As an administrator, I can upload and replace the website logo from an
   admin settings section.
 
 **Functional requirements**
 
 - **FR-20.1 — Upload and storage:** Store uploaded video objects under the
-  application-managed `uploads/` namespace with server-generated opaque keys;
-  never use the client filename as a path. Apply server-side size, extension,
+  `/uploads/` URL namespace with server-generated opaque names; never trust or
+  concatenate client filenames into paths. Apply server-side size, extension,
   MIME, and file-signature checks, authorization, and safe response headers.
-  Support MP4 video up to 100 MiB per file; verify that the upload and serving
-  path supports this limit before implementation and seek approval before
-  changing the format or limit.
-- **FR-20.2 — Production durability:** Resolve the storage discrepancy before
-  implementation: `production.md` documents private Vercel Blob storage with
-  an `uploads/` prefix, while `specs/012-profile-cms-uploads/plan.md` describes
-  PostgreSQL image storage and the repository also contains a local `uploads/`
-  directory. Preserve the user's `uploads/` storage namespace, but do not
-  write production uploads to an ephemeral Vercel filesystem or assume public
-  directory writes are durable. The approved phase plan must name the actual
-  storage adapter per deployment target and verify media remains fetchable
-  after restart/redeploy.
+  Local video uploads from CMS forms must be saved through this durable
+  `/uploads/` flow.
+  Enforce the approved 4 MiB Vercel video limit and 100 MiB limit on other
+  production hosts.
+- **FR-20.2 — Production durability:** Use Vercel Blob on Vercel and a
+  configured durable `UPLOADS_DIR` on other production hosts, superseding
+  Phase 12's PostgreSQL-byte decision. Serve assets through stable
+  `/uploads/<opaque-id>` routes and verify availability after restart/redeploy
+  before rollout. Do not write production media to ephemeral filesystems.
 - **FR-20.3 — CMS fields and forms:** Add video asset references and separate
-  optional Aparat URLs to product and news content without treating an
-  arbitrary URL as an uploaded file. Connect both create and edit workflows
-  and protect all mutations with existing admin authorization and Zod
-  validation.
+  optional Aparat video references to product and news content without
+  treating an arbitrary URL as an uploaded file. Connect both create and edit
+  workflows and protect all mutations with existing admin authorization and
+  Zod validation. Store an Aparat URL as a separate provider reference.
+  Editors upload to Aparat outside this application; this application does
+  not call Aparat's upload API or store Aparat credentials.
 - **FR-20.4 — Playback:** Render uploaded media and Aparat embeds safely on
   their product/news pages. Uploaded videos expose native or equivalent
   accessible controls for play, pause, volume/mute, and full-screen entry;
-  initialize muted. Do not autoplay. Restrict Aparat URLs to approved HTTPS
-  hosts and use the provider-supported embed mechanism; do not inject
-  arbitrary iframe HTML.
+  initialize muted. Do not autoplay. Configure Aparat embeds to initialize
+  muted and support mute and full-screen controls where its documented player
+  API permits. Restrict Aparat URLs to approved HTTPS hosts and use the
+  provider-supported embed mechanism; do not inject arbitrary iframe HTML.
+  The owner approved the standard Aparat player and controls, accepting that
+  muted startup cannot be guaranteed.
 - **FR-20.5 — Website logo:** Add an admin-only branding/settings section to
   upload, preview, replace, and remove the site logo using the approved
   durable image-upload flow from Phase 12. Persist a stable asset reference,
@@ -808,7 +850,7 @@ Administrators also need a managed website-logo upload.
 - Extend `prisma/schema.prisma` (`NewsArticle.videoUrl` exists and
   `ShopProduct` currently has no video field) with explicit uploaded-video
   and Aparat reference fields; add a migration only after clarifying field
-  semantics.
+  semantics and how an Aparat upload result is identified.
 - Extend `src/pages/admin/content/news-articles/new.tsx`,
   `src/pages/admin/content/news-articles/[id].tsx`,
   `src/pages/admin/shop/index.tsx`, the relevant product API routes under
@@ -819,29 +861,33 @@ Administrators also need a managed website-logo upload.
 - Add `src/pages/admin/settings/branding.tsx` and
   `src/pages/api/admin/settings/branding.ts`; connect them to the Phase 12
   asset-reference lifecycle and shared site chrome.
+- Reconcile deployment guidance in `production.md` and `docs/application.md`
+  with the approved durable `/uploads/` URL and backing-store design.
 - Add focused API, storage, CMS form, playback, and browser tests. Use
   representative small fixture videos and never commit real media or secrets.
 
-**Dependencies:** Phase 12's approved durable upload/reference lifecycle;
-Phase 19's news detail page and shared admin layout. Do not begin production
-video upload implementation until the `uploads/` storage discrepancy is
-resolved and deployment persistence is verified.
+**Dependencies:** Phase 12's approved durable upload/reference lifecycle and
+Phase 19's news detail page and shared admin layout. The owner's clarified
+storage and Aparat decisions are recorded in the phase spec; actual deployment
+persistence remains a rollout check.
 
 **Done when:** Authorized editors can upload, replace, and remove product/news
-videos and the site logo; stored media survives the documented deployment
-restart/redeploy; video controls include full screen and mute with muted
-initial state and no autoplay; Aparat links are validated and embedded
-separately from local uploads; replacement failures preserve existing media;
-and targeted upload/API/UI tests pass.
+videos and the site logo; the documented durable store is verified across a
+deployment restart/redeploy; video controls include full screen and mute with
+muted initial state and no autoplay; Aparat links are validated and embedded
+separately from `/uploads/` assets; replacement failures preserve existing
+media; and targeted upload/API/UI tests pass.
 
 ### Phase 21 — Test completeness and test-suite value audit
 
-**Status:** Backlog; run after Phases 17–20, with focused tests added in every
-feature phase rather than deferred to this audit.
+**Status:** Audit and unit/typecheck/lint/build gates complete. Chromium passed
+all admin routes but two public-page checks are blocked by the configured
+database lacking the Phase 20 media migration; deployment persistence remains
+unverified. See `specs/021-test-suite-audit/converge.md`.
 
-**Why:** The repository currently has 68 source test files and 7 Playwright
-spec files. The Phase 16 report recorded 305 passing Vitest tests; rebaseline
-counts and behavior at phase start. This phase checks unit/integration test
+**Why:** At Phase 21 audit start, the repository had 87 source test files and
+420 passing Vitest tests, with 9 Playwright spec files. Rebaseline counts and
+behavior during this audit. This phase checks unit/integration test
 completeness and removes only tests shown to provide no durable verification
 value.
 
@@ -851,8 +897,9 @@ value.
   Playwright tests against critical user flows, including auth and role
   checks, registration/CAPTCHA/activation, student and shop checkout, each
   payment adapter and callback lifecycle, refunds, stock reservation,
-  upload authorization/storage, public news/product navigation, and admin
-  route layout. Record requirements-to-tests mapping and uncovered behavior.
+  upload authorization/storage, Aparat URL/embed workflows,
+  video playback controls, public news/product navigation, and admin route
+  layout. Record requirements-to-tests mapping and uncovered behavior.
 - **FR-21.2 — Valuable assertions:** Every retained test must assert
   externally meaningful behavior, a required invariant, or a regression.
   Prefer public request/response, database state, UI behavior, and adapter
@@ -865,8 +912,9 @@ value.
   Do not remove tests merely to reduce runtime or pass a failing suite.
 - **FR-21.4 — No hidden external dependencies:** Keep unit and integration
   suites deterministic and network-isolated; mock all configured payment
-  providers and delivery services at their external boundaries. Keep
-  production/sandbox provider smoke tests opt-in and credential-gated.
+  providers, Aparat upload/player boundaries, and delivery services at their
+  external boundaries. Keep production/sandbox provider smoke tests opt-in
+  and credential-gated.
 - **FR-21.5 — Quality gates:** Run the targeted suites, `npm test`,
   `npm run test:coverage`, `npm run typecheck`, `npm run lint`, and relevant
   Playwright tests. Record exact outcomes and explain any environment-blocked
@@ -880,7 +928,7 @@ value.
 - Update individual test files with their feature owners; do not rewrite
   working tests or suppress diagnostics as a substitute for fixing the cause.
 - Record the final requirements-to-tests matrix, removals, and residual gaps
-  in `specs/021-test-quality-audit/converge.md`.
+  in `specs/021-test-suite-audit/converge.md`.
 
 **Dependencies:** Phases 17–20 and the test inventory/evidence they produce.
 

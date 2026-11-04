@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { authorizeStudent } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
 import { CHECKOUT_TTL_MS } from '@/lib/payments';
-import { getZarinpalConfig, requestPayment } from '@/lib/zarinpal';
+import { getDefaultPaymentGateway } from '@/lib/payment-gateways';
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,14 +17,13 @@ export default async function handler(
   try {
     const userId = await authorizeStudent(req, res);
     if (!userId) return;
-    const config = getZarinpalConfig();
-    if (!config) {
+    const db = await getPrisma();
+    const gateway = await getDefaultPaymentGateway(db);
+    if (!gateway) {
       return res.status(503).json({
         message: 'درگاه پرداخت پیکربندی نشده است؛ لطفاً با آکادمی تماس بگیرید',
       });
     }
-
-    const db = await getPrisma();
     const checkoutReference = `pending:${randomUUID()}`;
     const now = new Date();
     const expiresAt = new Date(now.getTime() + CHECKOUT_TTL_MS);
@@ -34,7 +33,7 @@ export default async function handler(
         await tx.payment.updateMany({
           where: {
             userId,
-            method: 'ZARINPAL',
+            method: { in: ['ZARINPAL', 'ZIBAL'] },
             status: 'PENDING',
             OR: [
               { expiresAt: { lte: now } },
@@ -47,7 +46,7 @@ export default async function handler(
         const pendingPayment = await tx.payment.findFirst({
           where: {
             userId,
-            method: 'ZARINPAL',
+            method: { in: ['ZARINPAL', 'ZIBAL'] },
             status: 'PENDING',
             OR: [
               { expiresAt: { gt: now } },
@@ -98,7 +97,8 @@ export default async function handler(
                 registrationId: registration.id,
                 amount: registration.due * 10,
                 currency: 'IRR',
-                method: 'ZARINPAL',
+                method: gateway.provider,
+                provider: gateway.provider,
                 status: 'PENDING',
                 providerReference: checkoutReference,
                 expiresAt,
@@ -128,28 +128,36 @@ export default async function handler(
     }
 
     try {
-      const { authority, paymentUrl } = await requestPayment(
-        config,
+      const { reference, paymentUrl } = await gateway.requestPayment(
         result.amountInRial,
         result.description,
-        `${config.siteUrl}/api/student/payments/callback`,
+        `${gateway.siteUrl}/api/student/payments/callback`,
+        checkoutReference,
       );
       await db.payment.updateMany({
         where: { providerReference: checkoutReference },
-        data: { providerReference: authority },
+        data: { providerReference: reference },
       });
       return res.status(200).json({ paymentUrl });
-    } catch (error) {
+    } catch {
       await db.payment.updateMany({
         where: { providerReference: checkoutReference, status: 'PENDING' },
         data: { status: 'FAILED' },
       });
-      console.error('Zarinpal payment request error:', error);
+      console.error('Student payment provider request failed');
       return res.status(502).json({
         message: 'ایجاد درخواست پرداخت ناموفق بود؛ لطفاً دوباره تلاش کنید',
       });
     }
   } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === 'Payment gateway encryption key is unavailable'
+    ) {
+      return res.status(503).json({
+        message: 'درگاه پرداخت به‌صورت امن پیکربندی نشده است',
+      });
+    }
     if (
       typeof error === 'object' &&
       error !== null &&
@@ -160,7 +168,7 @@ export default async function handler(
         message: 'درخواست پرداخت دیگری هم‌زمان ایجاد شده است؛ لطفاً وضعیت را بررسی کنید',
       });
     }
-    console.error('Student payment initialization error:', error);
+    console.error('Student payment initialization failed');
     return res.status(500).json({ message: 'خطا در ایجاد درخواست پرداخت' });
   }
 }

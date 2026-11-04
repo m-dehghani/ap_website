@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/router';
+import Script from 'next/script';
 import { useForm, useWatch } from 'react-hook-form';
 import type { FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,6 +20,27 @@ import {
   readRegistrationDraft,
   saveRegistrationDraft,
 } from '@/lib/registration-draft';
+
+type RecaptchaWidget = {
+  render: (
+    container: HTMLElement,
+    options: {
+      sitekey: string;
+      callback: (token: string) => void;
+      'expired-callback': () => void;
+      'error-callback': () => void;
+    },
+  ) => number;
+  reset: (widgetId?: number) => void;
+};
+
+declare global {
+  interface Window {
+    grecaptcha?: RecaptchaWidget;
+  }
+}
+
+const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
 const registrationSchema = z
   .object({
@@ -73,6 +95,10 @@ const RegisterPage: React.FC = () => {
   const [programs, setPrograms] = useState<ProgramViewModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [savedDraftValues, setSavedDraftValues] = useState<string | null>(null);
+  const [recaptchaReady, setRecaptchaReady] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+  const recaptchaWidgetRef = useRef<number | null>(null);
   const router = useRouter();
 
   const {
@@ -136,6 +162,28 @@ const RegisterPage: React.FC = () => {
     typeof router.query.program === 'string' ? router.query.program : null;
 
   useEffect(() => {
+    const widget = window.grecaptcha;
+    const container = recaptchaContainerRef.current;
+    if (
+      !recaptchaReady ||
+      currentStep !== 2 ||
+      !recaptchaSiteKey ||
+      !widget ||
+      !container ||
+      recaptchaWidgetRef.current !== null
+    ) {
+      return;
+    }
+
+    recaptchaWidgetRef.current = widget.render(container, {
+      sitekey: recaptchaSiteKey,
+      callback: setRecaptchaToken,
+      'expired-callback': () => setRecaptchaToken(null),
+      'error-callback': () => setRecaptchaToken(null),
+    });
+  }, [currentStep, recaptchaReady]);
+
+  useEffect(() => {
     const fetchPrograms = async () => {
       try {
         const response = await fetch('/api/programs');
@@ -182,6 +230,11 @@ const RegisterPage: React.FC = () => {
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
     try {
+      if (!recaptchaToken) {
+        toast.error('لطفاً تأیید امنیتی را انجام دهید.');
+        return;
+      }
+
       const birthDate = parsePersianBirthDate(data.dateOfBirth);
       if (!birthDate) {
         toast.error('تاریخ تولد را به‌صورت شمسی و معتبر وارد کنید.');
@@ -194,6 +247,7 @@ const RegisterPage: React.FC = () => {
         lastName: data.lastName,
         email: data.email?.trim() || undefined,
         phone: data.phone?.trim() || undefined,
+        recaptchaToken,
         programId: data.program,
         birthDate: birthDate.toISOString().slice(0, 10),
         password: data.password,
@@ -214,22 +268,52 @@ const RegisterPage: React.FC = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        if (typeof result.confirmationProof === 'string') {
+          try {
+            window.sessionStorage.setItem(
+              'registration-confirmation-proof',
+              result.confirmationProof,
+            );
+          } catch {
+            // Activation and registration remain usable when browser storage is disabled.
+          }
+        }
         try {
           clearRegistrationDraft(window.localStorage);
         } catch {
           // Browser storage is optional; successful registration takes priority.
         }
-        toast.success('ثبت نام با موفقیت انجام شد!');
-        router.push('/registration-success');
+        toast.success(
+          result.activationSent
+            ? 'ثبت‌نام انجام شد؛ کد فعال‌سازی برای شما ارسال شد.'
+            : 'ثبت‌نام انجام شد؛ برای فعال‌سازی حساب، کد را دوباره درخواست کنید.',
+        );
+        const challengeId = result.activationSent
+          ? result.activationChallengeId
+          : null;
+        router.push(
+          typeof challengeId === 'string'
+            ? `/activate?challengeId=${encodeURIComponent(challengeId)}`
+            : '/activate',
+        );
       } else {
         const error = await response.json();
         toast.error(
           error.message || 'ثبت نام ناموفق بود. لطفاً دوباره تلاش کنید.',
         );
+        setRecaptchaToken(null);
+        if (recaptchaWidgetRef.current !== null) {
+          window.grecaptcha?.reset(recaptchaWidgetRef.current);
+        }
         console.error('Registration error:', error);
       }
     } catch (error) {
       toast.error('خطایی رخ داد. لطفاً دوباره تلاش کنید.');
+      setRecaptchaToken(null);
+      if (recaptchaWidgetRef.current !== null) {
+        window.grecaptcha?.reset(recaptchaWidgetRef.current);
+      }
       console.error('Registration error:', error);
     } finally {
       setIsSubmitting(false);
@@ -284,6 +368,14 @@ const RegisterPage: React.FC = () => {
                 className="space-y-8"
                 noValidate
               >
+                {recaptchaSiteKey ? (
+                  <Script
+                    src="https://www.google.com/recaptcha/api.js?render=explicit&hl=fa"
+                    strategy="afterInteractive"
+                    onReady={() => setRecaptchaReady(true)}
+                    onError={() => setRecaptchaReady(false)}
+                  />
+                ) : null}
                 <p className="sr-only" aria-live="polite">
                   {savedDraftValues === serializedFormValues
                     ? 'پیش‌نویس این فرم در این دستگاه ذخیره شد.'
@@ -805,6 +897,28 @@ const RegisterPage: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                  <p className="mb-3 text-sm font-medium text-gray-800">
+                    برای ثبت‌نام، تأیید امنیتی را انجام دهید.
+                  </p>
+                  {recaptchaSiteKey ? (
+                    <div
+                      ref={recaptchaContainerRef}
+                      aria-label="تأیید امنیتی reCAPTCHA"
+                    />
+                  ) : (
+                    <p role="status" className="text-sm text-amber-800">
+                      تأیید امنیتی موقتاً در دسترس نیست؛ کمی بعد دوباره تلاش
+                      کنید.
+                    </p>
+                  )}
+                  {recaptchaSiteKey && !recaptchaToken ? (
+                    <p className="mt-2 text-sm text-gray-600" aria-live="polite">
+                      لطفاً گزینه «من ربات نیستم» را انتخاب کنید.
+                    </p>
+                  ) : null}
+                </div>
+
                 </section>
 
                 {/* Step Controls */}
@@ -846,7 +960,8 @@ const RegisterPage: React.FC = () => {
                     )}
                   </div>
                   <p className="mt-3 text-center text-sm text-gray-500">
-                    برای تکمیل ثبت نام به صفحه پرداخت امن هدایت می‌شوید.
+                    پس از ثبت‌نام، حساب خود را با تأیید ایمیل یا شماره تلفن
+                    فعال می‌کنید.
                   </p>
                 </div>
               </form>

@@ -124,4 +124,18 @@ describe('student dashboard attendance history', () => {
       }),
     ]);
   });
+
+  it('redirects an inactive student away before loading protected data', async () => {
+    vi.mocked(getSession).mockResolvedValue(null);
+
+    const result = await getServerSideProps({
+      req: { cookies: { auth_token: 'pending-student-token' } },
+    } as never);
+
+    expect(result).toEqual({
+      redirect: { destination: '/login', permanent: false },
+    });
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+    expect(prisma.program.findMany).not.toHaveBeenCalled();
+  });
 });

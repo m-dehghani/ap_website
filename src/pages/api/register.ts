@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { createHash, randomInt, randomUUID } from 'node:crypto';
 import { getPrisma } from '../../lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
@@ -6,6 +7,9 @@ import { FORM_VALIDATION } from '@/constants/app';
 import { normalizePhone } from '@/lib/auth';
 import { calculateAge, parseBirthDateInput } from '@/lib/age';
 import { rejectRateLimitedRequest } from '@/lib/api-rate-limit';
+import { verifyRecaptcha } from '@/lib/recaptcha';
+import { sendEmail, sendSms } from '@/lib/notifications';
+import { createRegistrationConfirmationProof } from '@/lib/registration-confirmation';
 
 const registrationSchema = z
   .object({
@@ -40,6 +44,9 @@ const registrationSchema = z
     path: ['email'],
   });
 
+const activationCodeHash = (challengeId: string, code: string) =>
+  createHash('sha256').update(`${challengeId}:${code}`).digest('hex');
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -50,6 +57,26 @@ export default async function handler(
   if (rejectRateLimitedRequest(req, res, 'register')) return;
 
   try {
+    const captchaToken =
+      typeof req.body?.recaptchaToken === 'string'
+        ? req.body.recaptchaToken.trim()
+        : '';
+    if (!captchaToken || captchaToken.length > 4096) {
+      return res.status(400).json({
+        message: 'لطفاً تأیید امنیتی را انجام دهید و دوباره تلاش کنید',
+      });
+    }
+
+    const captcha = await verifyRecaptcha(captchaToken);
+    if (!captcha.ok) {
+      return res.status(captcha.reason === 'unavailable' ? 503 : 400).json({
+        message:
+          captcha.reason === 'unavailable'
+            ? 'بررسی امنیتی موقتاً در دسترس نیست؛ کمی بعد دوباره تلاش کنید'
+            : 'تأیید امنیتی معتبر نیست یا منقضی شده است؛ دوباره تأیید کنید',
+      });
+    }
+
     // Validate request body
     const validatedData = registrationSchema.parse(req.body);
     const db = await getPrisma();
@@ -130,6 +157,7 @@ export default async function handler(
             phone: phone ?? null,
             birthDate,
             role: 'STUDENT',
+            activatedAt: null,
           },
           select: {
             id: true,
@@ -191,9 +219,58 @@ export default async function handler(
       return res.status(409).json({ message: 'ظرفیت این برنامه تکمیل شده است' });
     }
 
-    // Return success response (without password)
+    const activationChannel = result.user.email ? 'EMAIL' : 'PHONE';
+    const activationTarget =
+      activationChannel === 'EMAIL' ? result.user.email : result.user.phone;
+    let activationChallengeId: string | null = null;
+    let activationSent = false;
+    try {
+      if (!activationTarget) {
+        throw new Error('Registered contact is unavailable');
+      }
+
+      const code = randomInt(100_000, 1_000_000).toString();
+      activationChallengeId = randomUUID();
+      await db.verificationChallenge.create({
+        data: {
+          id: activationChallengeId,
+          userId: result.user.id,
+          purpose: 'ACCOUNT_ACTIVATION',
+          channel: activationChannel,
+          target: activationTarget,
+          codeHash: activationCodeHash(activationChallengeId, code),
+          expiresAt: new Date(Date.now() + 10 * 60_000),
+        },
+      });
+
+      const message = `کد فعال‌سازی آکادمی فوتبال افشین پیروانی: ${code} (اعتبار تا ۱۰ دقیقه)`;
+      if (activationChannel === 'EMAIL') {
+        await sendEmail({
+          to: activationTarget,
+          subject: 'فعال‌سازی حساب آکادمی فوتبال افشین پیروانی',
+          text: message,
+        });
+      } else {
+        await sendSms(activationTarget, message);
+      }
+      activationSent = true;
+    } catch (deliveryError) {
+      console.error(
+        'Initial account activation delivery failed:',
+        deliveryError instanceof Error ? deliveryError.name : 'Unknown error',
+      );
+    }
+
+    const confirmationProof = await createRegistrationConfirmationProof(
+      result.registration.id,
+    );
     res.status(201).json({
-      message: 'ثبت نام با موفقیت انجام شد',
+      message: 'ثبت‌نام انجام شد؛ برای استفاده از حساب، آن را فعال کنید',
+      pendingActivation: true,
+      activationSent,
+      canResend: true,
+      activationChallengeId,
+      confirmationProof,
       data: {
         user: {
           id: result.user.id,

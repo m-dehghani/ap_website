@@ -2,6 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getPrisma } from '@/lib/db';
 import { authorizeAdmin } from '@/lib/auth';
 import { isValidImageReference } from '@/lib/uploads';
+import {
+  isValidVideoReference,
+  videoContentFieldsSchema,
+} from '@/lib/media';
 
 export default async function handler(
   req: NextApiRequest,
@@ -29,6 +33,10 @@ export default async function handler(
       return res.status(200).json(articles);
     }
     case 'POST': {
+      const parsedVideoFields = videoContentFieldsSchema.safeParse(req.body);
+      if (!parsedVideoFields.success) {
+        return res.status(400).json({ error: 'نشانی ویدئو معتبر نیست' });
+      }
       const {
         title,
         excerpt,
@@ -54,6 +62,14 @@ export default async function handler(
       if (!(await isValidImageReference(prisma, image))) {
         return res.status(400).json({ error: 'تصویر باید از بخش بارگذاری انتخاب شود' });
       }
+      if (
+        !(await isValidVideoReference(
+          prisma,
+          parsedVideoFields.data.uploadedVideoUrl,
+        ))
+      ) {
+        return res.status(400).json({ error: 'ویدئو باید از بخش بارگذاری انتخاب شود' });
+      }
       const article = await prisma.newsArticle.create({
         data: {
           title,
@@ -67,6 +83,8 @@ export default async function handler(
             typeof videoUrl === 'string' && videoUrl.trim()
               ? videoUrl.trim()
               : null,
+          uploadedVideoUrl: parsedVideoFields.data.uploadedVideoUrl ?? null,
+          aparatVideoUrl: parsedVideoFields.data.aparatVideoUrl ?? null,
           tags: tags ?? [],
           readTimeMinutes: readTimeMinutes ?? 1,
           likes: likes ?? 0,

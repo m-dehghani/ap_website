@@ -132,6 +132,12 @@ const LoginPage: React.FC = () => {
                     هنوز حساب کاربری ندارید؟ ثبت نام کنید
                   </Link>
                   <Link
+                    href="/activate"
+                    className="block text-primary-600 hover:text-primary-700 text-sm"
+                  >
+                    حساب فعال نشده؟ فعال‌سازی یا ارسال دوباره کد
+                  </Link>
+                  <Link
                     href="/contact"
                     className="text-primary-600 hover:text-primary-700 text-sm"
                   >

@@ -1,5 +1,19 @@
 # Phase 12 convergence
 
+## Storage-decision correction
+
+The original convergence text below incorrectly presents PostgreSQL byte
+storage as the current implementation. The later
+`20261101000200_move_image_assets_to_disk` migration drops the `image_assets`
+table, while the current upload code uses Vercel Blob when configured and
+otherwise writes to `UPLOADS_DIR`. The owner approved this as the superseding
+storage decision during Phase 20: use Vercel Blob on Vercel and require a
+durable `UPLOADS_DIR` on other production hosts. The old database-persistence
+claims below are historical evidence, not proof of current persistence.
+
+No live deployment restart/redeploy test has established either production
+backend's persistence in this environment.
+
 ## Requirement-to-change mapping
 
 | Requirement | Implementation evidence | Verification |

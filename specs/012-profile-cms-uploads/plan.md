@@ -1,5 +1,10 @@
 # Phase 12 implementation plan
 
+> **Superseded storage direction:** The original PostgreSQL-byte approach
+> below is historical. Phase 20 records the owner-approved Vercel Blob plus
+> durable `UPLOADS_DIR` decision that supersedes it:
+> [`spec.md`](./spec.md#subsequent-storage-decision).
+
 ## Storage and request flow
 
 Use the existing PostgreSQL database for durable image bytes in an

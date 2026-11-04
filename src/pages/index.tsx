@@ -215,9 +215,9 @@ const HomePage: React.FC<HomePageProps> = ({
             </ul>
           </div>
         </nav>
+        <ShopSpotlight />
+        <NewsUpdates categories={newsCategories} articles={recentNews} />
         <div className="hidden md:block">
-          <ShopSpotlight />
-          <NewsUpdates categories={newsCategories} articles={recentNews} />
           <Features features={features} stats={featureStatsData} />
           <CoachSpotlight coaches={coaches} />
           <SuccessStories honors={milestones} />

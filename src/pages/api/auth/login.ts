@@ -93,6 +93,17 @@ export default async function handler(
     }
 
     const userRecord = matchingUsers[0];
+    if (
+      userRecord.role === 'STUDENT' &&
+      'activatedAt' in userRecord &&
+      !userRecord.activatedAt
+    ) {
+      return res.status(403).json({
+        message: 'حساب شما هنوز فعال نشده است؛ کد فعال‌سازی را وارد کنید',
+        activationRequired: true,
+        activationUrl: '/activate',
+      });
+    }
     const token = await new SignJWT({
       userId: userRecord.id,
       role: userRecord.role,

@@ -181,6 +181,34 @@ describe('shop input validation', () => {
     ).toBe(false);
   });
 
+  it('accepts only persisted video references and canonical Aparat URLs', () => {
+    expect(
+      shopProductInputSchema.safeParse({
+        ...validProduct,
+        uploadedVideoUrl: '/uploads/550e8400-e29b-41d4-a716-446655440000.mp4',
+        aparatVideoUrl: 'https://www.aparat.com/v/abc123',
+      }).success,
+    ).toBe(true);
+    expect(
+      shopProductInputSchema.safeParse({
+        ...validProduct,
+        uploadedVideoUrl: 'https://outside.example/video.mp4',
+      }).success,
+    ).toBe(false);
+    expect(
+      shopProductInputSchema.safeParse({
+        ...validProduct,
+        aparatVideoUrl: 'https://www.aparat.com.evil.example/v/abc123',
+      }).success,
+    ).toBe(false);
+    expect(
+      shopProductInputSchema.safeParse({
+        ...validProduct,
+        aparatVideoUrl: 'https://www.aparat.com/v/abc123?autoplay=1',
+      }).success,
+    ).toBe(false);
+  });
+
   it('rejects invalid ratings and non-HTTP review media', () => {
     expect(
       shopReviewInputSchema.safeParse({

@@ -5,13 +5,12 @@ import handler from '@/pages/api/student/payments';
 import { authorizeStudent } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
 import { CHECKOUT_TTL_MS } from '@/lib/payments';
-import { getZarinpalConfig, requestPayment } from '@/lib/zarinpal';
+import { getDefaultPaymentGateway } from '@/lib/payment-gateways';
 
 vi.mock('@/lib/auth', () => ({ authorizeStudent: vi.fn() }));
 vi.mock('@/lib/db', () => ({ getPrisma: vi.fn() }));
-vi.mock('@/lib/zarinpal', () => ({
-  getZarinpalConfig: vi.fn(),
-  requestPayment: vi.fn(),
+vi.mock('@/lib/payment-gateways', () => ({
+  getDefaultPaymentGateway: vi.fn(),
 }));
 
 const tx = {
@@ -21,6 +20,12 @@ const tx = {
 const mockPrisma = {
   $transaction: vi.fn(),
   payment: { updateMany: vi.fn() },
+};
+const requestPayment = vi.fn();
+const gateway = {
+  provider: 'ZARINPAL',
+  siteUrl: 'https://academy.example',
+  requestPayment,
 };
 const request = () => ({ method: 'POST' }) as never;
 const response = () =>
@@ -39,16 +44,11 @@ describe('/api/student/payments', () => {
     vi.resetAllMocks();
     vi.mocked(authorizeStudent).mockResolvedValue('student-1');
     vi.mocked(getPrisma).mockResolvedValue(mockPrisma as never);
-    vi.mocked(getZarinpalConfig).mockReturnValue({
-      merchantId: 'merchant',
-      apiUrl: 'https://gateway.example/api',
-      startPayUrl: 'https://gateway.example/pay',
-      siteUrl: 'https://academy.example',
-    });
-    vi.mocked(requestPayment).mockResolvedValue({
-      authority: 'authority123',
+    requestPayment.mockResolvedValue({
+      reference: 'authority123',
       paymentUrl: 'https://gateway.example/pay/authority123',
     });
+    vi.mocked(getDefaultPaymentGateway).mockResolvedValue(gateway as never);
     mockPrisma.$transaction.mockImplementation(
       (callback: (transaction: typeof tx) => Promise<unknown>) =>
         callback(tx),
@@ -84,11 +84,11 @@ describe('/api/student/payments', () => {
     expect(expiresAt).toBeInstanceOf(Date);
     expect(expiresAt.getTime()).toBeGreaterThanOrEqual(startedAt + CHECKOUT_TTL_MS);
     expect(expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + CHECKOUT_TTL_MS);
-    expect(vi.mocked(requestPayment)).toHaveBeenCalledWith(
-      expect.any(Object),
+    expect(requestPayment).toHaveBeenCalledWith(
       25000,
       'پرداخت شهریه Football، Goalkeeping',
       'https://academy.example/api/student/payments/callback',
+      expect.stringMatching(/^pending:/),
     );
     expect(res.json).toHaveBeenCalledWith({
       paymentUrl: 'https://gateway.example/pay/authority123',
@@ -109,7 +109,7 @@ describe('/api/student/payments', () => {
     expect(tx.payment.updateMany).toHaveBeenCalledWith({
       where: expect.objectContaining({
         userId: 'student-1',
-        method: 'ZARINPAL',
+        method: { in: ['ZARINPAL', 'ZIBAL'] },
         status: 'PENDING',
         OR: expect.arrayContaining([
           { expiresAt: { lte: expect.any(Date) } },
@@ -124,7 +124,7 @@ describe('/api/student/payments', () => {
     expect(tx.payment.findFirst).toHaveBeenCalledWith({
       where: expect.objectContaining({
         userId: 'student-1',
-        method: 'ZARINPAL',
+        method: { in: ['ZARINPAL', 'ZIBAL'] },
         status: 'PENDING',
         OR: expect.arrayContaining([
           { expiresAt: { gt: expect.any(Date) } },
@@ -150,12 +150,37 @@ describe('/api/student/payments', () => {
   });
 
   it('reports an unavailable gateway instead of fabricating a checkout URL', async () => {
-    vi.mocked(getZarinpalConfig).mockReturnValue(null);
+    vi.mocked(getDefaultPaymentGateway).mockResolvedValue(null);
     const res = response();
 
     await handler(request(), res as never);
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(requestPayment).not.toHaveBeenCalled();
+  });
+
+  it('snapshots the selected Zibal provider on each pending tuition payment', async () => {
+    vi.mocked(getDefaultPaymentGateway).mockResolvedValue({
+      ...gateway,
+      provider: 'ZIBAL',
+    } as never);
+    const res = response();
+
+    await handler(request(), res as never);
+
+    expect(tx.payment.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          provider: 'ZIBAL',
+          method: 'ZIBAL',
+          currency: 'IRR',
+        }),
+      }),
+    );
+    expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { providerReference: 'authority123' },
+      }),
+    );
   });
 });

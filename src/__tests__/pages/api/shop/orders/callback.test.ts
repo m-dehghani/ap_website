@@ -3,13 +3,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import handler from '@/pages/api/shop/orders/callback';
 import { getPrisma } from '@/lib/db';
-import { getZarinpalConfig, verifyPayment } from '@/lib/zarinpal';
+import { getPaymentGateway } from '@/lib/payment-gateways';
 
 vi.mock('@/lib/db', () => ({ getPrisma: vi.fn() }));
-vi.mock('@/lib/zarinpal', () => ({
-  getZarinpalConfig: vi.fn(),
-  verifyPayment: vi.fn(),
-}));
+vi.mock('@/lib/payment-gateways', () => ({ getPaymentGateway: vi.fn() }));
 
 const item = { variantId: 'variant-1', quantity: 2 };
 const tx = {
@@ -20,6 +17,7 @@ const mockPrisma = {
   shopOrder: { findUnique: vi.fn() },
   $transaction: vi.fn(),
 };
+const verifyPayment = vi.fn();
 const request = (status: string) =>
   ({
     method: 'GET',
@@ -42,6 +40,8 @@ const order = (overrides: Record<string, unknown> = {}) => ({
   orderNumber: 'AP-123',
   totalAmount: 100_000,
   status: 'PENDING_PAYMENT',
+  provider: 'ZARINPAL',
+  providerReference: 'authority123',
   expiresAt: new Date(Date.now() + 60_000),
   items: [item],
   ...overrides,
@@ -51,13 +51,10 @@ describe('/api/shop/orders/callback reservation consistency', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(getPrisma).mockResolvedValue(mockPrisma as never);
-    vi.mocked(getZarinpalConfig).mockReturnValue({
-      merchantId: 'merchant',
-      apiUrl: 'https://gateway.example/api',
-      startPayUrl: 'https://gateway.example/pay',
-      siteUrl: 'https://academy.example',
-    });
-    vi.mocked(verifyPayment).mockResolvedValue({ code: 100, ref_id: 123 });
+    verifyPayment.mockResolvedValue({ state: 'paid', reference: '123' });
+    vi.mocked(getPaymentGateway).mockResolvedValue({
+      verifyPayment,
+    } as never);
     mockPrisma.shopOrder.findUnique.mockResolvedValue(order());
     tx.shopOrder.findUnique.mockResolvedValue(order());
     tx.shopOrder.update.mockResolvedValue({});
@@ -68,6 +65,7 @@ describe('/api/shop/orders/callback reservation consistency', () => {
   });
 
   it('releases stock once when the customer cancels a pending order', async () => {
+    verifyPayment.mockResolvedValue({ state: 'not-paid' });
     const res = response();
 
     await handler(request('NOK'), res as never);
@@ -87,12 +85,40 @@ describe('/api/shop/orders/callback reservation consistency', () => {
   });
 
   it('releases stock when the gateway confirms payment failure', async () => {
-    vi.mocked(verifyPayment).mockResolvedValue({ code: -21 });
+    verifyPayment.mockResolvedValue({ state: 'not-paid' });
     const res = response();
 
     await handler(request('OK'), res as never);
 
     expect(tx.shopVariant.updateMany).toHaveBeenCalledTimes(1);
+    expect(tx.shopOrder.update).toHaveBeenCalledWith({
+      where: { id: 'order-1' },
+      data: { status: 'PAYMENT_FAILED' },
+    });
+  });
+
+  it('does not trust Zibal success=1 without verification and exact rial amount', async () => {
+    verifyPayment.mockResolvedValue({ state: 'not-paid' });
+    mockPrisma.shopOrder.findUnique.mockResolvedValue(order({ provider: 'ZIBAL' }));
+    const req = {
+      method: 'GET',
+      query: { trackId: '15966442233311', success: '1' },
+    } as never;
+    const res = response();
+
+    await handler(req, res as never);
+
+    expect(getPaymentGateway).toHaveBeenCalledWith(
+      mockPrisma,
+      'ZIBAL',
+      { allowDisabled: true },
+    );
+    expect(verifyPayment).toHaveBeenCalledWith(
+      '15966442233311',
+      1_000_000,
+    );
+    expect(tx.shopVariant.updateMany).toHaveBeenCalledTimes(1);
+    expect(tx.shopVariant.update).not.toHaveBeenCalled();
     expect(tx.shopOrder.update).toHaveBeenCalledWith({
       where: { id: 'order-1' },
       data: { status: 'PAYMENT_FAILED' },

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import ImageUploadField from '@/components/ImageUploadField';
+import VideoMediaFields from '@/components/VideoMediaFields';
 
 interface NewsArticle {
   id: string;
@@ -18,6 +19,8 @@ interface NewsArticle {
   author: string;
   image: string | null;
   videoUrl: string | null;
+  uploadedVideoUrl: string | null;
+  aparatVideoUrl: string | null;
   tags: string[];
   readTimeMinutes: number;
   likes: number;
@@ -41,6 +44,8 @@ interface FormData {
   author: string;
   image: string;
   videoUrl: string;
+  uploadedVideoUrl: string;
+  aparatVideoUrl: string;
   tags: string;
   readTimeMinutes: number;
   likes: number;
@@ -67,6 +72,8 @@ export default function NewsArticleEditPage() {
     author: '',
     image: '',
     videoUrl: '',
+    uploadedVideoUrl: '',
+    aparatVideoUrl: '',
     tags: '',
     readTimeMinutes: 1,
     likes: 0,
@@ -92,6 +99,8 @@ export default function NewsArticleEditPage() {
           author: article.author,
           image: article.image ?? '',
           videoUrl: article.videoUrl ?? '',
+          uploadedVideoUrl: article.uploadedVideoUrl ?? '',
+          aparatVideoUrl: article.aparatVideoUrl ?? '',
           tags: article.tags.join(', '),
           readTimeMinutes: article.readTimeMinutes,
           likes: article.likes,
@@ -294,17 +303,17 @@ export default function NewsArticleEditPage() {
               }
             />
 
-            <div>
-              <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                آدرس ویدئو (اختیاری)
-              </label>
-              <Input
-                id="videoUrl"
-                name="videoUrl"
-                type="url"
-                value={formData.videoUrl}
-                onChange={handleChange}
-                placeholder="https://example.com/video.mp4"
+            <div className="md:col-span-2">
+              <VideoMediaFields
+                scope="news"
+                uploadedVideoUrl={formData.uploadedVideoUrl}
+                aparatVideoUrl={formData.aparatVideoUrl}
+                onUploadedVideoChange={(uploadedVideoUrl) =>
+                  setFormData((previous) => ({ ...previous, uploadedVideoUrl }))
+                }
+                onAparatVideoChange={(aparatVideoUrl) =>
+                  setFormData((previous) => ({ ...previous, aparatVideoUrl }))
+                }
               />
             </div>
 

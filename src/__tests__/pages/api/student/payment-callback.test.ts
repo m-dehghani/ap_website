@@ -3,13 +3,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import handler from '@/pages/api/student/payments/callback';
 import { getPrisma } from '@/lib/db';
-import { getZarinpalConfig, verifyPayment } from '@/lib/zarinpal';
+import { getPaymentGateway } from '@/lib/payment-gateways';
 
 vi.mock('@/lib/db', () => ({ getPrisma: vi.fn() }));
-vi.mock('@/lib/zarinpal', () => ({
-  getZarinpalConfig: vi.fn(),
-  verifyPayment: vi.fn(),
-}));
+vi.mock('@/lib/payment-gateways', () => ({ getPaymentGateway: vi.fn() }));
 
 const tx = {
   payment: { findMany: vi.fn(), update: vi.fn() },
@@ -19,6 +16,7 @@ const mockPrisma = {
   payment: { findMany: vi.fn(), updateMany: vi.fn() },
   $transaction: vi.fn(),
 };
+const verifyPayment = vi.fn();
 const request = (status: string) =>
   ({
     method: 'GET',
@@ -41,15 +39,17 @@ describe('/api/student/payments/callback', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(getPrisma).mockResolvedValue(mockPrisma as never);
-    vi.mocked(getZarinpalConfig).mockReturnValue({
-      merchantId: 'merchant',
-      apiUrl: 'https://gateway.example/api',
-      startPayUrl: 'https://gateway.example/pay',
-      siteUrl: 'https://academy.example',
-    });
-    vi.mocked(verifyPayment).mockResolvedValue({ code: 100, ref_id: 123 });
+    verifyPayment.mockResolvedValue({ state: 'paid', reference: '123' });
+    vi.mocked(getPaymentGateway).mockResolvedValue({
+      verifyPayment,
+    } as never);
     mockPrisma.payment.findMany.mockResolvedValue([
-      { id: 'payment-1', amount: 10000, status: 'PENDING' },
+      {
+        id: 'payment-1',
+        amount: 10000,
+        status: 'PENDING',
+        provider: 'ZARINPAL',
+      },
     ]);
     mockPrisma.payment.updateMany.mockResolvedValue({ count: 1 });
     tx.payment.findMany.mockResolvedValue([
@@ -80,8 +80,12 @@ describe('/api/student/payments/callback', () => {
 
     await handler(request('OK'), res as never);
 
+    expect(getPaymentGateway).toHaveBeenCalledWith(
+      mockPrisma,
+      'ZARINPAL',
+      { allowDisabled: true },
+    );
     expect(verifyPayment).toHaveBeenCalledWith(
-      expect.any(Object),
       'authority123',
       10000,
     );
@@ -100,7 +104,7 @@ describe('/api/student/payments/callback', () => {
   });
 
   it('does not trust a cancellation query unless the gateway verifies it', async () => {
-    vi.mocked(verifyPayment).mockResolvedValue({ code: -21 });
+    verifyPayment.mockResolvedValue({ state: 'not-paid' });
     const res = response();
 
     await handler(request('NOK'), res as never);
@@ -108,7 +112,7 @@ describe('/api/student/payments/callback', () => {
     expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith({
       where: {
         providerReference: 'authority123',
-        method: 'ZARINPAL',
+        provider: 'ZARINPAL',
         status: 'PENDING',
       },
       data: { status: 'FAILED' },
@@ -116,14 +120,19 @@ describe('/api/student/payments/callback', () => {
     expect(tx.registration.update).not.toHaveBeenCalled();
     expect(res.redirect).toHaveBeenCalledWith(
       302,
-      '/student/dashboard?payment=cancelled',
+      '/student/dashboard?payment=failed',
     );
   });
 
   it('queues a gateway-verified success after expiry without crediting tuition', async () => {
     const expiredAt = new Date(Date.now() - 15 * 60 * 1000);
     mockPrisma.payment.findMany.mockResolvedValue([
-      { id: 'payment-1', amount: 10000, status: 'FAILED' },
+      {
+        id: 'payment-1',
+        amount: 10000,
+        status: 'FAILED',
+        provider: 'ZARINPAL',
+      },
     ]);
     tx.payment.findMany.mockResolvedValue([
       {
@@ -145,7 +154,6 @@ describe('/api/student/payments/callback', () => {
     await handler(request('OK'), res as never);
 
     expect(verifyPayment).toHaveBeenCalledWith(
-      expect.any(Object),
       'authority123',
       10000,
     );
@@ -158,5 +166,33 @@ describe('/api/student/payments/callback', () => {
       302,
       '/student/dashboard?payment=refund-required',
     );
+  });
+
+  it('dispatches a Zibal trackId callback by persisted provider despite the callback success flag', async () => {
+    mockPrisma.payment.findMany.mockResolvedValue([
+      {
+        id: 'payment-1',
+        amount: 12500,
+        status: 'PENDING',
+        provider: 'ZIBAL',
+      },
+    ]);
+    vi.mocked(getPaymentGateway).mockResolvedValue({
+      verifyPayment,
+    } as never);
+    const req = {
+      method: 'GET',
+      query: { trackId: '15966442233311', success: '1' },
+    } as never;
+    const res = response();
+
+    await handler(req, res as never);
+
+    expect(getPaymentGateway).toHaveBeenCalledWith(
+      mockPrisma,
+      'ZIBAL',
+      { allowDisabled: true },
+    );
+    expect(verifyPayment).toHaveBeenCalledWith('15966442233311', 12500);
   });
 });

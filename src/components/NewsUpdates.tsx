@@ -28,19 +28,14 @@ function NewsDetails({
   label: string;
 }) {
   return (
-    <details className="group">
-      <summary
-        aria-label={`${label}: ${article.title}`}
-        className="inline-flex cursor-pointer list-none items-center gap-1 text-sm font-medium text-primary-700 hover:text-primary-800 focus-visible:underline"
-      >
-        {label}
-        <ArrowRightIcon
-          className="h-4 w-4 transition-transform group-open:rotate-90"
-          aria-hidden="true"
-        />
-      </summary>
-      <p className="mt-3 text-gray-700 leading-relaxed">{article.content}</p>
-    </details>
+    <Link
+      href={`/news/${encodeURIComponent(article.id)}`}
+      aria-label={`${label}: ${article.title}`}
+      className="inline-flex items-center gap-1 text-sm font-medium text-primary-700 hover:text-primary-800 focus-visible:underline"
+    >
+      {label}
+      <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+    </Link>
   );
 }
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   PhoneIcon,
   EnvelopeIcon,
@@ -41,9 +42,19 @@ const Footer: React.FC<FooterProps> = ({ site }) => {
             {/* Enhanced Company Info */}
             <div className="lg:col-span-2 space-y-6 bg-red-950/10 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">
               <div className="flex items-center space-x-3">
-                <div className="w-14 h-14 bg-linear-to-br from-primary-600 to-primary-700 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-elegant-lg">
-                  ⚽
-                </div>
+                {site?.logoUrl ? (
+                  <Image
+                    src={site.logoUrl}
+                    alt="لوگوی آکادمی فوتبال AP"
+                    width={56}
+                    height={56}
+                    className="size-14 shrink-0 rounded-xl object-contain"
+                  />
+                ) : (
+                  <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-red-700 text-lg font-extrabold text-white shadow-md">
+                    AP
+                  </span>
+                )}
                 <div>
                   <h3 className="text-2xl font-bold text-white">
                     {site?.name ?? 'آکادمی فوتبال AP'}

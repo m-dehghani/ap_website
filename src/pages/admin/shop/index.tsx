@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import AdminLayout from '@/components/AdminLayout';
 import { formatPersianDate, formatToman } from '@/lib/format';
 import ImageUploadField from '@/components/ImageUploadField';
+import VideoMediaFields from '@/components/VideoMediaFields';
 
 interface ShopVariantForm {
   sku: string;
@@ -22,6 +23,8 @@ interface ShopProductForm {
   description: string;
   shortDescription: string;
   images: string;
+  uploadedVideoUrl: string;
+  aparatVideoUrl: string;
   price: string;
   salePrice: string;
   saleStartsAt: string;
@@ -39,10 +42,21 @@ interface ManagedProduct extends Omit<ShopProductForm, 'id'> {
 
 interface ShopProductRecord extends Omit<
   ShopProductForm,
-  'id' | 'images' | 'price' | 'salePrice' | 'saleStartsAt' | 'saleEndsAt' | 'availableAt' | 'variants'
+  | 'id'
+  | 'images'
+  | 'uploadedVideoUrl'
+  | 'aparatVideoUrl'
+  | 'price'
+  | 'salePrice'
+  | 'saleStartsAt'
+  | 'saleEndsAt'
+  | 'availableAt'
+  | 'variants'
 > {
   id: string;
   images: string[];
+  uploadedVideoUrl: string | null;
+  aparatVideoUrl: string | null;
   price: number;
   salePrice: number | null;
   saleStartsAt: string | null;
@@ -89,6 +103,8 @@ const newProduct = (): ShopProductForm => ({
   description: '',
   shortDescription: '',
   images: '',
+  uploadedVideoUrl: '',
+  aparatVideoUrl: '',
   price: '',
   salePrice: '',
   saleStartsAt: '',
@@ -160,6 +176,8 @@ export default function ShopAdminPage() {
       setProducts((productData.products as ShopProductRecord[]).map((product) => ({
         ...product,
         images: product.images.join('\n'),
+        uploadedVideoUrl: product.uploadedVideoUrl ?? '',
+        aparatVideoUrl: product.aparatVideoUrl ?? '',
         price: String(product.price),
         salePrice: product.salePrice == null ? '' : String(product.salePrice),
         saleStartsAt: toDateInput(product.saleStartsAt),
@@ -398,6 +416,17 @@ export default function ShopAdminPage() {
                     'images',
                     (Array.isArray(images) ? images : [images]).join('\n'),
                   )
+                }
+              />
+              <VideoMediaFields
+                scope="product"
+                uploadedVideoUrl={form.uploadedVideoUrl}
+                aparatVideoUrl={form.aparatVideoUrl}
+                onUploadedVideoChange={(uploadedVideoUrl) =>
+                  setForm((current) => ({ ...current, uploadedVideoUrl }))
+                }
+                onAparatVideoChange={(aparatVideoUrl) =>
+                  setForm((current) => ({ ...current, aparatVideoUrl }))
                 }
               />
               <div className="grid gap-3 sm:grid-cols-2">

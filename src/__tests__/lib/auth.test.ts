@@ -61,6 +61,7 @@ describe('session helpers', () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: 'user-1',
       role: 'STUDENT',
+      activatedAt: new Date('2026-01-01T00:00:00.000Z'),
     });
     mockPrisma.coach.findUnique.mockResolvedValue(null);
   });
@@ -77,14 +78,30 @@ describe('session helpers', () => {
     });
     expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
       where: { id: 'user-1' },
-      select: { id: true, role: true },
+      select: { id: true, role: true, activatedAt: true },
     });
+  });
+
+  it('does not create a student session before account activation', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      role: 'STUDENT',
+      activatedAt: null,
+    });
+
+    await expect(
+      getSession({ cookies: { auth_token: 'signed-token' } }),
+    ).resolves.toBeNull();
   });
 
   it.each(['ADMIN', 'SHOP_MANAGER'] as const)(
     'returns the current %s database role for a user account',
     async (role) => {
-      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', role });
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        role,
+        activatedAt: null,
+      });
       const session = await getSession({
         cookies: { auth_token: 'signed-token' },
       });
@@ -161,6 +178,7 @@ describe('authorization helpers', () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: 'user-1',
       role: 'STUDENT',
+      activatedAt: new Date('2026-01-01T00:00:00.000Z'),
     });
     mockPrisma.coach.findUnique.mockResolvedValue(null);
   });
@@ -172,6 +190,27 @@ describe('authorization helpers', () => {
     expect(id).toBeNull();
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ message: 'احراز هویت نشده' });
+  });
+
+  it('returns an activation recovery response for an inactive student token', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      role: 'STUDENT',
+      activatedAt: null,
+    });
+    const res = createResponse();
+
+    await expect(
+      authorizeStudent(
+        { cookies: { auth_token: 'signed-token' } } as never,
+        res as never,
+      ),
+    ).resolves.toBeNull();
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'برای دسترسی به حساب، ابتدا آن را فعال کنید',
+      activationRequired: true,
+    });
   });
 
   it('rejects a non-admin based on the current database role', async () => {

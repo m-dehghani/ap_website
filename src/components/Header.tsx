@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -174,9 +175,19 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
       <div className="container-custom">
         <div className="flex items-center justify-between gap-2 py-3 md:py-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-primary-600 to-primary-800 text-lg font-bold text-white shadow-md sm:h-11 sm:w-11">
-              AP
-            </div>
+            {site?.logoUrl ? (
+              <Image
+                src={site.logoUrl}
+                alt="لوگوی آکادمی فوتبال AP"
+                width={44}
+                height={44}
+                className="size-10 shrink-0 rounded-xl object-contain sm:size-11"
+              />
+            ) : (
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-700 text-sm font-extrabold text-white shadow-sm sm:size-11">
+                AP
+              </span>
+            )}
             <div className="min-w-0">
               <p className="truncate text-sm font-bold leading-tight text-navy-900 sm:text-base">
                 {site?.name ?? 'آکادمی فوتبال AP'}
@@ -301,6 +312,16 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
                           <Cog6ToothIcon className="h-5 w-5" />
                           تنظیمات
                         </Link>
+                        {user.role === 'ADMIN' && (
+                          <Link
+                            href="/admin/settings/branding"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-primary-50 hover:text-primary-700"
+                          >
+                            <Cog6ToothIcon className="h-5 w-5" aria-hidden="true" />
+                            تنظیمات برند سایت
+                          </Link>
+                        )}
                       </div>
                       <div className="border-t border-slate-100 pt-3">
                         <p className="mb-2 px-1 text-xs font-semibold text-slate-500">

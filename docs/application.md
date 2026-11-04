@@ -7,7 +7,7 @@
 **Language**: TypeScript
 **Styling**: Tailwind CSS v4
 **Database**: PostgreSQL (via Prisma ORM)
-**Payments**: Zarinpal (student tuition and shop checkout)
+**Payments**: Zarinpal and Zibal IPG (student tuition and shop checkout)
 **Authentication**: Custom session-based auth (bcryptjs), with separate `users` and `coaches` identities
 **Language and routing**: Persian-only; routes have no locale prefix
 **Location**: Shiraz, Iran
@@ -76,12 +76,50 @@ Access via `process.env.VARIABLE_NAME`. Defined in `.env.local` (local), `.env.p
 
 > **Important**: Variables without `NEXT_PUBLIC_` prefix are **not** available in client-side code.
 
+Public registration also requires a Google reCAPTCHA v2 checkbox:
+
+| Variable | Scope | Purpose |
+|----------|-------|---------|
+| `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | Client | Public site key rendered by the Persian checkbox widget |
+| `RECAPTCHA_SECRET_KEY` | Server only | Private key used to verify the response with Google |
+
+Set both keys in the deployment environment. Never expose or commit the secret.
+Registration fails closed if the key is missing or Google's verifier is
+unavailable; the request token is verified before any account or registration
+write.
+
 The student checkout also needs `NEXT_PUBLIC_SITE_URL` (or the existing
 `NEXT_PUBLIC_APP_URL`) set to the public site origin for Zarinpal's callback.
 Set `ZARINPAL_SANDBOX=true` for sandbox requests; otherwise the production
 gateway is used. Keep `ZARINPAL_MERCHANT_ID` server-only. Program prices and
-registration balances are stored in toman and converted to rial when sent to
-Zarinpal. Apply the student-payment Prisma migration before deploying.
+registration balances are stored in toman and converted to rial at the gateway
+adapter boundary. Zibal uses the official IPG API at
+`https://gateway.zibal.ir`: request with `POST /v1/request`, redirect the
+browser to `/start/{trackId}`, and verify callbacks with `POST /v1/verify`.
+Zibal's `merchant` JSON field is its credential; request and expected
+verification amounts are integer rial. The callback's `success` value is
+untrusted; only a server-side verification with a paid status and exact rial
+amount can settle an order or tuition payment. See
+<https://help.zibal.ir/ipg/> and the official OpenAPI
+<https://api.zibal.ir/static/helpdocs/ipg.json>.
+
+Admin-configured Zarinpal and Zibal credentials are encrypted with
+AES-256-GCM. Provision `PAYMENT_CONFIG_ENCRYPTION_KEY` as a base64-encoded,
+random 32-byte value in the deployment secret manager before enabling database
+credentials. The application fails closed for configuration writes and
+gateway selection if this key is missing or invalid. Do not rotate or remove
+the key without first migrating the stored credentials; the old key is needed
+to decrypt them. Callback verification uses the provider recorded on the
+pending transaction, even if that provider has since been disabled for new
+checkout. Credential replacement/removal is blocked while unresolved
+transactions may still need callbacks. Admin responses never include
+credential values.
+
+Pasargad is listed as deferred in the admin UI and is not configurable or
+available at checkout. Its official product/API and credential contract could
+not be verified, so do not enable or configure it until the provider contract
+and account prerequisites are confirmed. Apply the student-payment and
+payment-gateway Prisma migrations before deploying.
 
 ### Identity, refunds, attendance, and evaluations
 
@@ -121,6 +159,22 @@ profile-verification Prisma migration before deploying. Marketing campaigns are
 limited to students who opted in through their profile; coaches can only
 message students in their own programs.
 
+### New student account activation
+
+New public student accounts remain inactive until the registered email or
+mobile number is verified. Activation codes are bound to that account and
+destination, expire after 10 minutes, allow five guesses, and are limited to
+one resend per minute and five sends per rolling 24 hours. Resend requests
+require the account password. Email delivery uses Resend and phone delivery
+uses Kavenegar; notification failure leaves the account pending and can be
+recovered from `/activate`.
+
+Apply the `20261105010000_add_user_activation` migration before deploying.
+Existing users are backfilled as active using `createdAt`; this does not set
+`emailVerifiedAt` or `phoneVerifiedAt`. New accounts start with `activatedAt`
+unset, and activation sets only the timestamp for the contact actually
+verified.
+
 ### Academy shop
 
 The `/shop` storefront supports public browsing and guest checkout. Product
@@ -144,29 +198,38 @@ Shop managers can manage products, orders, reviews, and the configurable
 shipping fee; regular academy admin users can also access the shop panel.
 Product images can be uploaded by admins and shop managers. Profile photos and
 CMS image uploads are stored outside PostgreSQL; the database stores only
-application paths (for example, `/api/uploads/<id>.webp`). The application
-accepts JPEG, PNG, and WebP files up to 5 MiB and serves them through
-`/api/uploads/<id>.<extension>`.
+application paths. JPEG, PNG, and WebP uploads are limited to 4 MiB on Vercel
+and 5 MiB on other hosts. Existing `/api/uploads/<id>.<extension>` image
+references remain supported.
 
-Local development uses the `uploads/` directory by default. Set `UPLOADS_DIR`
-to a durable directory when running a persistent Node.js server. Vercel
-deployments use Vercel Blob: set `BLOB_READ_WRITE_TOKEN` (and optionally
-`BLOB_STORE_ID` for a specific store). The object key prefix defaults to
-`uploads/`. Keep the store private; images are served through the application's
-upload API. Back up the Blob store alongside the database, since PostgreSQL
-backups contain paths only, not image bytes.
+Phase 20 adds uploaded MP4/WebM video to products and news, Aparat watch URLs,
+and admin-managed site branding. Video uploads are limited to 4 MiB on Vercel
+and 100 MiB on other hosts. New media uses opaque IDs and stable
+`/uploads/<id>.<extension>` URLs; the route supports byte ranges and safe
+content headers. Uploaded local video starts muted, has native controls, and
+does not autoplay. Aparat URLs are restricted to the verified HTTPS host and
+watch/embed paths; the application constructs the embed URL and does not
+autoplay. Existing news `videoUrl` values and image references remain intact.
 
-Before switching an existing filesystem deployment to Vercel Blob, copy its
-existing `uploads/` files to the Blob store under the `uploads/` prefix (for
-example, using the Vercel CLI or dashboard). Preserve the image filenames
-because database paths reference them. An existing database with legacy
-image-asset rows must run `npm run migrate:uploads` with its database and
-target storage configuration before `npx prisma migrate deploy`. That migration
-copies image bytes to the configured storage, updates their stored paths, then
-removes the legacy database asset rows; it fails if any legacy asset cannot be
-copied safely. User-submitted shop-review media is outside this CMS
-image-upload workflow.
-User-submitted shop-review media is outside this CMS image-upload workflow.
+The Phase 20 storage decision supersedes Phase 12's PostgreSQL-byte design:
+Vercel deployments require `BLOB_READ_WRITE_TOKEN`; non-Vercel production
+hosts require `UPLOADS_DIR` to point to a durable, writable directory shared
+by all application instances. Production uploads fail closed if the required
+backend is not configured. Local development defaults to the repository's
+`uploads/` directory. `BLOB_STORE_ID` is optional where configured for the
+image Blob URL helper. Blob objects are created with public access because
+these product, news, profile, and branding assets are intended for public site
+rendering; do not treat their URLs or bytes as private. Configure store access
+and backups accordingly. PostgreSQL backups contain paths only, not media
+bytes.
+
+Preserve existing referenced filenames and copy existing filesystem assets
+into the selected durable backend before changing a deployment's storage
+configuration. Before `npx prisma migrate deploy`, run
+`npm run migrate:uploads` for databases that still contain legacy
+`image_assets`; it copies those bytes to the configured backend and updates the
+references. User-submitted shop-review media is outside this CMS image-upload
+workflow.
 Ratings and reviews are accepted only from signed-in students whose account is
 attached to a paid order for that product; submissions remain unpublished until
 a shop manager approves them. Guest favorites are stored in that browser only.

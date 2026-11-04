@@ -10,7 +10,8 @@ import {
   isValidTomanAmount,
   releaseOrderReservation,
 } from '@/lib/shop';
-import { getZarinpalConfig, requestPayment } from '@/lib/zarinpal';
+import { getDefaultPaymentGateway } from '@/lib/payment-gateways';
+import type { PaymentGateway } from '@/lib/payment-providers/types';
 
 const checkoutSchema = z.object({
   fullName: z.string().trim().min(3).max(120),
@@ -39,13 +40,6 @@ export default async function handler(
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const config = getZarinpalConfig();
-  if (!config) {
-    return res.status(503).json({
-      message: 'درگاه پرداخت پیکربندی نشده است؛ لطفاً با آکادمی تماس بگیرید',
-    });
-  }
-
   const parsed = checkoutSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({
@@ -70,6 +64,19 @@ export default async function handler(
   }
 
   const db = await getPrisma();
+  let gateway: PaymentGateway | null;
+  try {
+    gateway = await getDefaultPaymentGateway(db);
+  } catch {
+    return res.status(503).json({
+      message: 'درگاه پرداخت به‌صورت امن پیکربندی نشده است',
+    });
+  }
+  if (!gateway) {
+    return res.status(503).json({
+      message: 'درگاه پرداخت پیکربندی نشده است؛ لطفاً با آکادمی تماس بگیرید',
+    });
+  }
   const session = await getOptionalSession(req);
   const userId =
     session?.source === 'user' && session.role === 'STUDENT'
@@ -184,6 +191,7 @@ export default async function handler(
             shippingFee,
             totalAmount,
             userId,
+            provider: gateway.provider,
             expiresAt: new Date(now.getTime() + CHECKOUT_TTL_MS),
             items: {
               create: lines.map(({ variant, quantity, unitPrice, lineTotal }) => ({
@@ -225,18 +233,18 @@ export default async function handler(
     }
 
     try {
-      const payment = await requestPayment(
-        config,
+      const payment = await gateway.requestPayment(
         order.totalAmount * 10,
         `خرید فروشگاه آکادمی - ${order.orderNumber}`,
-        `${config.siteUrl}/api/shop/orders/callback`,
+        `${gateway.siteUrl}/api/shop/orders/callback`,
+        order.orderNumber,
       );
       await db.shopOrder.update({
         where: { id: order.id },
-        data: { authority: payment.authority },
+        data: { providerReference: payment.reference },
       });
       return res.status(200).json({ paymentUrl: payment.paymentUrl });
-    } catch (error) {
+    } catch {
       await db.$transaction(async (tx) => {
         const pending = await tx.shopOrder.findUnique({
           where: { id: order.id },
@@ -256,7 +264,7 @@ export default async function handler(
           });
         }
       });
-      console.error('Shop payment request error:', error);
+      console.error('Shop payment provider request failed');
       return res.status(502).json({
         message: 'ایجاد درخواست پرداخت ناموفق بود؛ لطفاً دوباره تلاش کنید',
       });
@@ -282,9 +290,9 @@ export default async function handler(
       });
     }
     if (orderId) {
-      console.error(`Shop order ${orderId} creation failed:`, error);
+      console.error(`Shop order ${orderId} creation failed`);
     } else {
-      console.error('Shop order creation error:', error);
+      console.error('Shop order creation failed');
     }
     return res.status(500).json({ message: 'خطا در ثبت سفارش' });
   }

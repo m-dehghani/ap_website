@@ -8,7 +8,7 @@ const buckets = new Map<string, { count: number; resetAt: number }>();
 export function rejectRateLimitedRequest(
   req: NextApiRequest,
   res: NextApiResponse,
-  scope: 'login' | 'register',
+  scope: 'login' | 'register' | 'activation',
 ): boolean {
   const clientAddress = req.socket?.remoteAddress ?? 'unknown';
   const key = `${scope}:${clientAddress}`;

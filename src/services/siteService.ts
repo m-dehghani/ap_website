@@ -1,4 +1,5 @@
 import { getPrisma } from '@/lib/db';
+import { uploadedLogoUrlSchema } from '@/lib/media';
 import {
   SiteInfoViewModel,
   toOpeningHourViewModel,
@@ -7,7 +8,7 @@ import {
 
 export async function getSiteInfo(): Promise<SiteInfoViewModel | null> {
   const prisma = await getPrisma();
-  const [academy, hours, socialLinks, programs] = await Promise.all([
+  const [academy, hours, socialLinks, programs, branding] = await Promise.all([
     prisma.academyInfo.findUnique({ where: { id: 'default' } }),
     prisma.openingHour.findMany({ orderBy: { displayOrder: 'asc' } }),
     prisma.socialLink.findMany({
@@ -18,6 +19,10 @@ export async function getSiteInfo(): Promise<SiteInfoViewModel | null> {
       where: { isActive: true },
       orderBy: { displayOrder: 'asc' },
       select: { id: true, name: true, ageRange: true },
+    }),
+    prisma.siteBranding.findUnique({
+      where: { id: 'default' },
+      select: { logoUrl: true },
     }),
   ]);
   if (!academy) return null;
@@ -33,6 +38,9 @@ export async function getSiteInfo(): Promise<SiteInfoViewModel | null> {
     city: academy.city,
     foundedYear: academy.foundedYear,
     domain: academy.domain ?? 'https://afshin-football.com',
+    logoUrl: uploadedLogoUrlSchema.safeParse(branding?.logoUrl).success
+      ? branding?.logoUrl ?? null
+      : null,
     officeHours: hours
       .filter((h) => h.type === 'OFFICE')
       .map(toOpeningHourViewModel),
