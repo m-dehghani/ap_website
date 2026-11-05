@@ -19,7 +19,12 @@ export type SessionResult =
   | { session: Session; reason: 'session' }
   | {
       session: null;
-      reason: 'missing' | 'invalid-token' | 'invalid-subject' | 'unrecognized';
+      reason:
+        | 'missing'
+        | 'invalid-token'
+        | 'invalid-subject'
+        | 'unrecognized'
+        | 'activation-required';
     };
 
 function isUserRole(
@@ -62,10 +67,13 @@ export async function getSessionResult(
   const db = await getPrisma();
   const user = await db.user.findUnique({
     where: { id: payload.userId },
-    select: { id: true, role: true },
+    select: { id: true, role: true, activatedAt: true },
   });
 
   if (user && isUserRole(user.role)) {
+    if (user.role === 'STUDENT' && !user.activatedAt) {
+      return { session: null, reason: 'activation-required' };
+    }
     return {
       session: { id: user.id, role: user.role, source: 'user' },
       reason: 'session',
@@ -110,6 +118,13 @@ function sendSessionFailure(
   res: NextApiResponse,
   reason: Exclude<SessionResult['reason'], 'session'>,
 ): void {
+  if (reason === 'activation-required') {
+    res.status(403).json({
+      message: 'برای دسترسی به حساب، ابتدا آن را فعال کنید',
+      activationRequired: true,
+    });
+    return;
+  }
   if (reason === 'unrecognized') {
     res.status(403).json({ message: 'دسترسی مجاز نیست' });
     return;

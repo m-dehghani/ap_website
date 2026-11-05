@@ -3,9 +3,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import handler from '@/pages/api/register';
 import { getPrisma } from '@/lib/db';
+import { verifyRecaptcha } from '@/lib/recaptcha';
+import { sendEmail, sendSms } from '@/lib/notifications';
+import { createRegistrationConfirmationProof } from '@/lib/registration-confirmation';
 
 vi.mock('@/lib/db', () => ({
   getPrisma: vi.fn(),
+}));
+
+vi.mock('@/lib/recaptcha', () => ({
+  verifyRecaptcha: vi.fn(),
+}));
+
+vi.mock('@/lib/notifications', () => ({
+  sendEmail: vi.fn(),
+  sendSms: vi.fn(),
+}));
+
+vi.mock('@/lib/registration-confirmation', () => ({
+  createRegistrationConfirmationProof: vi.fn(),
 }));
 
 const createdUser = {
@@ -33,8 +49,10 @@ const transaction = {
     create: vi.fn().mockResolvedValue(createdRegistration),
   },
 };
+const verificationChallenge = { create: vi.fn() };
 const mockPrisma = {
   $transaction: vi.fn(),
+  verificationChallenge,
 };
 
 let registrationCount = 0;
@@ -65,6 +83,7 @@ const validRegistration = (overrides: Record<string, unknown> = {}) => ({
   firstName: 'Student',
   lastName: 'User',
   phone: '09123456789',
+  recaptchaToken: 'captcha-token',
   password: 'securepass123',
   programId: 'program-1',
   birthDate: '2012-01-01',
@@ -77,6 +96,13 @@ describe('/api/register', () => {
     vi.resetAllMocks();
     registrationCount = 0;
     vi.mocked(getPrisma).mockResolvedValue(mockPrisma as never);
+    vi.mocked(verifyRecaptcha).mockResolvedValue({ ok: true });
+    vi.mocked(sendEmail).mockResolvedValue(undefined);
+    vi.mocked(sendSms).mockResolvedValue(undefined);
+    vi.mocked(createRegistrationConfirmationProof).mockResolvedValue(
+      'signed-registration-proof',
+    );
+    verificationChallenge.create.mockResolvedValue({ id: 'activation-1' });
     transaction.user.findFirst.mockResolvedValue(null);
     transaction.coach.findFirst.mockResolvedValue(null);
     transaction.program.findUnique.mockResolvedValue({
@@ -117,6 +143,64 @@ describe('/api/register', () => {
     expect(getPrisma).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ['rejected', { ok: false, reason: 'invalid' }],
+    ['expired', { ok: false, reason: 'invalid' }],
+    ['malformed', { ok: false, reason: 'invalid' }],
+    ['unavailable', { ok: false, reason: 'unavailable' }],
+  ] as const)(
+    'does not access registration storage when CAPTCHA is %s',
+    async (_outcome, verification) => {
+      vi.mocked(verifyRecaptcha).mockResolvedValue(verification);
+      const res = createResponse();
+
+      await handler(createRequest(validRegistration()), res as never);
+
+      expect(res.status).toHaveBeenCalledWith(
+        verification.reason === 'unavailable' ? 503 : 400,
+      );
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('امنیتی'),
+        }),
+      );
+      expect(getPrisma).not.toHaveBeenCalled();
+    },
+  );
+
+  it('rejects a missing CAPTCHA token before invoking Google or accessing registration storage', async () => {
+    const res = createResponse();
+
+    await handler(
+      createRequest(validRegistration({ recaptchaToken: undefined })),
+      res as never,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(verifyRecaptcha).not.toHaveBeenCalled();
+    expect(getPrisma).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['null', null],
+    ['non-string', 42],
+    ['oversized', 'x'.repeat(4097)],
+  ])(
+    'rejects %s CAPTCHA token input before registration storage',
+    async (_label, recaptchaToken) => {
+      const res = createResponse();
+
+      await handler(
+        createRequest(validRegistration({ recaptchaToken })),
+        res as never,
+      );
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(verifyRecaptcha).not.toHaveBeenCalled();
+      expect(getPrisma).not.toHaveBeenCalled();
+    },
+  );
+
   it('returns an explicit 429 after five registration requests from one address', async () => {
     const responses = Array.from({ length: 6 }, () => createResponse());
 
@@ -149,6 +233,15 @@ describe('/api/register', () => {
     await handler(createRequest(validRegistration()), res as never);
 
     expect(res.status).toHaveBeenCalledWith(201);
+    expect(createRegistrationConfirmationProof).toHaveBeenCalledWith(
+      'registration-1',
+    );
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        confirmationProof: 'signed-registration-proof',
+        pendingActivation: true,
+      }),
+    );
     expect(res.status).not.toHaveBeenCalledWith(429);
   });
 
@@ -194,7 +287,41 @@ describe('/api/register', () => {
       },
     });
     expect(res.status).toHaveBeenCalledWith(201);
+    expect(transaction.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ activatedAt: null }),
+      }),
+    );
+    expect(verificationChallenge.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'student-1',
+        purpose: 'ACCOUNT_ACTIVATION',
+        channel: 'PHONE',
+        target: '09123456789',
+        codeHash: expect.any(String),
+        expiresAt: expect.any(Date),
+      }),
+    });
+    expect(sendSms).toHaveBeenCalledWith('09123456789', expect.any(String));
     expect(JSON.stringify(res.json.mock.calls)).not.toContain('password');
+    expect(JSON.stringify(res.json.mock.calls)).not.toMatch(/\b\d{6}\b/);
+  });
+
+  it('keeps a created account pending and returns a resend path when initial delivery fails', async () => {
+    vi.mocked(sendSms).mockRejectedValue(new Error('delivery unavailable'));
+    const res = createResponse();
+
+    await handler(createRequest(validRegistration()), res as never);
+
+    expect(transaction.user.create).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pendingActivation: true,
+        activationSent: false,
+        canResend: true,
+      }),
+    );
   });
 
   it('stores the birth date supplied during public registration', async () => {

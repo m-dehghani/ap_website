@@ -4,6 +4,7 @@ import path from 'node:path';
 import { del, list, put } from '@vercel/blob';
 import { z } from 'zod';
 import { getPrisma } from '@/lib/db';
+import { getMaxImageUploadBytes } from '@/lib/media';
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const imageUploadScopeSchema = z.enum([
@@ -14,6 +15,7 @@ export const imageUploadScopeSchema = z.enum([
   'staff-member',
   'news-article',
   'shop-product',
+  'site-logo',
 ]);
 
 export type ImageMimeType = 'image/jpeg' | 'image/png' | 'image/webp';
@@ -43,10 +45,28 @@ type ImageStore = Pick<
   | 'testimonial'
   | 'newsArticle'
   | 'shopProduct'
+  | 'siteBranding'
 >;
 
 function getUploadsDirectory() {
-  return path.resolve(process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads'));
+  const configured = process.env.UPLOADS_DIR?.trim();
+  if (process.env.NODE_ENV === 'production' && !configured && process.env.VERCEL !== '1') {
+    throw new Error('DURABLE_UPLOADS_DIR_REQUIRED');
+  }
+  return path.resolve(configured || path.join(process.cwd(), 'uploads'));
+}
+
+function getImageBlobToken() {
+  const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  if (process.env.VERCEL === '1') {
+    if (!token) throw new Error('VERCEL_BLOB_TOKEN_REQUIRED');
+    return token;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    getUploadsDirectory();
+    return null;
+  }
+  return token || null;
 }
 
 function getImageFilename(url: string | null | undefined): string | null {
@@ -67,7 +87,7 @@ export function detectImageMimeType(
   data: Buffer,
   declaredMimeType: string,
 ): ImageMimeType | null {
-  if (!data.length || data.length > MAX_IMAGE_BYTES) return null;
+  if (!data.length || data.length > getMaxImageUploadBytes()) return null;
 
   let detected: ImageMimeType | null = null;
   if (
@@ -108,9 +128,9 @@ export async function writeImageFile(
   }
 
   const filename = `${id}.${imageExtensions[contentType]}`;
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  const blobToken = getImageBlobToken();
   if (blobToken) {
-      await put(filename, Buffer.from(data), {
+    await put(filename, Buffer.from(data), {
       access: 'public',
       token: blobToken,
       addRandomSuffix: false,
@@ -149,7 +169,7 @@ export async function readImageFile(
   const contentType = getImageMimeTypeFromUrl(url);
   if (!filename || !contentType) return null;
 
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  const blobToken = getImageBlobToken();
   if (blobToken) {
     const blobUrl = `${process.env.BLOB_STORE_ID ? `https://${process.env.BLOB_STORE_ID}.public.blob.vercel-storage.com` : 'https://blob.vercel-storage.com'}/${filename}`;
     try {
@@ -185,7 +205,7 @@ export async function removeImageFile(url: string): Promise<void> {
   const filename = getImageFilename(url);
   if (!filename) return;
 
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  const blobToken = getImageBlobToken();
   if (blobToken) {
     const blobUrl = `${process.env.BLOB_STORE_ID ? `https://${process.env.BLOB_STORE_ID}.public.blob.vercel-storage.com` : 'https://blob.vercel-storage.com'}/${filename}`;
     await del(blobUrl, { token: blobToken });
@@ -195,7 +215,7 @@ export async function removeImageFile(url: string): Promise<void> {
 }
 
 export async function clearStoredImageFiles(): Promise<void> {
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  const blobToken = getImageBlobToken();
   if (blobToken) {
     const prefix = 'uploads/';
     let cursor: string | undefined;

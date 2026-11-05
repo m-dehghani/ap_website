@@ -6,6 +6,7 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import handler from '@/pages/api/uploads/[id]';
 import { readImageFile, saveUploadedImage } from '@/lib/uploads';
+import { saveUploadedVideo } from '@/lib/media';
 
 const imageBytes = Uint8Array.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
@@ -67,5 +68,34 @@ describe('/api/uploads/[id]', () => {
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.send).not.toHaveBeenCalled();
     expect(await readImageFile('/api/uploads/../private-file')).toBeNull();
+  });
+
+  it('serves video byte ranges with 206 and a precise Content-Range', async () => {
+    const bytes = Buffer.from('0123456789');
+    const url = await saveUploadedVideo('video/mp4', Buffer.concat([
+      Buffer.from([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]),
+      bytes,
+    ]));
+    const filename = url.split('/').at(-1)!;
+    const res = response();
+
+    await handler(
+      {
+        method: 'GET',
+        query: { id: filename },
+        headers: { range: 'bytes=4-7' },
+      } as never,
+      res as never,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(206);
+    expect(res.headers).toMatchObject({
+      'Content-Type': 'video/mp4',
+      'Content-Range': `bytes 4-7/${12 + bytes.length}`,
+      'Content-Length': '4',
+      'Accept-Ranges': 'bytes',
+      'X-Content-Type-Options': 'nosniff',
+    });
+    expect(res.send).toHaveBeenCalledWith(Buffer.from([0x66, 0x74, 0x79, 0x70]));
   });
 });

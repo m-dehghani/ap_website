@@ -126,6 +126,8 @@ export async function getNewsArticles(limit?: number): Promise<NewsArticleViewMo
     author: n.author,
     image: n.image,
     videoUrl: n.videoUrl,
+    uploadedVideoUrl: n.uploadedVideoUrl,
+    aparatVideoUrl: n.aparatVideoUrl,
     tags: n.tags,
     readTimeMinutes: n.readTimeMinutes,
     likes: n.likes,

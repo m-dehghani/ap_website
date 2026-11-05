@@ -28,6 +28,7 @@ export interface SiteInfoViewModel {
   city: string;
   foundedYear: number | null;
   domain: string;
+  logoUrl?: string | null;
   officeHours: OpeningHourViewModel[];
   trainingHours: OpeningHourViewModel[];
   socialLinks: SocialLinkViewModel[];

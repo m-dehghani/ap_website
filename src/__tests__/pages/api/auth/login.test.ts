@@ -60,6 +60,7 @@ describe('/api/auth/login', () => {
       firstName: 'Student',
       lastName: 'User',
       role: 'STUDENT',
+      activatedAt: new Date('2026-01-01T00:00:00.000Z'),
     });
     const req = createRequest({
       identifier: '۰۹۱۲۳۴۵۶۷۸۹',
@@ -161,6 +162,7 @@ describe('/api/auth/login', () => {
       firstName: 'Student',
       lastName: 'User',
       role: 'STUDENT',
+      activatedAt: new Date('2026-01-01T00:00:00.000Z'),
     });
     const res = createResponse();
 
@@ -174,6 +176,68 @@ describe('/api/auth/login', () => {
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.status).not.toHaveBeenCalledWith(429);
+  });
+
+  it('does not issue a session cookie to an unactivated student with valid credentials', async () => {
+    mockPrisma.user.findFirst.mockResolvedValue({
+      id: 'student-pending',
+      email: 'student@example.com',
+      phone: null,
+      password: passwordHash,
+      firstName: 'Student',
+      lastName: 'User',
+      role: 'STUDENT',
+      activatedAt: null,
+    });
+    const res = createResponse();
+
+    await handler(
+      createRequest({
+        identifier: 'student@example.com',
+        password: 'secret123',
+      }),
+      res as never,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        activationRequired: true,
+        activationUrl: '/activate',
+      }),
+    );
+    expect(res.setHeader).not.toHaveBeenCalledWith(
+      'Set-Cookie',
+      expect.anything(),
+    );
+  });
+
+  it('does not apply the student activation gate to administrative accounts', async () => {
+    mockPrisma.user.findFirst.mockResolvedValue({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      phone: null,
+      password: passwordHash,
+      firstName: 'Admin',
+      lastName: 'User',
+      role: 'ADMIN',
+      activatedAt: null,
+    });
+    const res = createResponse();
+
+    await handler(
+      createRequest({
+        identifier: 'admin@example.com',
+        password: 'secret123',
+      }),
+      res as never,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Set-Cookie',
+      expect.arrayContaining([expect.stringContaining('auth_token=')]),
+    );
   });
 
   it('normalizes Persian phone digits for matching', () => {

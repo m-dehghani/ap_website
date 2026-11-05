@@ -46,7 +46,7 @@ const CTAComponent: React.FC<CTAProps> = ({ content }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16"
+            className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12"
           >
             <motion.a
               href={content.primaryCTA.href}
@@ -118,7 +118,7 @@ const CTAComponent: React.FC<CTAProps> = ({ content }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="mt-16"
+            className="mt-12"
           >
             <h3 className="text-2xl font-bold text-white mb-8">
               چرا باید امروز شروع کنید؟

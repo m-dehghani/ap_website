@@ -1,26 +1,29 @@
 import type { GetServerSideProps } from 'next';
 import Layout from '@/components/Layout';
 import PageHero from '@/components/PageHero';
+import SuccessStories from '@/components/SuccessStories';
 import Testimonials from '@/components/Testimonials';
-import { getTestimonials } from '@/services/content';
+import { getMilestones, getTestimonials } from '@/services/content';
 import { withSite, SiteProps } from '@/lib/page-props';
 
 type TestimonialsPageProps = SiteProps & {
   testimonials: Awaited<ReturnType<typeof getTestimonials>>;
+  honors: Awaited<ReturnType<typeof getMilestones>>;
 };
 
-function TestimonialsPage({ testimonials }: TestimonialsPageProps) {
+function TestimonialsPage({ testimonials, honors }: TestimonialsPageProps) {
   return (
     <Layout
-      title="نظرات و تجربه‌ها - آکادمی فوتبال AP"
-      description="دیدگاه‌ها و تجربه‌های ثبت‌شده درباره آکادمی فوتبال AP."
+      title="نظرات و افتخارات - آکادمی فوتبال AP"
+      description="دیدگاه‌های ثبت‌شده و افتخارات تأییدشده آکادمی فوتبال AP."
       canonical="https://ap-football.com/testimonials"
     >
       <PageHero
-        title="نظرات و تجربه‌ها"
-        description="دیدگاه‌های ثبت‌شده درباره تجربه حضور در آکادمی."
-        badge="نظرات"
+        title="نظرات و افتخارات آکادمی"
+        description="دیدگاه‌های ثبت‌شده و افتخارات تأییدشده آکادمی."
+        badge="آکادمی فوتبال AP"
       />
+      <SuccessStories honors={honors} />
       <Testimonials testimonials={testimonials} />
     </Layout>
   );
@@ -28,8 +31,11 @@ function TestimonialsPage({ testimonials }: TestimonialsPageProps) {
 
 export const getServerSideProps: GetServerSideProps<TestimonialsPageProps> =
   async () => {
-    const testimonials = await getTestimonials('GENERAL');
-    return { props: await withSite({ testimonials }) };
+    const [testimonials, honors] = await Promise.all([
+      getTestimonials('GENERAL'),
+      getMilestones(),
+    ]);
+    return { props: await withSite({ testimonials, honors }) };
   };
 
 export default TestimonialsPage;

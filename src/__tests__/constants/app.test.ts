@@ -12,10 +12,10 @@ describe('site navigation', () => {
       { href: '/coaches', label: 'مربیان ما' },
       { href: '/about', label: 'درباره آکادمی' },
       { href: '/news', label: 'اخبار و رویدادها' },
-      { href: '/success', label: 'افتخارات آکادمی' },
-      { href: '/testimonials', label: 'نظرات و تجربه‌ها' },
+      { href: '/testimonials', label: 'نظرات و افتخارات' },
       { href: '/contact', label: 'تماس با ما' },
     ]);
+    expect(NAVIGATION.main.map(({ href }) => href)).not.toContain('/success');
     expect(NAVIGATION.footer.programs[0]?.href).toBe(
       NAVIGATION.main.find(({ href }) => href === '/programs')?.href,
     );

@@ -17,11 +17,10 @@ interface ZarinpalResponse {
   errors?: unknown;
 }
 
-export function getZarinpalConfig(): ZarinpalConfig | null {
-  const merchantId = process.env.ZARINPAL_MERCHANT_ID;
+export function getPaymentSiteUrl(): string | null {
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL;
-  if (!merchantId || !siteUrl) return null;
+  if (!siteUrl) return null;
   let baseUrl: URL;
   try {
     baseUrl = new URL(siteUrl);
@@ -36,6 +35,15 @@ export function getZarinpalConfig(): ZarinpalConfig | null {
   ) {
     return null;
   }
+  return baseUrl.origin;
+}
+
+export function getZarinpalConfig(
+  configuredMerchantId?: string,
+): ZarinpalConfig | null {
+  const merchantId = configuredMerchantId ?? process.env.ZARINPAL_MERCHANT_ID;
+  const siteUrl = getPaymentSiteUrl();
+  if (!merchantId || !siteUrl) return null;
 
   const sandbox = process.env.ZARINPAL_SANDBOX === 'true';
   return {
@@ -44,7 +52,7 @@ export function getZarinpalConfig(): ZarinpalConfig | null {
     startPayUrl: sandbox
       ? 'https://sandbox.zarinpal.com/pg/StartPay'
       : 'https://payment.zarinpal.com/pg/StartPay',
-    siteUrl: baseUrl.origin,
+    siteUrl,
   };
 }
 
@@ -78,9 +86,7 @@ export async function requestPayment(
     callback_url: callbackUrl,
   });
   if (result.data?.code !== 100 || !result.data.authority) {
-    throw new Error(
-      `Zarinpal payment request was rejected: ${JSON.stringify(result.errors ?? result.data)}`,
-    );
+    throw new Error('Zarinpal rejected the payment request');
   }
   return {
     authority: result.data.authority,

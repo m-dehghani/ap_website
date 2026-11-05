@@ -79,7 +79,7 @@ export default function CoachSpotlight({ coaches = [] }: CoachSpotlightProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-600 text-sm font-medium mb-4">
             <UserGroupIcon className="w-4 h-4 ml-2" />
@@ -411,7 +411,7 @@ export default function CoachSpotlight({ coaches = [] }: CoachSpotlightProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-20"
+          className="mt-12"
         >
           <h3 className="text-2xl font-bold text-gray-900 text-center mb-12">
             تمام مربیان ما

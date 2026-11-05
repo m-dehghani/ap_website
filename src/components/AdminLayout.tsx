@@ -246,6 +246,23 @@ export default function AdminLayout({
             </Link>
 
             <Link
+              href="/admin/payment-gateways"
+              aria-current={
+                router.pathname === '/admin/payment-gateways' ? 'page' : undefined
+              }
+              className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                router.pathname === '/admin/payment-gateways'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <span className="ml-3" aria-hidden="true">
+                ◈
+              </span>
+              درگاه‌های پرداخت
+            </Link>
+
+            <Link
               href="/admin/messages"
               aria-current={
                 router.pathname.startsWith('/admin/messages')

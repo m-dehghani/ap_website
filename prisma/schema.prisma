@@ -27,6 +27,7 @@ model User {
   marketingOptIn Boolean @default(false)
   image     String?
   themePreference String @default("system") @map("theme_preference")
+  activatedAt DateTime? @default(now())
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -184,6 +185,7 @@ model Payment {
   currency          String   @default("IRR")
   status            String   @default("PENDING")
   method            String   @default("ONLINE")
+  provider          String   @default("ZARINPAL")
   stripeId          String?
   providerReference String?
   expiresAt         DateTime?
@@ -197,8 +199,19 @@ model Payment {
   registrationId String
 
   @@index([method, status, expiresAt])
-  @@index([providerReference, method])
+  @@index([providerReference, provider])
   @@map("payments")
+}
+
+model PaymentGatewayConfig {
+  provider             String   @id
+  enabled              Boolean  @default(false)
+  isDefault            Boolean  @default(false)
+  encryptedCredential  String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("payment_gateway_configs")
 }
 
 model Session {
@@ -413,6 +426,8 @@ model NewsArticle {
   author          String
   image           String?
   videoUrl        String?  @map("video_url")
+  uploadedVideoUrl String? @map("uploaded_video_url")
+  aparatVideoUrl   String? @map("aparat_video_url")
   tags            String[] @default([])
   readTimeMinutes Int      @default(1)
   likes           Int      @default(0)
@@ -425,6 +440,14 @@ model NewsArticle {
 
   @@index([publishedAt])
   @@map("news_articles")
+}
+
+model SiteBranding {
+  id        String   @id @default("default")
+  logoUrl   String?  @map("logo_url")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_branding")
 }
 
 // Hero slider content for home page
@@ -592,6 +615,8 @@ model ShopProduct {
   description      String
   shortDescription String?
   images           String[] @default([])
+  uploadedVideoUrl String?  @map("uploaded_video_url")
+  aparatVideoUrl   String?  @map("aparat_video_url")
   price            Int
   salePrice        Int?
   saleStartsAt     DateTime?
@@ -645,7 +670,8 @@ model ShopOrder {
   shippingFee Int
   totalAmount Int
   status      String   @default("PENDING_PAYMENT")
-  authority   String?  @unique
+  provider    String   @default("ZARINPAL")
+  providerReference String? @unique
   expiresAt   DateTime
   paidAt      DateTime?
   createdAt   DateTime @default(now())

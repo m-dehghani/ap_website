@@ -1,5 +1,9 @@
 # Phase 12 atomic tasks
 
+> The PostgreSQL storage task below records the original plan. Its storage
+> direction was superseded by the owner-approved Phase 20 decision documented
+> in [`spec.md`](./spec.md#subsequent-storage-decision).
+
 - [x] **T1 — Add regression tests:** test unauthenticated and cross-account
   profile requests, coach/user ownership, CMS/editor role boundaries, empty,
   oversized, unsupported and signature-mismatched files, persistence and

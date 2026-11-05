@@ -6,6 +6,7 @@ import {
   areValidImageReferences,
   deleteUnreferencedImage,
 } from '@/lib/uploads';
+import { deleteUnreferencedMedia, isValidVideoReference } from '@/lib/media';
 
 export default async function handler(
   req: NextApiRequest,
@@ -48,11 +49,20 @@ export default async function handler(
   try {
     const currentProduct = await db.shopProduct.findUnique({
       where: { id },
-      select: { id: true, images: true },
+      select: { id: true, images: true, uploadedVideoUrl: true },
     });
     if (!currentProduct) return res.status(404).json({ message: 'محصول یافت نشد' });
     if (!(await areValidImageReferences(db, product.images, currentProduct.images))) {
       return res.status(400).json({ message: 'تصاویر باید از بخش بارگذاری انتخاب شوند' });
+    }
+    if (
+      !(await isValidVideoReference(
+        db,
+        product.uploadedVideoUrl,
+        [currentProduct.uploadedVideoUrl],
+      ))
+    ) {
+      return res.status(400).json({ message: 'ویدئو باید از بخش بارگذاری انتخاب شود' });
     }
 
     const updated = await db.$transaction(async (tx) => {
@@ -121,6 +131,12 @@ export default async function handler(
       if (!product.images.includes(oldImage)) {
         await deleteUnreferencedImage(db, oldImage);
       }
+    }
+    if (
+      currentProduct.uploadedVideoUrl &&
+      currentProduct.uploadedVideoUrl !== product.uploadedVideoUrl
+    ) {
+      await deleteUnreferencedMedia(db, currentProduct.uploadedVideoUrl);
     }
     const result = await db.shopProduct.findUnique({
       where: { id },

@@ -13,6 +13,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:id',
+        destination: '/api/uploads/:id',
+      },
+    ];
+  },
   // SEO and security optimization
   async headers() {
     return [

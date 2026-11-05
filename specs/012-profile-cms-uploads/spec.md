@@ -90,3 +90,14 @@ operational configuration.
 - Object-storage provider setup, image transformations, quotas, CDN work, or
   background cleanup of assets abandoned before a CMS record references them.
 - Changing any CMS content, testimonial text, product price, or claim.
+
+## Subsequent storage decision
+
+The original PostgreSQL-byte storage decision above is superseded by the
+owner-approved Phase 20 decision in
+[`specs/020-video-media-and-site-logo/spec.md`](../020-video-media-and-site-logo/spec.md):
+Vercel deployments use Vercel Blob, and other production hosts must configure
+a durable `UPLOADS_DIR`. This later decision accounts for the migration that
+dropped `image_assets` and the storage implementation/deployment guidance that
+followed Phase 12. New video and logo media must use that same durable
+storage policy; production must not fall back to ephemeral disk.

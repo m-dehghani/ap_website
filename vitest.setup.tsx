@@ -32,7 +32,7 @@ vi.mock('@heroicons/react/24/outline', () => {
     'StarIcon', 'TrophyIcon', 'AcademicCapIcon', 'UserGroupIcon',
     'ChevronLeftIcon', 'ChevronRightIcon', 'ArrowLeftIcon', 'ArrowRightIcon',
     'PlayIcon', 'PauseIcon', 'CameraIcon', 'UsersIcon', 'CalendarDaysIcon',
-    'CheckCircleIcon', 'HeartIcon', 'ClockIcon', 'ShieldCheckIcon',
+    'CheckCircleIcon', 'InformationCircleIcon', 'HeartIcon', 'ClockIcon', 'ShieldCheckIcon',
     'LightBulbIcon', 'SparklesIcon', 'RocketLaunchIcon', 'CogIcon',
     'ArrowTrendingUpIcon', 'ChatBubbleLeftRightIcon', 'PhoneIcon',
     'EnvelopeIcon', 'MapPinIcon',

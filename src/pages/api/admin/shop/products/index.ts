@@ -3,6 +3,7 @@ import { getPrisma } from '@/lib/db';
 import { authorizeShopManager } from '@/lib/auth';
 import { shopProductInputSchema } from '@/lib/shop';
 import { areValidImageReferences } from '@/lib/uploads';
+import { isValidVideoReference } from '@/lib/media';
 
 export default async function handler(
   req: NextApiRequest,
@@ -41,6 +42,9 @@ export default async function handler(
   const { variants, ...product } = parsed.data;
   if (!(await areValidImageReferences(db, product.images))) {
     return res.status(400).json({ message: 'تصاویر باید از بخش بارگذاری انتخاب شوند' });
+  }
+  if (!(await isValidVideoReference(db, product.uploadedVideoUrl))) {
+    return res.status(400).json({ message: 'ویدئو باید از بخش بارگذاری انتخاب شود' });
   }
   try {
     const created = await db.shopProduct.create({

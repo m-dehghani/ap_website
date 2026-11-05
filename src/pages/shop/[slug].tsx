@@ -9,6 +9,7 @@ import { HandThumbDownIcon, HandThumbUpIcon } from '@heroicons/react/24/outline'
 import Layout from '@/components/Layout';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import ProductGallery from '@/components/shop/ProductGallery';
+import VideoPlayer from '@/components/VideoPlayer';
 import ProductCard, { type ShopProductCardData } from '@/components/shop/ProductCard';
 import SocialShare from '@/components/shop/SocialShare';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -69,6 +70,8 @@ export const getServerSideProps: GetServerSideProps<{
 
 interface ProductDetail extends ShopProductCardData {
   description: string;
+  uploadedVideoUrl: string | null;
+  aparatVideoUrl: string | null;
   salePrice: number | null;
   saleStartsAt: string | null;
   saleEndsAt: string | null;
@@ -501,6 +504,15 @@ export default function ShopProductPage({
             <section className="mt-14 max-w-4xl" aria-labelledby="product-description-title">
               <h2 id="product-description-title" className="text-2xl font-bold text-slate-900">توضیحات محصول</h2>
               <p className="mt-4 whitespace-pre-wrap leading-8 text-slate-700">{product.description}</p>
+              {(product.uploadedVideoUrl || product.aparatVideoUrl) && (
+                <div className="mt-6">
+                  <VideoPlayer
+                    uploadedVideoUrl={product.uploadedVideoUrl}
+                    aparatVideoUrl={product.aparatVideoUrl}
+                    title={product.name}
+                  />
+                </div>
+              )}
             </section>
 
             <section className="mt-14" aria-labelledby="reviews-title">

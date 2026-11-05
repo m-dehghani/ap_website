@@ -133,6 +133,35 @@ export async function getNewsArticles(
   return rows.map(toNewsArticleViewModel);
 }
 
+export async function getPublishedNewsArticleById(
+  id: string,
+): Promise<NewsArticleViewModel | null> {
+  const prisma = await getPrisma();
+  const article = await prisma.newsArticle.findFirst({
+    where: { id, isPublished: true },
+    select: {
+      id: true,
+      title: true,
+      excerpt: true,
+      content: true,
+      category: true,
+      type: true,
+      author: true,
+      image: true,
+      videoUrl: true,
+      uploadedVideoUrl: true,
+      aparatVideoUrl: true,
+      tags: true,
+      readTimeMinutes: true,
+      likes: true,
+      comments: true,
+      featured: true,
+      publishedAt: true,
+    },
+  });
+  return article ? toNewsArticleViewModel(article) : null;
+}
+
 export async function getFeaturedNewsArticles(
   limit = 2,
 ): Promise<NewsArticleViewModel[]> {

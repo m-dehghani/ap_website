@@ -17,6 +17,12 @@ export default async function handler(
   try {
     const result = await getSessionResult(req);
     if (!result.session) {
+      if (result.reason === 'activation-required') {
+        return res.status(403).json({
+          message: 'برای دسترسی به حساب، ابتدا آن را فعال کنید',
+          activationRequired: true,
+        });
+      }
       if (result.reason === 'unrecognized') {
         return res.status(404).json({ message: 'کاربر یافت نشد' });
       }
