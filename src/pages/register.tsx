@@ -22,6 +22,7 @@ import {
 } from '@/lib/registration-draft';
 
 type RecaptchaWidget = {
+  ready: (callback: () => void) => void;
   render: (
     container: HTMLElement,
     options: {
@@ -175,12 +176,29 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
-    recaptchaWidgetRef.current = widget.render(container, {
-      sitekey: recaptchaSiteKey,
-      callback: setRecaptchaToken,
-      'expired-callback': () => setRecaptchaToken(null),
-      'error-callback': () => setRecaptchaToken(null),
+    let active = true;
+    widget.ready(() => {
+      if (
+        !active ||
+        currentStep !== 2 ||
+        !recaptchaSiteKey ||
+        recaptchaContainerRef.current !== container ||
+        recaptchaWidgetRef.current !== null
+      ) {
+        return;
+      }
+
+      recaptchaWidgetRef.current = widget.render(container, {
+        sitekey: recaptchaSiteKey,
+        callback: setRecaptchaToken,
+        'expired-callback': () => setRecaptchaToken(null),
+        'error-callback': () => setRecaptchaToken(null),
+      });
     });
+
+    return () => {
+      active = false;
+    };
   }, [currentStep, recaptchaReady]);
 
   useEffect(() => {

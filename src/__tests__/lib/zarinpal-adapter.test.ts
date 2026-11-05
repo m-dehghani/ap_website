@@ -83,4 +83,34 @@ describe('Zarinpal payment gateway adapter', () => {
       gateway.verifyPayment('A-invalid', 250_000),
     ).rejects.toThrow('Zarinpal could not verify the payment');
   });
+
+  it('treats the sandbox errors response for a cancelled payment as unpaid', async () => {
+    const fetchMock = mockFetch(
+      { errors: { code: -51, message: 'Payment was cancelled' } },
+      false,
+      400,
+    );
+    const gateway = createZarinpalAdapter(config);
+
+    await expect(
+      gateway.verifyPayment('A-cancelled', 250_000),
+    ).resolves.toEqual({ state: 'not-paid' });
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://sandbox.zarinpal.com/pg/v4/payment/verify.json',
+      expect.any(Object),
+    );
+  });
+
+  it('rejects other non-2xx verification errors', async () => {
+    mockFetch(
+      { errors: { code: -9, message: 'Provider error' } },
+      false,
+      400,
+    );
+    const gateway = createZarinpalAdapter(config);
+
+    await expect(
+      gateway.verifyPayment('A-invalid', 250_000),
+    ).rejects.toThrow('Zarinpal could not verify the payment');
+  });
 });

@@ -38,7 +38,10 @@ product/API contract can be verified.
   persist plaintext as a fallback, return secret material in HTML/API
   responses, or log credentials or decrypted configuration. Admin reads expose
   configured/masked metadata only; replacement and clear operations do not
-  retrieve the old value.
+  retrieve the old value and are blocked only while provider transactions are
+  within the callback window. That window extends one longest configured
+  checkout lifetime beyond `expiresAt`; when expiration is absent, `createdAt`
+  is used as the timestamp fallback.
 - **FR-18.3 — Stable payment identity:** Persist an explicit provider identity
   on every tuition payment and shop order. Preserve existing Zarinpal
   references and pending transactions during migration; never reinterpret a

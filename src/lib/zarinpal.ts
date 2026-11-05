@@ -14,7 +14,20 @@ interface ZarinpalResponse {
     authority?: string;
     ref_id?: number;
   };
-  errors?: unknown;
+  errors?: {
+    code?: number;
+    message?: string;
+  };
+}
+
+class ZarinpalRequestError extends Error {
+  constructor(
+    status: number,
+    readonly errors: ZarinpalResponse['errors'],
+  ) {
+    super(`Zarinpal request failed with HTTP ${status}`);
+    this.name = 'ZarinpalRequestError';
+  }
 }
 
 export function getPaymentSiteUrl(): string | null {
@@ -66,11 +79,11 @@ async function requestZarinpal(
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(15_000),
   });
-  const result = (await response.json()) as ZarinpalResponse;
+  const result = (await response.json()) as ZarinpalResponse | null;
   if (!response.ok) {
-    throw new Error(`Zarinpal request failed with HTTP ${response.status}`);
+    throw new ZarinpalRequestError(response.status, result?.errors);
   }
-  return result;
+  return result ?? {};
 }
 
 export async function requestPayment(
@@ -99,10 +112,17 @@ export async function verifyPayment(
   authority: string,
   amount: number,
 ) {
-  const result = await requestZarinpal(`${config.apiUrl}/verify.json`, {
-    merchant_id: config.merchantId,
-    authority,
-    amount,
-  });
-  return result.data;
+  try {
+    const result = await requestZarinpal(`${config.apiUrl}/verify.json`, {
+      merchant_id: config.merchantId,
+      authority,
+      amount,
+    });
+    return result.data;
+  } catch (error) {
+    if (error instanceof ZarinpalRequestError && error.errors) {
+      return { errors: error.errors };
+    }
+    throw error;
+  }
 }

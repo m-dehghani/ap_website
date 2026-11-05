@@ -103,6 +103,34 @@ describe('admin shop product video fields', () => {
     expect(res.status).toHaveBeenCalledWith(201);
   });
 
+  it('normalizes empty video fields from the default shop form payload', async () => {
+    prisma.shopProduct.create.mockResolvedValue({
+      id: 'product-1',
+      uploadedVideoUrl: null,
+      aparatVideoUrl: null,
+    });
+    const res = response();
+
+    await productsHandler(
+      request(
+        'POST',
+        productInput({ uploadedVideoUrl: '', aparatVideoUrl: '' }),
+      ),
+      res as never,
+    );
+
+    expect(isValidVideoReference).toHaveBeenCalledWith(prisma, null);
+    expect(prisma.shopProduct.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          uploadedVideoUrl: null,
+          aparatVideoUrl: null,
+        }),
+      }),
+    );
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
   it('rejects hostile Aparat references before writing a product', async () => {
     const res = response();
 

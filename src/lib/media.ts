@@ -47,8 +47,14 @@ export const uploadedLogoUrlSchema = z
   .string()
   .regex(new RegExp(`^/uploads/${uuidPattern}\\.(jpg|png|webp)$`, 'i'));
 export const videoContentFieldsSchema = z.object({
-  uploadedVideoUrl: videoAssetUrlSchema.nullable().optional(),
-  aparatVideoUrl: aparatVideoUrlSchema,
+  uploadedVideoUrl: z.preprocess(
+    (value) => (value === '' ? null : value),
+    videoAssetUrlSchema.nullable().optional(),
+  ),
+  aparatVideoUrl: z.preprocess(
+    (value) => (value === '' ? null : value),
+    aparatVideoUrlSchema,
+  ),
 });
 
 type VideoReferenceStore = Pick<

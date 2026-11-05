@@ -299,7 +299,7 @@ export default function PaymentGatewaysPage() {
                     }
                     className="h-4 w-4 rounded border-red-300 text-red-700 focus:ring-red-600"
                   />
-                  حذف کلید ذخیره‌شده (فقط پس از تعیین تکلیف پرداخت‌های در انتظار)
+                  حذف کلید ذخیره‌شده پس از پایان بازه دریافت پاسخ درگاه برای تراکنش‌های اخیر
                 </label>
               )}
 

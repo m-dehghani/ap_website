@@ -31,7 +31,7 @@ export default function VideoMediaFields({
         method: 'POST',
         headers: {
           'Content-Type': file.type,
-          'X-Upload-Filename': file.name,
+          'X-Upload-Filename': encodeURIComponent(file.name),
         },
         body: file,
       });

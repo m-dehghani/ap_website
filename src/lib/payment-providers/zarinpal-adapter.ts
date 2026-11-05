@@ -30,7 +30,15 @@ export function createZarinpalAdapter(
         reference,
         expectedAmountInRial,
       );
-      if (result?.code === -21) return { state: 'not-paid' };
+      if (
+        (result && 'errors' in result && result.errors.code === -51) ||
+        (result && 'code' in result && result.code === -21)
+      ) {
+        return { state: 'not-paid' };
+      }
+      if (!result || !('code' in result)) {
+        throw new Error('Zarinpal could not verify the payment');
+      }
       if (result?.code !== 100 && result?.code !== 101) {
         throw new Error('Zarinpal could not verify the payment');
       }
