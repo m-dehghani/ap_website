@@ -37,8 +37,7 @@ const MAIN_NAVIGATION = [
   { label: 'مربیان', href: '/coaches' },
   { label: 'درباره ما', href: '/about' },
   { label: 'اخبار', href: '/news' },
-  { label: 'افتخارات آکادمی', href: '/success' },
-  { label: 'نظرات و تجربه‌ها', href: '/testimonials' },
+  { label: 'نظرات و افتخارات', href: '/testimonials' },
   { label: 'تماس', href: '/contact' },
 ] as const;
 
@@ -52,8 +51,7 @@ const FOOTER_QUICK_LINK_LABELS: Record<
   '/coaches': 'مربیان ما',
   '/about': 'درباره آکادمی',
   '/news': 'اخبار و رویدادها',
-  '/success': 'افتخارات آکادمی',
-  '/testimonials': 'نظرات و تجربه‌ها',
+  '/testimonials': 'نظرات و افتخارات',
   '/contact': 'تماس با ما',
 };
 

@@ -28,11 +28,18 @@ vi.mock('@heroicons/react/24/outline', () => {
     ChevronDownIcon: Icon,
     ComputerDesktopIcon: Icon,
     Cog6ToothIcon: Icon,
+    HomeIcon: Icon,
     MoonIcon: Icon,
     ShoppingBagIcon: Icon,
     SunIcon: Icon,
+    UserGroupIcon: Icon,
     UserIcon: Icon,
     XMarkIcon: Icon,
+    BookOpenIcon: Icon,
+    MegaphoneIcon: Icon,
+    ChatBubbleLeftRightIcon: Icon,
+    EnvelopeIcon: Icon,
+    AcademicCapIcon: Icon,
   };
 });
 
@@ -47,8 +54,26 @@ vi.mock('framer-motion', async () => {
     </div>
   ));
   MotionDiv.displayName = 'MotionDiv';
+  const MotionSpan = React.forwardRef<
+    HTMLSpanElement,
+    React.HTMLAttributes<HTMLSpanElement>
+  >(({ children, ...props }, ref) => (
+    <span ref={ref} {...props}>
+      {children}
+    </span>
+  ));
+  MotionSpan.displayName = 'MotionSpan';
+  const MotionP = React.forwardRef<
+    HTMLParagraphElement,
+    React.HTMLAttributes<HTMLParagraphElement>
+  >(({ children, ...props }, ref) => (
+    <p ref={ref} {...props}>
+      {children}
+    </p>
+  ));
+  MotionP.displayName = 'MotionP';
   return {
-    motion: { div: MotionDiv },
+    motion: { div: MotionDiv, span: MotionSpan, p: MotionP },
     AnimatePresence: ({ children }: { children: React.ReactNode }) => (
       <>{children}</>
     ),
@@ -69,6 +94,53 @@ vi.mock('@/hooks/useThemePreference', () => ({
 }));
 
 describe('Header mobile navigation', () => {
+  it('renders distinct animated icons and styling for every main navigation item', () => {
+    const { container } = render(<Header />);
+    const navigation = screen.getByRole('navigation', { name: 'منوی اصلی' });
+    const links = Array.from(navigation.querySelectorAll('a[href]'));
+
+    expect(links).toHaveLength(8);
+    expect(navigation).toHaveClass('flex-nowrap');
+    expect(navigation).toHaveClass('2xl:flex');
+    for (const link of links) {
+      expect(link.querySelector('svg')).toBeInTheDocument();
+      expect(link.className).toContain('group');
+      expect(link).toHaveClass('text-sm');
+      expect(link).toHaveAttribute('aria-label');
+      expect(link).toHaveAttribute('title', link.getAttribute('aria-label'));
+      expect(link).toHaveTextContent(link.getAttribute('aria-label') ?? '');
+    }
+
+    expect(
+      screen.getByRole('button', { name: 'باز کردن منوی اصلی' }),
+    ).toHaveClass('2xl:hidden');
+    expect(screen.getByText('افشین پیروانی')).toBeInTheDocument();
+    expect(container.querySelector('a[href="/shop"]')).toHaveClass(
+      'bg-secondary-500',
+    );
+    expect(container.querySelector('a[href="/shop"]')).not.toHaveClass(
+      'bg-primary-600',
+    );
+  });
+
+  it('uses readable text sizing in the collapsed main menu', () => {
+    const { container } = render(<Header />);
+    fireEvent.click(screen.getByRole('button', { name: 'باز کردن منوی اصلی' }));
+
+    const links = Array.from(
+      container.querySelectorAll<HTMLAnchorElement>(
+        '#mobile-navigation nav[aria-label="منوی اصلی"] a',
+      ),
+    ).filter(
+      (link) =>
+        !['/shop/cart', '/register', '/login'].includes(link.getAttribute('href') ?? ''),
+    );
+    expect(links).toHaveLength(8);
+    for (const link of links) {
+      expect(link).toHaveClass('text-base', 'font-semibold');
+    }
+  });
+
   it('keeps Tab and Shift+Tab inside the open mobile menu', async () => {
     const { container } = render(<Header />);
     fireEvent.click(screen.getByRole('button', { name: 'باز کردن منوی اصلی' }));

@@ -257,13 +257,13 @@ const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="text-center mb-12"
         >
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-600 text-sm font-medium mb-6">
             <SparklesIcon className="w-4 h-4 ml-2" />
             چرا آکادمی AP
           </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gray-900 text-balance">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-gray-900 text-balance">
             چرا{' '}
             <span className="text-club-red-deep">آکادمی فوتبال افشین پیروانی</span>{' '}
             را انتخاب کنیم؟
@@ -279,7 +279,7 @@ const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, staggerChildren: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12"
         >
           {features.map((feature, index) => (
             <FeatureCard3D
@@ -299,7 +299,7 @@ const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative mb-20"
+          className="relative mb-12"
         >
           <div className="bg-linear-to-r from-primary-600 to-primary-700 rounded-4xl p-8 md:p-12 text-white shadow-elegant-xl relative overflow-hidden">
             <div className="absolute inset-0 opacity-10">
@@ -331,7 +331,7 @@ const FeaturesComponent: React.FC<FeaturesProps> = ({ features, stats }) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-20"
+          className="mb-12"
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div

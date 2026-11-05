@@ -60,7 +60,10 @@ export default function HeroNews({ article }: { article: NewsArticleViewModel })
               ⚽
             </span>
           )}
-          <Link href="/news" className="min-w-0 focus-visible:underline">
+          <Link
+            href={`/news/${encodeURIComponent(article.id)}`}
+            className="min-w-0 focus-visible:underline"
+          >
             <span className="mb-1 block text-xs font-medium text-primary-700">
               {article.type === 'VIDEO' ? 'ویدئو' : 'خبر'} ·{' '}
               {article.publishedAt.slice(0, 10)}

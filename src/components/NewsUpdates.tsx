@@ -357,7 +357,7 @@ function CategoryFilter({
 
 function NewsFollowCTA() {
   return (
-    <div className="mt-16 flex flex-col items-center justify-between gap-6 rounded-2xl bg-navy-800 p-8 text-center text-white sm:flex-row sm:text-right">
+    <div className="mt-12 flex flex-col items-center justify-between gap-6 rounded-2xl bg-navy-800 p-8 text-center text-white sm:flex-row sm:text-right">
       <div>
         <h3 className="mb-2 text-2xl font-bold text-white">
           از اخبار آکادمی مطلع شوید
@@ -434,7 +434,7 @@ export default function NewsUpdates({
   }, []);
 
   return (
-    <section className="py-20 bg-linear-to-br from-navy-50 to-navy-100 relative overflow-hidden">
+    <section className="py-16 bg-linear-to-br from-navy-50 to-navy-100 relative overflow-hidden">
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-300 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary-300 rounded-full blur-3xl" />
@@ -446,7 +446,7 @@ export default function NewsUpdates({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-navy-100 text-navy-800 text-sm font-medium mb-4">
             <CalendarDaysIcon className="w-4 h-4 ml-2" />
@@ -466,7 +466,7 @@ export default function NewsUpdates({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-16"
+          className="mb-12"
         >
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-2xl font-bold text-gray-900">اخبار ویژه</h3>

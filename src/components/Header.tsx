@@ -9,11 +9,18 @@ import {
   ChevronDownIcon,
   ComputerDesktopIcon,
   Cog6ToothIcon,
+  HomeIcon,
   MoonIcon,
+  BookOpenIcon,
+  MegaphoneIcon,
   ShoppingBagIcon,
   SunIcon,
+  UserGroupIcon,
   UserIcon,
   XMarkIcon,
+  ChatBubbleLeftRightIcon,
+  EnvelopeIcon,
+  AcademicCapIcon,
 } from '@heroicons/react/24/outline';
 import { NAVIGATION } from '@/constants/app';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,6 +30,17 @@ import ThemePreferenceControl from '@/components/ui/ThemePreferenceControl';
 import { useThemePreference } from '@/hooks/useThemePreference';
 import ProfileAvatar from '@/components/ProfileAvatar';
 
+const navigationIcons = {
+  '/': HomeIcon,
+  '/shop': ShoppingBagIcon,
+  '/programs': BookOpenIcon,
+  '/coaches': UserGroupIcon,
+  '/about': AcademicCapIcon,
+  '/news': MegaphoneIcon,
+  '/testimonials': ChatBubbleLeftRightIcon,
+  '/contact': EnvelopeIcon,
+} satisfies Record<(typeof NAVIGATION.main)[number]['href'], typeof HomeIcon>;
+
 interface HeaderProps {
   site?: SiteInfoViewModel | null;
 }
@@ -31,6 +49,7 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
@@ -40,6 +59,14 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
   const { preference } = useThemePreference();
 
   const navigation = NAVIGATION.main;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const closeMenu = () => {
@@ -166,58 +193,93 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
       : preference === 'light'
         ? SunIcon
         : ComputerDesktopIcon;
+  const brandName =
+    site?.name === 'آکادمی فوتبال افشین پیروانی'
+      ? 'افشین پیروانی'
+      : site?.name ?? 'افشین پیروانی';
 
   return (
-    <header className="site-header sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 shadow-sm backdrop-blur-xl">
+    <header
+      className={`site-header sticky top-0 z-50 transition-all duration-300 ease-out ${
+        isScrolled
+          ? 'bg-white/95 shadow-md border-b border-slate-200/50 py-2'
+          : 'bg-white/90 shadow-sm border-b border-slate-200/70 py-3 md:py-4'
+      }`}
+    >
       <a href="#main-content" className="skip-to-content">
         رفتن به محتوای اصلی
       </a>
       <div className="container-custom">
         <div className="flex items-center justify-between gap-2 py-3 md:py-4">
-          <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <Link
+            href="/"
+            className="flex min-w-0 items-center gap-2 sm:gap-3 group"
+            aria-label="برو به صفحه اصلی"
+          >
             {site?.logoUrl ? (
               <Image
                 src={site.logoUrl}
                 alt="لوگوی آکادمی فوتبال AP"
                 width={44}
                 height={44}
-                className="size-10 shrink-0 rounded-xl object-contain sm:size-11"
+                className="size-10 shrink-0 rounded-xl object-contain sm:size-11 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105"
               />
             ) : (
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-700 text-sm font-extrabold text-white shadow-sm sm:size-11">
+              <motion.span
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-primary-600 to-primary-700 text-sm font-extrabold text-white shadow-lg sm:size-11 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl"
+              >
                 AP
-              </span>
+              </motion.span>
             )}
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold leading-tight text-navy-900 sm:text-base">
-                {site?.name ?? 'آکادمی فوتبال AP'}
-              </p>
-              <p className="hidden text-xs font-medium text-slate-500 2xl:block">
-                {site?.tagline ?? 'AP Football Academy'}
-              </p>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="max-w-32 truncate text-base font-extrabold leading-tight bg-gradient-to-r from-navy-900 via-primary-700 to-primary-600 bg-clip-text text-transparent sm:text-lg"
+                title={brandName}
+              >
+                {brandName}
+              </motion.p>
             </div>
           </Link>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-0 lg:flex" aria-label="منوی اصلی">
-            {navigation.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-xl px-2 py-2 text-sm font-semibold transition-colors 2xl:px-2.5 ${
-                  item.href === '/shop'
-                    ? 'bg-primary-600 text-white shadow-sm hover:bg-primary-700'
-                    : isActive(item.href)
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-slate-600 hover:bg-primary-50 hover:text-primary-700'
-                }`}
-                aria-current={isActive(item.href) ? 'page' : undefined}
-              >
-                {item.href === '/shop' && (
-                  <ShoppingBagIcon className="h-4 w-4" aria-hidden="true" />
-                )}
-                {item.label}
-              </Link>
-            ))}
+          <nav className="hidden min-w-0 flex-1 flex-nowrap items-center justify-center gap-2 2xl:flex" aria-label="منوی اصلی">
+            {navigation.map((item) => {
+              const IconComponent = navigationIcons[item.href];
+              const isShop = item.href === '/shop';
+              const isActivePage = isActive(item.href);
+
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`group inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-xl px-1 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 2xl:min-w-0 2xl:justify-start 2xl:px-2 ${
+                    isShop
+                      ? 'bg-secondary-500 text-white shadow-sm hover:bg-secondary-600 hover:shadow-lg'
+                      : isActivePage
+                        ? isScrolled
+                          ? 'bg-primary-600 text-white shadow-sm'
+                          : 'bg-primary-50 text-primary-700'
+                        : isScrolled
+                          ? 'text-slate-700 hover:bg-primary-50 hover:text-primary-700 hover:shadow-md'
+                          : 'text-slate-600 hover:bg-primary-50 hover:text-primary-700'
+                  }`}
+                  aria-current={isActivePage ? 'page' : undefined}
+                  aria-label={item.label}
+                  title={item.label}
+                >
+                  <IconComponent
+                    className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-110 group-focus-visible:scale-110"
+                    aria-hidden="true"
+                  />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="flex shrink-0 items-center gap-2 lg:gap-3">
@@ -250,11 +312,23 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
             </Link>
             {!loading && !user ? (
               <div className="hidden items-center gap-2 lg:flex">
-                <Link href="/register" className="btn btn-secondary px-3 py-2 text-sm 2xl:px-4">
-                  ثبت نام
+                <Link
+                  href="/register"
+                  className="btn btn-secondary min-h-11 min-w-11 justify-center px-2 py-2 text-sm 2xl:min-w-0 2xl:px-4"
+                  aria-label="ثبت نام"
+                  title="ثبت نام"
+                >
+                  <UserIcon className="h-5 w-5 2xl:hidden" aria-hidden="true" />
+                  <span className="hidden 2xl:inline">ثبت نام</span>
                 </Link>
-                <Link href="/login" className="btn btn-primary px-3 py-2 text-sm 2xl:px-4">
-                  ورود
+                <Link
+                  href="/login"
+                  className="btn btn-primary min-h-11 min-w-11 justify-center px-2 py-2 text-sm 2xl:min-w-0 2xl:px-4"
+                  aria-label="ورود"
+                  title="ورود"
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5 2xl:hidden" aria-hidden="true" />
+                  <span className="hidden 2xl:inline">ورود</span>
                 </Link>
               </div>
             ) : !loading && user ? (
@@ -365,7 +439,7 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
               ref={mobileMenuButtonRef}
               type="button"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="rounded-xl border border-slate-200 p-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 lg:hidden"
+              className="rounded-xl border border-slate-200 p-2.5 text-slate-700 hover:bg-primary-50 hover:text-primary-700 2xl:hidden"
               aria-label={isMenuOpen ? 'بستن منوی اصلی' : 'باز کردن منوی اصلی'}
               aria-expanded={isMenuOpen}
               aria-controls="mobile-navigation"
@@ -386,29 +460,49 @@ const Header: React.FC<HeaderProps> = ({ site }) => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden border-t border-slate-200 lg:hidden"
+              className="overflow-hidden border-t border-slate-200 2xl:hidden"
               id="mobile-navigation"
             >
               <nav className="flex flex-col gap-1 py-4" aria-label="منوی اصلی">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`rounded-lg px-4 py-3 font-medium transition-colors ${
-                      isActive(item.href)
-                        ? 'bg-primary-50 text-primary-700'
-                        : 'text-slate-700 hover:bg-slate-50'
-                    }`}
-                    aria-current={isActive(item.href) ? 'page' : undefined}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                {navigation.map((item) => {
+                  const IconComponent = navigationIcons[item.href];
+                  const isShop = item.href === '/shop';
+                  const isActivePage = isActive(item.href);
+
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`group flex items-center gap-3 rounded-lg px-4 py-3 text-base font-semibold transition-all duration-300 ${
+                        isShop
+                          ? 'bg-secondary-500 text-white shadow-sm hover:bg-secondary-600'
+                          : isActivePage
+                            ? isScrolled
+                              ? 'bg-primary-600 text-white shadow-sm'
+                              : 'bg-primary-50 text-primary-700'
+                            : isScrolled
+                              ? 'text-slate-700 hover:bg-primary-50 hover:text-primary-700 hover:shadow-md'
+                              : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                      aria-current={isActivePage ? 'page' : undefined}
+                    >
+                      <IconComponent
+                        className={`h-5 w-5 transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-110 ${
+                          isShop || isActivePage
+                            ? 'text-current'
+                            : 'text-slate-400 group-hover:text-primary-600'
+                        }`}
+                        aria-hidden="true"
+                      />
+                      {item.label}
+                    </Link>
+                  );
+                })}
                 <Link
                   href="/shop/cart"
                   onClick={() => setIsMenuOpen(false)}
-                  className="rounded-lg px-4 py-3 font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg px-4 py-3 text-base font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   سبد خرید ({cartCount})
                 </Link>

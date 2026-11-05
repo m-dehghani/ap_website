@@ -37,7 +37,7 @@ const clientAuthenticatedRoutes = adminRoutes.filter(
   (route) => route !== '/admin',
 );
 
-test('homepage product and news sections fit narrow mobile viewports', async ({
+test('homepage product, news, and navigation fit narrow viewports', async ({
   page,
 }) => {
   await page.route('**/api/shop/products**', (route) =>
@@ -65,7 +65,7 @@ test('homepage product and news sections fit narrow mobile viewports', async ({
     }),
   );
 
-  for (const width of [320, 390]) {
+  for (const width of [320, 390, 1024, 1028, 1280, 1536]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
 
@@ -83,10 +83,39 @@ test('homepage product and news sections fit narrow mobile viewports', async ({
       `homepage overflows at ${width}px`,
     ).toBe(true);
 
-    const newsLinks = page.locator('a[href^="/news/"]');
+    if (width >= 1024) {
+      const mainNavigation = page.getByRole('navigation', { name: 'منوی اصلی' });
+      await expect(mainNavigation).toBeVisible();
+      expect(
+        await mainNavigation.evaluate(
+          (navigation) => navigation.scrollWidth <= navigation.clientWidth,
+        ),
+        `main navigation overflows at ${width}px`,
+      ).toBe(true);
+      expect(
+        await mainNavigation.locator('a').evaluateAll((links) => {
+          const tops = links.map((link) => link.getBoundingClientRect().top);
+          return tops.every((top) => Math.abs(top - tops[0]) < 1);
+        }),
+        `main navigation wraps at ${width}px`,
+      ).toBe(true);
+      await expect(mainNavigation.locator('a svg')).toHaveCount(9);
+
+      const heroNewsLink = page.locator('.home-hero a[href^="/news/"]');
+      await expect(heroNewsLink).toBeVisible();
+      await expect(heroNewsLink).toHaveAttribute('href', /^\/news\/[^/]+$/);
+    }
+
+    const newsLinks = page.locator('a[href^="/news/"]:visible');
     for (const link of await newsLinks.all()) {
       await expect(link).toBeVisible();
       await expect(link).toHaveAttribute('href', /^\/news\/[^/]+$/);
+    }
+
+    if (width >= 1024 && width <= 1028) {
+      await page.locator('.home-hero a[href^="/news/"]').click();
+      await expect(page).toHaveURL(/\/news\/[^/]+$/);
+      await expect(page.locator('article h1')).toBeVisible();
     }
   }
 });

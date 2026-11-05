@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import NewsUpdates from '@/components/NewsUpdates';
+import HeroNews from '@/components/hero/HeroNews';
 import type {
   NewsArticleViewModel,
   NewsCategoryViewModel,
@@ -31,6 +32,15 @@ const article = (
 });
 
 describe('homepage academy news cards', () => {
+  it('links the hero news item to its encoded article detail page', () => {
+    render(<HeroNews article={article('featured/article', 'خبر ویژه', true)} />);
+
+    expect(screen.getByRole('link', { name: /خبر ویژه/ })).toHaveAttribute(
+      'href',
+      '/news/featured%2Farticle',
+    );
+  });
+
   it('links featured and regular card actions to encoded stable article IDs', () => {
     render(
       <NewsUpdates
