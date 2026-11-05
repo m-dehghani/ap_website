@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import handler from '@/pages/api/admin/payment-gateways';
 import { authorizeAdmin } from '@/lib/auth';
 import { getPrisma } from '@/lib/db';
+import { CHECKOUT_TTL_MS } from '@/lib/payments';
 
 vi.mock('@/lib/auth', () => ({ authorizeAdmin: vi.fn() }));
 vi.mock('@/lib/db', () => ({ getPrisma: vi.fn() }));
@@ -225,5 +226,55 @@ describe('/api/admin/payment-gateways', () => {
     expect(JSON.stringify(vi.mocked(res.json).mock.calls)).not.toContain(
       'replacement-secret',
     );
+  });
+
+  it('limits credential-change checks to the provider callback window', async () => {
+    tx.paymentGatewayConfig.findUnique.mockResolvedValue({
+      provider: 'ZIBAL',
+      enabled: false,
+      isDefault: false,
+      encryptedCredential: 'encrypted',
+    });
+    const startedAt = Date.now();
+    const res = response();
+
+    await handler(
+      request('PUT', {
+        provider: 'ZIBAL',
+        enabled: false,
+        isDefault: false,
+        credential: 'replacement-secret',
+      }),
+      res as never,
+    );
+
+    const paymentWhere = tx.payment.count.mock.calls[0][0].where;
+    const orderWhere = tx.shopOrder.count.mock.calls[0][0].where;
+    expect(paymentWhere.OR).toHaveLength(2);
+    expect(paymentWhere.OR[0].expiresAt.gt).toBeInstanceOf(Date);
+    expect(paymentWhere.OR[1]).toMatchObject({
+      expiresAt: null,
+      createdAt: { gt: expect.any(Date) },
+    });
+    const paymentBoundary = paymentWhere.OR[0].expiresAt.gt.getTime();
+    expect(paymentBoundary).toBeGreaterThanOrEqual(
+      startedAt - CHECKOUT_TTL_MS,
+    );
+    expect(paymentBoundary).toBeLessThanOrEqual(
+      Date.now() - CHECKOUT_TTL_MS,
+    );
+    expect(orderWhere.expiresAt.gt).toBeInstanceOf(Date);
+    const orderBoundary = orderWhere.expiresAt.gt.getTime();
+    expect(orderBoundary).toBeGreaterThanOrEqual(startedAt - CHECKOUT_TTL_MS);
+    expect(orderBoundary).toBeLessThanOrEqual(Date.now() - CHECKOUT_TTL_MS);
+    expect(paymentWhere).toMatchObject({
+      provider: 'ZIBAL',
+      status: { in: ['PENDING', 'FAILED'] },
+    });
+    expect(orderWhere).toMatchObject({
+      provider: 'ZIBAL',
+      status: { in: ['PENDING_PAYMENT', 'PAYMENT_FAILED', 'CANCELLED'] },
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
   });
 });

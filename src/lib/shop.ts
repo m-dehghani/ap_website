@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { imageAssetUrlSchema } from '@/lib/uploads';
-import { aparatVideoUrlSchema } from '@/lib/aparat';
-import { videoAssetUrlSchema } from '@/lib/media';
+import { videoContentFieldsSchema } from '@/lib/media';
 import type { PrismaClient } from '../../prisma/generated/client';
 
 type ShopOrderReservation = {
@@ -93,8 +92,8 @@ export const shopProductInputSchema = z.object({
   description: z.string().trim().min(1).max(10_000),
   shortDescription: z.string().trim().max(500).nullable().optional(),
   images: z.array(z.union([httpUrlSchema, imageAssetUrlSchema])).max(12),
-  uploadedVideoUrl: videoAssetUrlSchema.nullable().optional(),
-  aparatVideoUrl: aparatVideoUrlSchema,
+  uploadedVideoUrl: videoContentFieldsSchema.shape.uploadedVideoUrl,
+  aparatVideoUrl: videoContentFieldsSchema.shape.aparatVideoUrl,
   price: z.number().int().positive(),
   salePrice: z.number().int().positive().nullable().optional(),
   saleStartsAt: z.coerce.date().nullable().optional(),

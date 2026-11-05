@@ -4,6 +4,7 @@ import { authorizeAdmin } from '@/lib/auth';
 import { encryptPaymentCredential, isPaymentConfigEncryptionKeyReady } from '@/lib/payment-config-crypto';
 import { getAdminGatewaySettings } from '@/lib/payment-gateways';
 import { getPrisma } from '@/lib/db';
+import { CHECKOUT_TTL_MS } from '@/lib/payments';
 
 const updateSchema = z
   .object({
@@ -83,11 +84,24 @@ export default async function handler(
 
       let encryptedCredential = current?.encryptedCredential ?? null;
       if (input.clearCredential || input.credential) {
+        const callbackWindowStart = new Date(
+          Date.now() - CHECKOUT_TTL_MS,
+        );
+        const paymentCallbackWindow = {
+          OR: [
+            { expiresAt: { gt: callbackWindowStart } },
+            { expiresAt: null, createdAt: { gt: callbackWindowStart } },
+          ],
+        };
+        const orderCallbackWindow = {
+          expiresAt: { gt: callbackWindowStart },
+        };
         const [pendingPayments, unresolvedOrders] = await Promise.all([
           tx.payment.count({
             where: {
               provider: input.provider,
               status: { in: ['PENDING', 'FAILED'] },
+              ...paymentCallbackWindow,
             },
           }),
           tx.shopOrder.count({
@@ -96,6 +110,7 @@ export default async function handler(
               status: {
                 in: ['PENDING_PAYMENT', 'PAYMENT_FAILED', 'CANCELLED'],
               },
+              ...orderCallbackWindow,
             },
           }),
         ]);
@@ -159,7 +174,7 @@ export default async function handler(
     }
     if (outcome.kind === 'pending-transactions') {
       return res.status(409).json({
-        message: 'تا تعیین تکلیف پرداخت‌های در انتظار، حذف کلید درگاه مجاز نیست.',
+        message: 'تا پایان بازه دریافت پاسخ درگاه برای تراکنش‌های اخیر، تغییر کلید مجاز نیست.',
       });
     }
     if (outcome.kind === 'credential-required') {

@@ -34,11 +34,18 @@ describe('payment credential encryption', () => {
     expect(isPaymentConfigEncryptionKeyReady()).toBe(false);
     expect(() => encryptPaymentCredential('merchant-secret')).toThrow();
 
+    process.env.PAYMENT_CONFIG_ENCRYPTION_KEY = Buffer.alloc(32, 1).toString(
+      'base64',
+    );
+    const encrypted = encryptPaymentCredential('merchant-secret');
+
     process.env.PAYMENT_CONFIG_ENCRYPTION_KEY = Buffer.alloc(16, 1).toString(
       'base64',
     );
     expect(isPaymentConfigEncryptionKeyReady()).toBe(false);
-    expect(() => decryptPaymentCredential('v1:bad:bad:bad')).toThrow();
+    expect(() => decryptPaymentCredential(encrypted)).toThrow(
+      'Payment configuration encryption key is invalid',
+    );
   });
 
   it('rejects modified ciphertext instead of returning corrupted credentials', () => {

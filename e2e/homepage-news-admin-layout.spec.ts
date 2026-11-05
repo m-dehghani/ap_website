@@ -1,6 +1,13 @@
 import { expect, test } from '@playwright/test';
+import { createRequire } from 'node:module';
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
+import { getPrisma } from '../src/lib/db';
+
+const { loadEnvConfig } = createRequire(import.meta.url)(
+  '@next/env',
+) as typeof import('@next/env');
+loadEnvConfig(process.cwd());
 
 const adminPagesRoot = path.join(process.cwd(), 'src', 'pages', 'admin');
 const pagesRoot = path.join(process.cwd(), 'src', 'pages');
@@ -40,6 +47,20 @@ const clientAuthenticatedRoutes = adminRoutes.filter(
 test('homepage product, news, and navigation fit narrow viewports', async ({
   page,
 }) => {
+  const prisma = await getPrisma();
+  const article = await prisma.newsArticle.create({
+    data: {
+      title: 'خبر آزمایشی صفحه نخست',
+      excerpt: 'خلاصه خبر آزمایشی',
+      content: 'متن خبر آزمایشی',
+      category: 'matches',
+      author: 'مدیر آکادمی',
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    select: { id: true },
+  });
+
   await page.route('**/api/shop/products**', (route) =>
     route.fulfill({
       json: {
@@ -65,58 +86,72 @@ test('homepage product, news, and navigation fit narrow viewports', async ({
     }),
   );
 
-  for (const width of [320, 390, 1024, 1028, 1280, 1536]) {
-    await page.setViewportSize({ width, height: 900 });
-    await page.goto('/');
+  try {
+    for (const width of [320, 390, 1024, 1028, 1280, 1536]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
 
-    await expect(
-      page.getByRole('heading', { name: 'برای بازی، آماده شو' }),
-    ).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'آخرین اخبار' })).toBeVisible();
-    await expect(
-      page.getByRole('link', { name: 'مشاهده محصول موجود' }),
-    ).toHaveAttribute('href', '/shop/existing-product');
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-      ),
-      `homepage overflows at ${width}px`,
-    ).toBe(true);
-
-    if (width >= 1024) {
-      const mainNavigation = page.getByRole('navigation', { name: 'منوی اصلی' });
-      await expect(mainNavigation).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: 'برای بازی، آماده شو' }),
+      ).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'آخرین اخبار' })).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: 'مشاهده محصول موجود' }),
+      ).toHaveAttribute('href', '/shop/existing-product');
       expect(
-        await mainNavigation.evaluate(
-          (navigation) => navigation.scrollWidth <= navigation.clientWidth,
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
         ),
-        `main navigation overflows at ${width}px`,
+        `homepage overflows at ${width}px`,
       ).toBe(true);
-      expect(
-        await mainNavigation.locator('a').evaluateAll((links) => {
-          const tops = links.map((link) => link.getBoundingClientRect().top);
-          return tops.every((top) => Math.abs(top - tops[0]) < 1);
-        }),
-        `main navigation wraps at ${width}px`,
-      ).toBe(true);
-      await expect(mainNavigation.locator('a svg')).toHaveCount(9);
 
-      const heroNewsLink = page.locator('.home-hero a[href^="/news/"]');
-      await expect(heroNewsLink).toBeVisible();
-      await expect(heroNewsLink).toHaveAttribute('href', /^\/news\/[^/]+$/);
-    }
+      const mainNavigation = page.getByRole('navigation', { name: 'منوی اصلی' });
+      if (width >= 1536) {
+        await expect(mainNavigation).toBeVisible();
+        expect(
+          await mainNavigation.evaluate(
+            (navigation) => navigation.scrollWidth <= navigation.clientWidth,
+          ),
+          `main navigation overflows at ${width}px`,
+        ).toBe(true);
+        expect(
+          await mainNavigation.locator('a').evaluateAll((links) => {
+            const tops = links.map((link) => link.getBoundingClientRect().top);
+            return tops.every((top) => Math.abs(top - tops[0]) < 1);
+          }),
+          `main navigation wraps at ${width}px`,
+        ).toBe(true);
+        await expect(mainNavigation.locator('a svg')).toHaveCount(8);
+      } else {
+        await expect(mainNavigation).toBeHidden();
+        await expect(
+          page.getByRole('button', { name: 'باز کردن منوی اصلی' }),
+        ).toBeVisible();
+      }
 
-    const newsLinks = page.locator('a[href^="/news/"]:visible');
-    for (const link of await newsLinks.all()) {
-      await expect(link).toBeVisible();
-      await expect(link).toHaveAttribute('href', /^\/news\/[^/]+$/);
-    }
+      if (width >= 1024) {
+        const heroNewsLink = page.locator('.home-hero a[href^="/news/"]');
+        await expect(heroNewsLink).toBeVisible();
+        await expect(heroNewsLink).toHaveAttribute(
+          'href',
+          `/news/${article.id}`,
+        );
+      }
 
-    if (width >= 1024 && width <= 1028) {
-      await page.locator('.home-hero a[href^="/news/"]').click();
-      await expect(page).toHaveURL(/\/news\/[^/]+$/);
-      await expect(page.locator('article h1')).toBeVisible();
+      const newsLinks = page.locator('a[href^="/news/"]:visible');
+      for (const link of await newsLinks.all()) {
+        await expect(link).toBeVisible();
+        await expect(link).toHaveAttribute('href', /^\/news\/[^/]+$/);
+      }
+
+      if (width >= 1024 && width <= 1028) {
+        await page.locator('.home-hero a[href^="/news/"]').click();
+        await expect(page).toHaveURL(`/news/${article.id}`);
+        await expect(page.locator('article h1')).toBeVisible();
+      }
     }
+  } finally {
+    await prisma.newsArticle.delete({ where: { id: article.id } });
   }
 });
 

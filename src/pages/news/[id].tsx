@@ -30,9 +30,10 @@ export const getServerSideProps: GetServerSideProps<
 
 export default function NewsArticlePage({
   article,
+  site,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
-    <Layout>
+    <Layout site={site}>
       <NextSeo
         title={article.title}
         description={article.excerpt}
@@ -42,7 +43,7 @@ export default function NewsArticlePage({
           description: article.excerpt,
         }}
       />
-      <main className="container-custom py-10 sm:py-14">
+      <div className="container-custom py-10 sm:py-14">
         <article className="mx-auto max-w-4xl rounded-2xl bg-white p-5 shadow-sm sm:p-8">
           <Link
             href="/news"
@@ -81,7 +82,7 @@ export default function NewsArticlePage({
             {article.content}
           </div>
         </article>
-      </main>
+      </div>
     </Layout>
   );
 }

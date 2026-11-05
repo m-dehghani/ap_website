@@ -411,7 +411,10 @@ export default async function handler(
 
   try {
     const input = activationSchema.parse(req.body);
-    if (input.action === 'request') return requestActivation(input, res);
+    if (input.action === 'request') {
+      await requestActivation(input, res);
+      return;
+    }
     return await verifyActivation(input, res);
   } catch (error) {
     if (error instanceof z.ZodError) {

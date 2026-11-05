@@ -102,6 +102,33 @@ describe('admin news video API fields', () => {
     expect(res.status).toHaveBeenCalledWith(201);
   });
 
+  it('normalizes empty video fields from the default news form payload', async () => {
+    const res = response();
+
+    await createHandler(
+      request('POST', {
+        title: 'عنوان',
+        excerpt: 'خلاصه',
+        content: 'متن',
+        category: 'academy',
+        author: 'مدیر',
+        uploadedVideoUrl: '',
+        aparatVideoUrl: '',
+      }),
+      res as never,
+    );
+
+    expect(prisma.newsArticle.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          uploadedVideoUrl: null,
+          aparatVideoUrl: null,
+        }),
+      }),
+    );
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
   it('preserves existing video fields when a partial edit omits them', async () => {
     prisma.newsArticle.findUnique.mockResolvedValue({
       image: null,
